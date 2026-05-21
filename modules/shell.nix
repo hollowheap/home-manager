@@ -1,5 +1,5 @@
 { config, pkgs, ...}: let
-  inherit (pkgs.lib) mkOrder mkMerge;
+  inherit (pkgs.lib) mkOrder;
 in {
   home.shellAliases = {
     "_" = "sudo ";
@@ -182,6 +182,6 @@ in {
 
 	(( ''${+commands[fastfetch]} )) && fastfetch
       '';
-    in mkMerge [ zshEarlyInit zshBeforeCompinit zshConfig ];
+    in pkgs.lib.mkMerge [ zshEarlyInit zshBeforeCompinit zshConfig ];
   };
 }

@@ -18,7 +18,6 @@ in {
     noto-fonts-color-emoji
     # desktop apps
     nautilus
-    spotify
     # services
     pass-git-helper
     # shell plugins
