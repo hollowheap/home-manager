@@ -1,51 +1,55 @@
 { config, ... }: let
-  inherit (builtins) mapAttrs;
-  mkLockedAttrs = mapAttrs (_: value: {
+  mkLockedAttrs = builtins.mapAttrs (_: value: {
     Value = value;
     Status = "locked";
   });
 in {
   programs.zen-browser = {
     enable = true;
+    setAsDefaultBrowser = true;
     policies = {
-      AutofillAddressEnabled = true;
-
-      # Privacy
-      DisableFeedbackCommands = true;
-      DisableFirefoxStudies = true;
+      # Telemetry
       DisableTelemetry = true;
+      DisableFirefoxStudies = true;
+      DisableFeedbackCommands = true;
 
-      # Optimizations
-      DontCheckDefaultBrowser = true;
-      DisablePocket = true;
-      DisableAppUpdate = true;
-      FirefoxHome = false;
-      Homepage = "none";
-
-      # Preferences
-      DisableSetDesktopBackground = true;
-      NoDefaultBookmarks = true;
-      DisplayMenuBar = "never";
-
-      # Security
-      OfferToSaveLogins = false;
-      AutofillCreditCardEnabled = false;
-      DisableFormHistory = true;
-      DisableMasterPasswordCreation = false;
-      PasswordManagerEnabled = false;
-      PrimaryPassword = false;
-      HTTPSOnlyMode = "force_enabled";
       EnableTrackingProtection = {
         Value = true;
         Locked = true;
         Cryptomining = true;
         Fingerprinting = true;
-	EmailTracking = true;
+        EmailTracking = true;
       };
+
+      # Authentication
+      HTTPSOnlyMode = "force_enabled";
+      OfferToSaveLogins = false;
+      PasswordManagerEnabled = false;
+      PrimaryPassword = false;
+      DisableMasterPasswordCreation = false;
+
       DNSOverHTTPS = {
         Enabled = true;
         Locked = true;
+        # Optional: ProviderURL = "https://cloudflare-dns.com/dns-query";
       };
+
+      # User and form data
+      AutofillAddressEnabled = true;
+      AutofillCreditCardEnabled = false;
+      DisableFormHistory = true;
+
+      # Startup optimizations
+      Homepage = "none";
+      FirefoxHome = false;
+      DisablePocket = true;
+      DontCheckDefaultBrowser = true;
+      DisableAppUpdate = true;
+      NoDefaultBookmarks = true;
+
+      # Preferences
+      DisableSetDesktopBackground = true;
+      DisplayMenuBar = "never";
 
       SearchEngines = {
         Add = [
@@ -60,41 +64,61 @@ in {
 	];
         Remove = [ "Google" "DuckDuckGo" "Bing" "Perplexity" ];
 	Default = "Startpage";
-	# PreventInstalls = true;
+	PreventInstalls = true;
       };
       Preferences = mkLockedAttrs {
-	"browser.ctrlTab.sortByRecentlyUser" = true;
-	"browser.tabs.hoverPreview.enabled" = true;
-        # Enable AI Sidebar
+        # Network Link Prefetch Shunts (Stops speculative background connections)
+        "network.dns.disablePrefetch" = true;
+        "network.predictor.enabled" = false;
+        "network.prefetch-next" = false;
+        "network.http.speculative-parallel-limit" = 0;
+
+	# Search Bar Information Leak Mitigation
+	"browser.urlbar.speculativeConnect.enabled" = false;
+
+	# Custom Geolocation override
+	"geo.provider.network.url" = "https://location.services.mozilla.com/v1/geolocate?key=%MOZILLA_API_KEY%";
+
+	# Advanced Content Blocking Definitions (Forces URL parameter stripping)
+        "privacy.query_stripping.enabled" = true;
+        "privacy.query_stripping.enabled.pbmode" = true;
+        "browser.contentblocking.features.strict" = "tp,tpPrivate,cookieBehavior5,cookieBehaviorPBM5,cm,fp,stp,emailTP,emailTPPrivate,-lvl2,rp,rpTop,ocsp,qps,qpsPBM,fpp,fppPrivate,3pcd,btp";
+
+	# Anti fingerprinting
+        "dom.battery.enabled" = false;
+      };
+    };
+    profiles."default" = {
+      settings = {
+        "browser.ctrlTab.sortByRecentlyUser" = true;
+        "browser.tabs.hoverPreview.enabled" = true;
+        "theme.floating_history.position" = "right";
+        
+        # Devtools UI States
+        "devtools.everOpened" = true;
+        "devtools.toolbox.host" = "right";
+
+        # AI Sidebar Integration
         "browser.ml.chat.enabled" = true;
         "browser.ml.chat.sidebar" = true;
         "browser.ml.chat.provider" = "https://gemini.google.com";
 
-	# Devtools
-	"devtools.everOpened" = true;
-	"devtools.toolbox.host" = "right";
-
-	"theme.floating_history.position" = "right";
-
-	# Zen settings
-	"zen.tabs.show-newtab-vertical" = false;
-	"zen.view.show-newtab-button-top" = false;
-	"zen.view.compact.hide-toolbar" = true;
-	"zen.view.use-single-toolbar" = false;
-	"zen.urlbar.behavior" = "float";
-	"zen.pinned-tab-manager.restore-pinned-tabs-to-pinned-url" = true;
-	"zen.workspaces.continue-where-left-off" = true;
-	"zen.workspaces.force-container-workspace" = true;
-	"zen.workspaces.separate-essentials" = false;
-	"zen.welcome-screen.seen" = true;
-
-        # Hardening
-	# Disable only on HTTP
-        "network.dns.disablePrefetch" = true;
-	"geo.provider.network.url" = "https://location.services.mozilla.com/v1/geolocate?key=%MOZILLA_API_KEY%";
+        # Zen Layout Options
+        "zen.tabs.show-newtab-vertical" = false;
+        "zen.view.show-newtab-button-top" = false;
+        "zen.view.compact.hide-toolbar" = true;
+        "zen.view.use-single-toolbar" = false;
+        "zen.urlbar.behavior" = "float";
+        "zen.pinned-tab-manager.restore-pinned-tabs-to-pinned-url" = true;
+        "zen.workspaces.continue-where-left-off" = true;
+        "zen.workspaces.force-container-workspace" = true;
+        "zen.workspaces.separate-essentials" = false;
+        "zen.welcome-screen.seen" = true;
       };
-    };
-    profiles."default" = {
+      search = {
+
+      };
+
       containersForce = true;
       containers = {
         Personal = {
@@ -119,9 +143,7 @@ in {
 	  id = 5;
 	};
       };
-      search = {
 
-      };
       spacesForce = true;
       spaces = let
         containers = config.programs.zen-browser.profiles."default".containers;

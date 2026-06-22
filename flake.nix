@@ -2,32 +2,56 @@
   description = "hollowheap's Home Manager Configuration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
 
-    home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    hm.url = "github:nix-community/home-manager/release-26.05";
+    hm.inputs.nixpkgs.follows = "nixpkgs";
+
+    stylix.url = "github:nix-community/stylix/release-26.05";
+    stylix.inputs.nixpkgs.follows = "nixpkgs";
 
     noctalia-shell.url = "github:noctalia-dev/noctalia-shell";
     noctalia-shell.inputs.nixpkgs.follows = "nixpkgs";
 
-    zen-browser.url = "github:0xc000022070/zen-browser-flake";
+    # Apps
+    zen-browser.url = "github:0xc000022070/zen-browser-flake/beta";
     zen-browser.inputs.nixpkgs.follows = "nixpkgs";
+    # zen-browser.inputs.home-manager.follows = "home-manager";
 
     nvf.url = "github:notashelf/nvf";
     nvf.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { nixpkgs, home-manager, noctalia-shell, zen-browser, nvf, ...} @ inputs :
-  {
-    homeConfigurations."hollowheap@NIXPC-HOLLOWHEAP" = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      extraSpecialArgs = { inherit inputs; };
-      modules = [
-	noctalia-shell.homeModules.default
-	zen-browser.homeModules.twilight-official
-	nvf.homeManagerModules.default
-        ./home.nix
-      ];
+  outputs =
+    { nixpkgs, hm, ... }@inputs:
+    {
+      homeConfigurations."hollowheap@NIXPC-HOLLOWHEAP" =
+        let
+          pkgs = import nixpkgs {
+            system = "x86_64-linux";
+            config = {
+              allowUnfreePredicate =
+                pkg:
+                builtins.elem (nixpkgs.lib.getName pkg) [
+                  "discord"
+                  "modrinth-app-unwrapped"
+                  "modrinth-app"
+                ];
+            };
+          };
+        in
+        hm.lib.homeManagerConfiguration {
+          inherit pkgs;
+          extraSpecialArgs = {
+            inherit inputs;
+          } // { inherit pkgs; };
+          modules = [
+            inputs.stylix.homeModules.stylix
+            inputs.noctalia-shell.homeModules.default
+            inputs.zen-browser.homeModules.twilight
+            inputs.nvf.homeManagerModules.default
+            ./home.nix
+          ];
+        };
     };
-  };
 }

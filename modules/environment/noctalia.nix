@@ -1,110 +1,121 @@
 { config, pkgs, ... }:
 {
-  home.packages = with pkgs; [
-    pwvucontrol
-    brightnessctl
-    cliphist
-    matugen
-  ];
-
-  programs.quickshell.enable = true;
-  programs.noctalia-shell = {
-    enable = true;
-    systemd.enable = true;
-  };
-  programs.noctalia-shell.settings = {
-    appLauncher = {
-      enableClipboardHistory = true;
-      terminalCommand = "ghostty -e";
+  programs.noctalia.enable = true;
+  programs.noctalia.settings = {
+    theme = {
+      mode = "dark";
+      source = "wallpaper";
+      wallpaper_scheme = "m3-rainbow";
+      templates = {
+        builtin_ids = [
+          "btop"
+          "ghostty"
+        ];
+        user = {
+          hyprland = {
+            enabled = true;
+            input_path = "$XDG_CONFIG_HOME/noctalia/templates/hypr-colors.lua";
+            output_path = "$XDG_CONFIG_HOME/hypr/noctalia.lua";
+            post_hook = "hyprctl reload config-only";
+          };
+        };
+      };
     };
-    audio = {
-      externalMixer = "pwvucontrol";
-      visualizerType = "wave";
-      visualizerQuality = "low";
+    shell = {
+      app_icon_colorize = true;
+      setup_wizard_enabled = false;
+      polkit_agent = true;
+      screen_corners = {
+        enabled = true;
+        size = config.theme.dims.margin.inner;
+      };
+      panel = {
+        transparency_mode = "glass";
+        borders = false;
+      };
+      screenshot = {
+        directory = "~/Pictures/Screenshots";
+        freeze_screen = true;
+        pipe_to_command = true;
+        pipe_command = "satty -f - --copy-command wl-copy";
+      };
+    };
+    wallpaper.default.path = "/home/hollowheap/Pictures/Wallpapers/Nilou2.png";
+    location.address = "Singapore, SG";
+    calendar.enabled = true;
+    calendar.account.personal = {
+      type = "google";
+      name = "Personal";
+    };
+    weather.enabled = true;
+    dock = {
+      enabled = true;
+      auto_hide = true;
+      icon_size = 24;
+      reserve_space = false;
     };
     bar = {
-      density = "comfortable";
-      floating = true;
-      position = "right";
-      showCapsule = true;
-      widgets = {
-        left = [
-          {
-	    id = "ControlCenter";
-	    colorizeSystemIcon = "primary";
-	    enableColorization = true;
-	    useDistroLogo = true;
-	  }
-	  {
-	    id = "Clock";
-	    formatHorizontal = "HH:mm - dd/MM";
-	    formatVertical = "HH mm - dd MM";
-	  }
-	  {
-	    id = "MediaMini";
-	    showAlbumArt = true;
-	  }
-	  {
-	    id = "AudioVisualizer";
-	    hideWhenIdle = true;
-	    width = 100;
-	  }
+      order = [ "main" ];
+      main = {
+        position = "top";
+        padding = 24;
+        margin_ends = 48;
+        margin_edge = config.theme.dims.margin.inner;
+        background_opacity = 0.9;
+        start = [
+          "group:main"
+          "group:audio"
         ];
-        center = [
+        center = [ "workspaces" ];
+        end = [ "group:actions" ];
+        capsule_group = [
           {
-            id = "Workspace";
-	    followFocusedScreen = true;
-            hideUnoccupied = false;
-            labelMode = "none";
+            id = "main";
+            members = [
+              "control-center"
+              "clock"
+            ];
+            padding = 12;
           }
-        ];
-        right = [
-	  { id = "KeyboardLayout"; }
           {
-            alwaysShowPercentage = false;
-            id = "Battery";
-            warningThreshold = 30;
+            id = "audio";
+            members = [
+              "media"
+              "audio_visualizer"
+            ];
           }
-	  {
-	    id = "NotificationHistory";
-	    showUnreadBadge = false;
-	  }
-	  { id = "Tray"; colorizeIcons = true; }
+          {
+            id = "actions";
+            members = [
+              "tray"
+              "weather"
+              "network"
+              "bluetooth"
+              "volume"
+              "notifications"
+            ];
+          }
         ];
       };
     };
-    colorSchemes = {
-      darkMode = config.gtk.colorScheme == "dark";
-      matugenSchemeType = "scheme-fidelity";
-      useWallpaperColors = true;
-    };
-    dock.enabled = false;
-    general = {
-      shadowDirection = true;
-    };
-    location.name = "Singapore, Singapore";
-    osd.location = "bottom";
-    sessionMenu.countdownDuration = 5000;
-    templates = {
-      enableUserTemplates = true;
-      cava = true;
-      ghostty = true;
-      gtk = true;
-      niri = true;
-      qt = true;
-      spicetify = true;
-    };
-    ui = {
-      fontDefault = "Sans Serif";
-      fontFixed = "Monospace";
-      panelsAttachedToBar = true;
-    };
-    wallpaper = {
-      hideWallpaperFilenames = true;
-      randomEnabled = true;
-      randomIntervalSec = 300;
-      recursiveSearch = true;
-      transitionType = "fade";
+    widget = {
+      control-center = {
+        custom_image = "${pkgs.nixos-icons}/share/icons/hicolor/48x48/apps/nix-snowflake.png";
+        custom_image_colorize = true;
+      };
+      media = {
+        album_art_only = true;
+      };
+      audio_visualizer = {
+        bands = 8;
+      };
+      workspaces = {
+        labels_only_when_occupied = true;
+        capsule = true;
+      };
+      tray = {
+        drawer = true;
+      };
     };
   };
 }
