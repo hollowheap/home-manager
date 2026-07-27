@@ -3,14 +3,24 @@
   programs.noctalia.enable = true;
   programs.noctalia.settings = {
     theme = {
-      mode = "dark";
+      mode = "auto";
       source = "wallpaper";
-      wallpaper_scheme = "m3-rainbow";
+      wallpaper_scheme = "faithful";
       templates = {
         builtin_ids = [
           "btop"
           "ghostty"
         ];
+        community_ids = [
+          "neovim"
+          "pear-desktop"
+          "vicinae"
+          "discord"
+          "steam"
+          "bat"
+          "zen-browser"
+        ];
+
         user = {
           hyprland = {
             enabled = true;
@@ -18,16 +28,23 @@
             output_path = "$XDG_CONFIG_HOME/hypr/noctalia.lua";
             post_hook = "hyprctl reload config-only";
           };
+          neovim = {
+            enabled = true;
+            input_path = "$XDG_CONFIG_HOME/noctalia/templates/neovim.lua";
+            output_path = "~/.cache/nvim/matugen.lua";
+            post_hook = "pkill -USR1 nvim || true";
+          };
         };
       };
     };
     shell = {
-      app_icon_colorize = true;
       setup_wizard_enabled = false;
       polkit_agent = true;
+      launch_apps_custom_command = "uwsm app -- $CMD";
+
       screen_corners = {
         enabled = true;
-        size = config.theme.dims.margin.inner;
+        size = config.theme.dims.border.radius;
       };
       panel = {
         transparency_mode = "glass";
@@ -39,6 +56,7 @@
         pipe_to_command = true;
         pipe_command = "satty -f - --copy-command wl-copy";
       };
+      session.grid = true;
     };
     wallpaper.default.path = "/home/hollowheap/Pictures/Wallpapers/Nilou2.png";
     location.address = "Singapore, SG";
@@ -54,50 +72,49 @@
       icon_size = 24;
       reserve_space = false;
     };
-    bar = {
-      order = [ "main" ];
-      main = {
-        position = "top";
-        padding = 24;
-        margin_ends = 48;
-        margin_edge = config.theme.dims.margin.inner;
-        background_opacity = 0.9;
-        start = [
-          "group:main"
-          "group:audio"
-        ];
-        center = [ "workspaces" ];
-        end = [ "group:actions" ];
-        capsule_group = [
-          {
-            id = "main";
-            members = [
-              "control-center"
-              "clock"
-            ];
-            padding = 12;
-          }
-          {
-            id = "audio";
-            members = [
-              "media"
-              "audio_visualizer"
-            ];
-          }
-          {
-            id = "actions";
-            members = [
-              "tray"
-              "weather"
-              "network"
-              "bluetooth"
-              "volume"
-              "notifications"
-            ];
-          }
-        ];
-      };
+    bar.order = [ "main" ];
+    bar."main" = {
+      position = "top";
+      padding = 24;
+      margin_ends = 48;
+      margin_edge = config.theme.dims.margin.inner;
+      background_opacity = 0.9;
+      start = [
+        "group:main"
+        "group:audio"
+      ];
+      center = [ "workspaces" ];
+      end = [ "group:actions" ];
+      capsule_group = [
+        {
+          id = "main";
+          members = [
+            "control-center"
+            "clock"
+          ];
+          padding = 12;
+        }
+        {
+          id = "audio";
+          members = [
+            "media"
+            "audio_visualizer"
+          ];
+        }
+        {
+          id = "actions";
+          members = [
+            "tray"
+            "weather"
+            "network"
+            "bluetooth"
+            "volume"
+            "notifications"
+          ];
+        }
+      ];
     };
+
     widget = {
       control-center = {
         custom_image = "${pkgs.nixos-icons}/share/icons/hicolor/48x48/apps/nix-snowflake.png";
