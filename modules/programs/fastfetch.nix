@@ -22,7 +22,7 @@
         // opts;
     in
     {
-      logo.type = "none";
+      # logo.type = "small";
       display = {
         separator = " ";
         key = {
