@@ -1,5 +1,12 @@
 { pkgs, ... }:
 {
+  gtk = {
+    theme = {
+      name = "MacTahoe-Dark";
+      package = pkgs.mactahoe-gtk-theme;
+    };
+  };
+
   stylix = {
     enable = true;
     autoEnable = false;
@@ -11,16 +18,12 @@
     polarity = "dark";
 
     targets = {
-      bat.enable = true;
       fontconfig.enable = true;
-      fzf.enable = true;
-      gtk.enable = true;
       nvf.enable = true;
+      nvf.transparentBackground = true;
+
       ghostty.enable = true;
       ghostty.colors.enable = false;
-      tmux.enable = true;
-      qt.enable = true;
-      yazi.enable = true;
     };
 
     cursor = {
@@ -31,9 +34,9 @@
 
     icons = {
       enable = true;
-      package = pkgs.tela-circle-icon-theme;
-      dark = "Tela-circle-standard";
-      light = "Tela-circle-standard";
+      package = pkgs.mactahoe-icon-theme;
+      dark = "mactahoe-icon-theme-latest-dark";
+      light = "mactahoe-icon-theme-latest-light";
     };
 
     fonts = {
