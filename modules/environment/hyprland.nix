@@ -28,6 +28,7 @@ in
 {
   wayland.windowManager.hyprland = {
     enable = true;
+    package = pkgs.stable.hyprland;
     portalPackage = null;
     systemd.enable = false;
 
