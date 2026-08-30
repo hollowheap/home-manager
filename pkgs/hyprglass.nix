@@ -1,22 +1,22 @@
 {
-  stable,
   cmake,
   lib,
+  hyprlandPlugins,
   fetchFromGitHub,
 }:
-stable.hyprlandPlugins.mkHyprlandPlugin (_: {
+hyprlandPlugins.mkHyprlandPlugin (_: {
   pluginName = "hyprglass";
-  version = "0.6.1";
+  version = "0.7.0";
 
-  src = stable.fetchFromGitHub {
+  src = fetchFromGitHub {
     owner = "hyprnux";
     repo = "hyprglass";
-    rev = "v0.6.1";
-    hash = "sha256-044bxcqawwbxlr75sdmf81w0k5n0nppmwv6d843lgdp208y9aazi";
+    rev = "v0.7.0";
+    hash = "sha256-x/584kY+XXlU/OWKtZAFo89VtowjLXs1DiP9PC0o0Os=";
   };
 
   nativeBuildInputs = [
-    stable.cmake
+    cmake
   ];
 
   dontUseCmakeConfigure = true;

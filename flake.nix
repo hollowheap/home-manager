@@ -17,7 +17,6 @@
 
     noctalia-shell = {
       url = "github:noctalia-dev/noctalia-shell/cachix";
-      # inputs.nixpkgs.follows = "nixpkgs";
     };
 
     zen-browser = {
@@ -33,10 +32,6 @@
   };
 
   nixConfig = {
-    extra-experimental-features = [
-      "flakes"
-      "nix-command"
-    ];
     extra-substituters = [ "http://noctalia.cachix.org" ];
     extra-trusted-public-keys = [
       "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
@@ -50,6 +45,8 @@
         "modrinth-app"
         "modrinth-app-unwrapped"
         "antigravity-cli"
+        "steam"
+        "steam-unwrapped"
       ];
 
       packageConfig = {
@@ -58,18 +55,7 @@
         config.allowUnfreePredicate = pkg: builtins.elem (inputs.nixpkgs.lib.getName pkg) unfreePackages;
         config.permittedInsecurePackages = [ "electron-40.10.5" ];
 
-        overlays = [
-          (final: prev: {
-            stable = import inputs.nixpkgs-stable {
-              localSystem = prev.stdenv.hostPlatform.system;
-              config = {
-                allowUnfreePredicate = pkg: builtins.elem (inputs.nixpkgs-stable.lib.getName pkg) unfreePackages;
-                permittedInsecurePackages = [ "electron-40.10.5" ];
-              };
-            };
-          })
-          (_: prev: import ./pkgs/default.nix prev)
-        ];
+        overlays = [ (_: prev: import ./pkgs/default.nix prev) ];
       };
 
       stateVersionConfig = {

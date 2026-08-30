@@ -5,7 +5,6 @@
   glib,
   libxml2,
   unixtools,
-  gtk-engine-murrine,
   jdupes,
 }:
 stdenvNoCC.mkDerivation (_: {
@@ -16,7 +15,7 @@ stdenvNoCC.mkDerivation (_: {
     owner = "vinceliuice";
     repo = "MacTahoe-gtk-theme";
     rev = "main";
-    hash = "sha256-oA0YTNBO25dD1SCF913cdB9O6t/1dcqfcXPDMk2I498=";
+    hash = "sha256-yiH83S5GYfadANEr6xv9S5m6ZGjEy/+gnfrVAvgOojM=";
   };
 
   nativeBuildInputs = [
@@ -27,9 +26,8 @@ stdenvNoCC.mkDerivation (_: {
     unixtools.getent
   ];
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
+  # propagatedUserEnvPkgs = [
+  # ];
 
   patchPhase = ''
     sed -i 's/MY_USERNAME=.*/MY_USERNAME="nixbld"/' libs/lib-core.sh
