@@ -1,11 +1,21 @@
 { pkgs, ... }:
 {
+  home.packages = with pkgs; [
+    noto-fonts
+    noto-fonts-color-emoji
+    nerd-fonts.victor-mono
+  ];
+
   gtk = {
+    enable = true;
+    colorScheme = "dark";
     theme = {
       name = "MacTahoe-Dark";
       package = pkgs.mactahoe-gtk-theme;
     };
   };
+
+  qt.enable = true;
 
   stylix = {
     enable = true;
@@ -19,8 +29,14 @@
 
     targets = {
       fontconfig.enable = true;
-      nvf.enable = true;
-      nvf.transparentBackground = true;
+
+      gtk.enable = true;
+      gtk.colors.enable = false;
+
+      vesktop.enable = true;
+      vesktop.colors.enable = false;
+
+      noctalia.enable = true;
 
       ghostty.enable = true;
       ghostty.colors.enable = false;
@@ -47,8 +63,8 @@
       ];
       emoji.name = "Noto Color Emoji";
       monospace.name = "VictorMono NFM";
-      sansSerif.name = "Noto Sans";
-      serif.name = "Noto Serif";
+      sansSerif.name = "VictorMono NFP";
+      serif.name = "VictorMono NFP";
     };
   };
 }

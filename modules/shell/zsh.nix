@@ -33,17 +33,17 @@
     sc = "systemctl";
     scu = "sc --user";
 
-    nixos-up = "_ nixos-rebuild switch --flake .";
-    nixos-up-legacy = "_ nixos-rebuild switch";
-    nix-gc = "_ nix store gc -d";
+    nixos-rb = "_ nixos-rebuild switch --flake .";
+    nix-gc = "_ nix store gc";
 
     hm = "home-manager";
-    hm-up = "hm switch --flake . -b backup";
-    hm-up-legacy = "hm switch";
+    hm-rb = "hm switch --flake . -b backup";
+    hm-rb-legacy = "hm switch";
     hm-gc = ''hm expire-generations "-3 days"'';
   };
 
   programs.zsh = {
+    dotDir = "${config.xdg.configHome}/zsh/";
     enable = true;
     enableCompletion = true;
     defaultKeymap = "viins";
@@ -107,7 +107,8 @@
 
     completionInit = ''
       autoload -U compinit
-      compinit -d "$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION"
+      compinit -d "$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION" -C
+      (zcompile "$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION" >/dev/null 2>&1 &)
     '';
 
     initContent = ''
