@@ -1,24 +1,30 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 {
   programs.noctalia.enable = true;
   programs.noctalia.settings = {
     theme = {
-      mode = "auto";
-      source = "wallpaper";
-      wallpaper_scheme = "faithful";
+      mode = lib.mkForce "dark";
+      source = lib.mkForce "wallpaper";
+      wallpaper_scheme = "m3-content";
+      pure_black_dark = true;
       templates = {
         builtin_ids = [
           "btop"
           "ghostty"
+          "starship"
         ];
         community_ids = [
-          "neovim"
+          "yazi"
+          "lazygit"
           "pear-desktop"
-          "vicinae"
           "discord"
           "steam"
           "bat"
-          "zen-browser"
         ];
 
         user = {
@@ -30,21 +36,27 @@
           };
           neovim = {
             enabled = true;
-            input_path = "$XDG_CONFIG_HOME/noctalia/templates/neovim.lua";
-            output_path = "~/.cache/nvim/matugen.lua";
-            post_hook = "pkill -USR1 nvim || true";
+            input_path = "$XDG_CONFIG_HOME/noctalia/templates/nvim-colors.lua";
+            output_path = "$XDG_CONFIG_HOME/nvf/lua/noctalia.lua";
+            post_hook = "pkill -SIGUSR1 nvim";
           };
         };
       };
     };
+
     shell = {
       setup_wizard_enabled = false;
       polkit_agent = true;
       launch_apps_custom_command = "uwsm app -- $CMD";
 
+      button_borders = false;
+      input_borders = false;
+      popup_borders = false;
+      card_borders = false;
+
       screen_corners = {
         enabled = true;
-        size = config.theme.dims.border.radius;
+        size = config.theme.dims.border.radius * 2;
       };
       panel = {
         transparency_mode = "glass";
@@ -56,16 +68,23 @@
         pipe_to_command = true;
         pipe_command = "satty -f - --copy-command wl-copy";
       };
+
+      launcher.app_grid = true;
       session.grid = true;
     };
-    wallpaper.default.path = "/home/hollowheap/Pictures/Wallpapers/Nilou2.png";
     location.address = "Singapore, SG";
     calendar.enabled = true;
     calendar.account.personal = {
       type = "google";
       name = "Personal";
     };
+    brightness = {
+      enable_ddcutil = true;
+      monitor.HDMI-A-1.backend = "ddcutil";
+      monitor.DP-1.backend = "ddcutil";
+    };
     weather.enabled = true;
+    wallpaper.transition_on_startup = true;
     dock = {
       enabled = true;
       auto_hide = true;
@@ -80,20 +99,14 @@
       margin_edge = config.theme.dims.margin.inner;
       background_opacity = 0.9;
       start = [
-        "group:main"
+        "launcher"
+        "clock"
         "group:audio"
+        "workspaces"
       ];
-      center = [ "workspaces" ];
+      center = [ "active_window" ];
       end = [ "group:actions" ];
       capsule_group = [
-        {
-          id = "main";
-          members = [
-            "control-center"
-            "clock"
-          ];
-          padding = 12;
-        }
         {
           id = "audio";
           members = [
@@ -104,21 +117,39 @@
         {
           id = "actions";
           members = [
-            "tray"
             "weather"
             "network"
             "bluetooth"
             "volume"
             "notifications"
+            "tray"
           ];
         }
       ];
     };
 
+    idle.behavior = {
+      lock.enabled = true;
+      suspend = true;
+    };
+
+    lockscreen_widgets = {
+      enabled = true;
+
+      clock-1 = {
+        output = "HDMI-A-1";
+
+      };
+    };
+
     widget = {
-      control-center = {
+      launcher = {
         custom_image = "${pkgs.nixos-icons}/share/icons/hicolor/48x48/apps/nix-snowflake.png";
         custom_image_colorize = true;
+        capsule = true;
+      };
+      clock = {
+        capsule = true;
       };
       media = {
         album_art_only = true;
@@ -130,7 +161,14 @@
         labels_only_when_occupied = true;
         capsule = true;
       };
+      active_window = {
+        max_length = 480;
+      };
+      network = {
+        show_label = false;
+      };
       tray = {
+        anchor = true;
         drawer = true;
       };
     };

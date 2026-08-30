@@ -7,7 +7,7 @@
 let
   inherit (builtins) concatLists genList;
   inherit (lib.trivial) mod;
-  inherit (lib.generators) mkLuaInline toLua;
+  inherit (lib.generators) mkLuaInline;
 
   mkArgs = args: { _args = args; };
 
@@ -28,16 +28,9 @@ in
 {
   wayland.windowManager.hyprland = {
     enable = true;
-    package = pkgs.stable.hyprland;
+    package = null;
     portalPackage = null;
     systemd.enable = false;
-
-    extraConfig = ''
-      local hg = hl.plugin.hyprglass
-      if hg ~= nil then
-        hg.config(${toLua { } config.hyprPlugins.hyprglass})
-      end
-    '';
 
     plugins = with pkgs; [
       hyprglass
@@ -48,11 +41,18 @@ in
         _var = mkLuaInline ''require("noctalia")'';
       };
 
-      monitor = {
-        output = "eDP-1";
-        mode = "highrr";
-        position = "auto";
-      };
+      monitor = [
+        {
+          output = "HDMI-A-1";
+          mode = "1920x1080@75";
+          position = "0x0";
+        }
+        {
+          output = "DP-1";
+          mode = "1920x1080@320";
+          position = "1920x0";
+        }
+      ];
 
       env = map mkArgs [
         [
@@ -99,7 +99,6 @@ in
 
           shadow = {
             enabled = true;
-            range = 25;
             color = mkLuaInline "colors.active_shadow";
             color_inactive = mkLuaInline "colors.inactive_shadow";
           };
@@ -107,7 +106,7 @@ in
           blur = {
             enabled = true;
             size = 2;
-            passes = 2;
+            passes = 3;
             noise = 0.001;
             xray = false;
             ignore_opacity = true;
@@ -116,6 +115,10 @@ in
             brightness = 0.8;
             vibrancy = 0.17;
             new_optimizations = false;
+          };
+
+          motion_blur = {
+            enabled = true;
           };
         };
 
@@ -127,7 +130,7 @@ in
           disable_hyprland_logo = true;
           disable_splash_rendering = true;
           disable_scale_notification = true;
-          # vrr = 3;
+          vrr = 3;
         };
 
         ecosystem = {
@@ -140,6 +143,28 @@ in
           focus_fit_method = 0;
         };
 
+        quirks = {
+          prefer_hdr = 1;
+        };
+      };
+
+      "plugin\.hyprglass\.config" = {
+        blur_strength = 0.5;
+        blur_iterations = 3;
+        lens_distortion = 1;
+        refraction_strength = 2;
+        chromatic_aberration = 0.1;
+        tint_color = 4294967040;
+        fresnel_strength = 1;
+        specular_strength = 1;
+        dark = {
+          brightness = 1;
+          adaptive_dim = 0;
+        };
+        light = {
+          brightness = 1;
+          adaptive_boost = 0;
+        };
       };
 
       animation = mkArgs [
@@ -180,10 +205,19 @@ in
           gaps_out = config.theme.dims.margin.inner;
           gaps_in = 0;
         }
-      ];
+      ]
+      ++ (genList (
+        i:
+        let
+          key = mod (i + 1) 10;
+        in
+        {
+          workspace = "${toString key}";
+          monitor = if (mod key 2) == 0 then "DP-1" else "HDMI-A-1";
+        }
+      ) 10);
 
       window_rule =
-
         let
           mkFloatRule = name: match: {
             inherit name;
@@ -274,12 +308,10 @@ in
           ]
 
           # Active workspace controls
-          # [ "SUPER + SHIFT + T" (mkDsp "workspace.opt(\"allfloat\")") ])
           [
             "SUPER + G"
             (mkDsp "group.toggle()")
           ]
-          # [ "SUPER + X" (mkDsp "window.togglesplit()") ])
 
           # App shortcuts
           [
@@ -296,11 +328,11 @@ in
           ]
           [
             "SUPER + V"
-            (mkDspExec (launchApp "noctalia msg launcher clipboard"))
+            (mkDspExec "noctalia msg panel-toggle clipboard")
           ]
           [
             "SUPER + SPACE"
-            (mkDspExec (launchApp "noctalia msg panel-toggle launcher"))
+            (mkDspExec "noctalia msg panel-toggle launcher")
           ]
           [
             "SUPER + TAB"
