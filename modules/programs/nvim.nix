@@ -1,13 +1,23 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  ...
+}:
 let
   inherit (lib.generators) mkLuaInline;
   modes = {
-    motion = [
+    nvo = [
       "n"
       "v"
       "o"
     ];
+
+    nv = [
+      "n"
+      "v"
+    ];
   };
+
   hollowHeapColorscript = pkgs.writeShellScriptBin "hollowheap-colorscript" ''
     initializeANSI()
     {
@@ -46,12 +56,22 @@ in
       enable = true;
 
       settings.vim = {
-        extraPackages = [ hollowHeapColorscript ];
+        extraPackages = [
+        ];
         lazy.plugins = with pkgs; {
           "helpview.nvim" = {
+            ft = [ "help" ];
+            lazy = true;
             package = vimPlugins.helpview-nvim;
           };
           "foldtext.nvim" = {
+            keys = [
+              {
+                mode = modes.nvo;
+                key = "z";
+              }
+            ];
+            lazy = true;
             package = vimUtils.buildVimPlugin {
               pname = "foldtext.nvim";
               version = "2.0.0";
@@ -82,6 +102,10 @@ in
 
           nix.enable = true;
           python.enable = true;
+          tsx.enable = true;
+          typescript.enable = true;
+          yaml.enable = true;
+          zsh.enable = true;
           markdown.enable = true;
           markdown.extensions.markview-nvim.enable = true;
         };
@@ -99,6 +123,10 @@ in
           };
         };
 
+        diagnostics = {
+          config.virtual_text = true;
+        };
+
         debugger = {
           nvim-dap.enable = true;
           nvim-dap.ui.enable = true;
@@ -107,21 +135,11 @@ in
         assistant = {
           avante-nvim.enable = true;
           avante-nvim.setupOpts = {
-            provider = "gemini-cli";
-            acp_providers = {
-              gemini-cli = {
-                command = "gemini";
-                args = [ "--acp" ];
-                env = {
-                  NODE_NO_WARNINGS = "1";
-                };
-              };
-            };
-            # behaviour.auto_set_keymaps = false;
+            # provider = "copilot";
           };
 
+          supermaven-nvim.enable = true;
           supermaven-nvim.setupOpts = {
-            disable_inline_completion = true;
             disable_keymaps = true;
           };
         };
@@ -163,11 +181,56 @@ in
         };
 
         utility = {
+          smart-splits.enable = true;
           snacks-nvim.enable = true;
           snacks-nvim.setupOpts = {
             dashboard = {
               enabled = true;
               width = 80;
+              preset.keys = [
+                {
+                  icon = " ";
+                  key = "f";
+                  desc = "Find File";
+                  action = ":lua Snacks.dashboard.pick('files')";
+                }
+                {
+                  icon = " ";
+                  key = "n";
+                  desc = "New File";
+                  action = ":ene | startinsert";
+                }
+                {
+                  icon = " ";
+                  key = "g";
+                  desc = "Find Text";
+                  action = ":lua Snacks.dashboard.pick('live_grep')";
+                }
+                {
+                  icon = " ";
+                  key = "r";
+                  desc = "Recent Files";
+                  action = ":lua Snacks.dashboard.pick('oldfiles')";
+                }
+                {
+                  icon = " ";
+                  key = "c";
+                  desc = "Config";
+                  action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.expand('~/.config/home-manager/')})";
+                }
+                {
+                  icon = " ";
+                  key = "s";
+                  desc = "Restore Session";
+                  section = "session";
+                }
+                {
+                  icon = " ";
+                  key = "q";
+                  desc = "Quit";
+                  action = ":qa";
+                }
+              ];
               sections = [
                 {
                   section = "terminal";
@@ -176,12 +239,23 @@ in
                   height = 8;
                 }
                 {
+                  icon = " ";
+                  title = "Git Status";
+                  ttl = 300;
+                  indent = 2;
+                  padding = 1;
+                  section = "terminal";
+                  enabled = mkLuaInline "Snacks.git.get_root() ~= nil";
+                  cmd = "git --no-pager diff --stat -B -M -C";
+                  height = 10;
+                }
+                {
                   section = "keys";
                   gap = 1;
                 }
-                {
-                  section = "startup";
-                }
+                # {
+                #   section = "startup";
+                # }
               ];
             };
             explorer = {
@@ -211,6 +285,9 @@ in
             profiler = {
               enabled = true;
             };
+            words = {
+              enabled = true;
+            };
           };
         };
 
@@ -227,6 +304,7 @@ in
               "U" = "Redo";
               "gO" = "Document Outline";
 
+              "d" = "+Delete";
               "y" = "+Yank";
               "z" = "+Fold";
 
@@ -243,7 +321,6 @@ in
 
               "<leader>s" = "+Search";
               "<leader>sx" = "+Diagnostics";
-              # "<leader>f" = "+Find";
               "<leader>d" = "+Debugger";
               "<leader>q" = "+Quit";
             };
@@ -255,7 +332,28 @@ in
             };
           };
         };
-
+        theme = {
+          enable = true;
+          base16-colors = {
+            base00 = "#000000";
+            base01 = "#1e1e1e";
+            base02 = "#2e2e2e";
+            base03 = "#555555";
+            base04 = "#6e6e6e";
+            base05 = "#ababab";
+            base06 = "#d9d9d9";
+            base07 = "#ffffff";
+            base08 = "#ff0000";
+            base09 = "#ff0000";
+            base0A = "#ff0000";
+            base0B = "#00ff00";
+            base0C = "#00ff00";
+            base0D = "#0000ff";
+            base0E = "#0000ff";
+            base0F = "#0000ff";
+          };
+          name = "base16";
+        };
 
         ui = {
           borders.enable = true;
@@ -263,25 +361,19 @@ in
             which-key.enable = true;
           };
 
-          colorizer.enable = true;
+          nvim-highlight-colors.enable = true;
           colorful-menu-nvim.enable = true;
           illuminate.enable = true;
-
-          noice.enable = true;
-          noice.setupOpts = {
-            lsp.progress.enabled = false;
-            lsp.override = {
-              "cmp.entry.get_documentation" = false;
-              "vim.lsp.util.convert_input_to_markdown_lines" = false;
-              "vim.lsp.util.stylize_markdown" = false;
-            };
-            notify.enabled = false;
-            preset.bottom_search = false;
-          };
+          modes-nvim.enable = true;
         };
 
         statusline.lualine = {
           enable = true;
+          # setupOpts.options.theme =
+          #   let
+          #     colors = "require('base16-colorscheme').colors";
+          #   in
+          #   mkLuaInline "";
           icons.enable = true;
           sectionSeparator = {
             left = "";
@@ -291,71 +383,67 @@ in
             left = "";
             right = "";
           };
-          activeSection = {
-            a = [
-              ''
-                { "mode", separator = { left = "" }, right_padding = 2 }
-              ''
-            ];
-            b = [
-              ''
-                { "filename", symbols = { modified = " ", readonly = " " } }
-              ''
-              "branch"
-            ];
-            c = [
-              ''
-                { "diff", colored = false, diff_color = { added = "DiffAdd", modified = "DiffChange", removed = "DiffDelete" }, symbols = { added = "+", modified = "~", removed = "-" } }
-              ''
-              "diagnostics"
-            ];
-            x = [
-              ''
-                {
-                  function()
-                    if not package.loaded["noice"] then return "" end
-                    return require("noice").api.status.command.get()
-                  end,
-                  cond = function()
-                    if not package.loaded["noice"] then return false end
-                    return require("noice").api.status.command.has()
-                  end
-                }
-              ''
-              ''
-                { "filetype", icon_only = true, icon = { align = "left" } }
-              ''
-            ];
-            # y uses defaults
-            z = [
-              ''
-                { "progress", left_padding = 2 }
-              ''
-              ''
-                { "location", separator = { right = "" } }
-              ''
-            ];
-          };
+          activeSection =
+            let
+              separator = ''separator = { left = "", right = "" }'';
+            in
+            {
+              a = [
+                ''
+                  { "mode", ${separator} }
+                ''
+              ];
+              b = [
+                ''
+                  { "filename", ${separator}, symbols = { modified = " ", readonly = " " }, onclick = function() Snacks.picker.buffers() end }
+                ''
+                ''
+                  { "branch", ${separator}, icon = " •", right_padding = 1, onclick = function() Snacks.picker.git_branches() end }
+                ''
+              ];
+              c = [
+                ''
+                  { "diff", ${separator}, colored = false, symbols = { added = "+ ", modified = "~ ", removed = "- " } }
+                ''
+                "diagnostics"
+              ];
+              x = [
+                ''
+                  { "filetype", icon_only = true, icon = { align = "left" } }
+                ''
+              ];
+              y = [
+                ''{ "searchcount" }''
+              ];
+              z = [
+                ''
+                  { "progress", left_padding = 2 }
+                ''
+                ''
+                  { "location", separator = { right = "" } }
+                ''
+              ];
+            };
           inactiveSection = {
             a = [ "filename" ];
-            b = [];
-            c = [];
-            x = [];
-            y = [];
-            z = [];
+            b = [ ];
+            c = [ ];
+            x = [ ];
+            y = [ ];
+            z = [ ];
           };
         };
 
         visuals = {
-          # blink-indent.enable = true;
           fidget-nvim.enable = true;
+          fidget-nvim.setupOpts.notification.override_vim_notify = true;
         };
 
         keymaps =
           (map
             (key: {
               inherit key;
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "<Nop>";
             })
             # Disable unintuitive defaults first
@@ -372,45 +460,15 @@ in
           ++ [
             {
               key = "x";
-              mode = [ "n" "v" ];
+              mode = modes.nv;
               action = "\"_x";
               desc = "Delete without yank";
             }
             {
               key = "X";
-              mode = [ "n" "v" ];
+              mode = modes.nv;
               action = "\"_X";
               desc = "Delete without yank (backwards)";
-            }
-            {
-              key = "*";
-              mode = "n";
-              action = "*";
-              desc = "Search forward";
-            }
-            {
-              key = "#";
-              mode = "n";
-              action = "#";
-              desc = "Search backward";
-            }
-            {
-              key = "d";
-              mode = [
-                "n"
-                "v"
-              ];
-              action = "d";
-              desc = "Delete";
-            }
-            {
-              key = "y";
-              mode = [
-                "n"
-                "v"
-              ];
-              action = "y";
-              desc = "Yank";
             }
             # Better defaults (very opionated)
             {
@@ -422,67 +480,67 @@ in
 
             {
               key = "r";
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "ge";
               desc = "Prev end of word";
             }
             {
               key = "R";
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "gE";
               desc = "Prev end of WORD";
             }
             {
               key = "H";
-              mode = modes.motion;
+              mode = modes.nv;
               action = "^";
               desc = "Beginning of line";
             }
             {
               key = "L";
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "$";
               desc = "End of line";
             }
             {
               key = "J";
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "<C-d>zz";
               desc = "Scroll view down";
             }
             {
               key = "K";
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "<C-u>zz";
               desc = "Scroll view up";
             }
             {
               key = "gj";
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "Gzz";
               desc = "Bottom of file";
             }
             {
               key = "gk";
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "ggzz";
               desc = "Top of file";
             }
             {
               key = "<leader>y";
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "\"+y";
               desc = "Yank to clipboard";
             }
             {
               key = "<leader>p";
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "\"+p";
               desc = "Paste after from clipboard";
             }
             {
               key = "<leader>P";
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "\"+P";
               desc = "Paste before from clipboard";
             }
@@ -497,38 +555,59 @@ in
             }
             {
               key = "<leader>qw";
-              mode = modes.motion;
+              mode = modes.nv;
               action = "<cmd>wqa<cr>";
               desc = "Quit and save";
             }
             {
               key = "<leader>qq";
-              mode = modes.motion;
+              mode = modes.nvo;
               action = "<cmd>qa!<cr>";
               desc = "Quit without saving";
             }
 
             # Core Pickers
             {
+              key = "<leader>e";
+              lua = true;
+              action = "function() Snacks.explorer() end";
+              mode = modes.nv;
+              desc = "Explorer";
+            }
+            {
+              key = "<leader>f";
+              lua = true;
+              action = "function() Snacks.picker.files() end";
+              mode = modes.nv;
+              desc = "Find Files";
+            }
+            {
               key = "<leader>sf";
               lua = true;
               action = "function() Snacks.picker.files() end";
-              mode = "n";
+              mode = modes.nv;
               desc = "Find Files";
             }
             {
               key = "<leader>sg";
               lua = true;
               action = "function() Snacks.picker.grep() end";
-              mode = "n";
+              mode = modes.nv;
               desc = "Live Grep";
             }
             {
               key = "<leader>sb";
               lua = true;
               action = "function() Snacks.picker.buffers() end";
-              mode = "n";
+              mode = modes.nv;
               desc = "Buffers";
+            }
+            {
+              key = "<leader>sn";
+              lua = true;
+              action = "function() Snacks.picker.noice() end";
+              mode = modes.nv;
+              desc = "Noice";
             }
 
             # LSP Menus
@@ -536,14 +615,21 @@ in
               key = "<leader>sd";
               lua = true;
               action = "function() Snacks.picker.diagnostics_buffer() end";
-              mode = "n";
-              desc = "Document diagnostics [snacks]";
+              mode = modes.nv;
+              desc = "Diagnostics (buffer) [snacks]";
+            }
+            {
+              key = "<leader>sD";
+              lua = true;
+              action = "function() Snacks.picker.diagnostics() end";
+              mode = modes.nv;
+              desc = "Diagnostics (workspace) [snacks]";
             }
             {
               key = "<leader>lr";
               lua = true;
               action = "function() Snacks.picker.lsp_references() end";
-              mode = "n";
+              mode = modes.nv;
               desc = "LSP References [snacks]";
             }
             {
@@ -553,29 +639,21 @@ in
               mode = "n";
               desc = "List document symbols [snacks]";
             }
-
-            # Workspace/Global Menus
             {
-              key = "<leader>sxl";
+              key = "<leader>sl";
               lua = true;
               action = "function() Snacks.picker.loclist() end";
               mode = "n";
               desc = "Location List [snacks]";
             }
             {
-              key = "<leader>sxq";
+              key = "<leader>sq";
               lua = true;
               action = "function() Snacks.picker.qflist() end";
               mode = "n";
               desc = "Quickfix List [snacks]";
             }
-            {
-              key = "<leader>sxd";
-              lua = true;
-              action = "function() Snacks.picker.diagnostics() end";
-              mode = "n";
-              desc = "Workspace Diagnostics [snacks]";
-            }
+
           ];
 
         lineNumberMode = "relNumber";
@@ -641,7 +719,7 @@ in
         };
         autocmds = [
           {
-            event = [ "UIEnter" ];
+            event = [ "VimEnter" ];
             once = true;
             callback = mkLuaInline ''
               function()
@@ -656,7 +734,7 @@ in
               return {
                 stats = function()
                   return {
-                    startuptime = _G.lazy_startup_time or vim.uv.now() / 1e6,
+                    startuptime = _G.lazy_startup_time or vim.uv.now() / 1e12,
                     count = #vim.fn.globpath(vim.o.packpath, "pack/*/*/*", 0, 1),
                     loaded = #vim.fn.globpath(vim.o.packpath, "pack/*/start/*", 0, 1)
                   }
@@ -664,28 +742,78 @@ in
               }
             end
 
-            local matugen_path = vim.fn.expand("~/.config/nvim/lua/matugen.lua")
-            local function load_matugen()
-              package.loaded['matugen'] = nil
-              local ok, matugen = pcall(dofile, matugen_path)
-              if ok and type(matugen) == "table" and type(matugen.setup) == "function" then
-                matugen.setup()
-                vim.api.nvim_exec_autocmds("ColorScheme", {})
-              end
-            end
+            require("noctalia").setup()
 
-            load_matugen()
+            local colors = require("base16-colorscheme").colors
+            require("lualine").setup({
+	            options = {
+                theme = {
+                  normal = {
+                    a = { fg = colors.base00, bg = colors.base08 },
+                    b = { fg = colors.base05, bg = colors.base00 },
+                    c = { fg = colors.base05, bg = colors.base00 },
 
-            vim.api.nvim_create_autocmd("Signal", {
-              pattern = "SIGUSR1",
-              callback = function()
-                load_matugen()
-                vim.cmd("redraw!")
-              end,
+                    x = { fg = colors.base05, bg = colors.base00 },
+                    y = { fg = colors.base05, bg = colors.base00 },
+                    z = { fg = colors.base00, bg = colors.base05 },
+                  },
+                  insert = { a = { fg = colors.base00, bg = colors.base09 } },
+                  visual = { a = { fg = colors.base00, bg = colors.base0A } },
+                  replace = { a = { fg = colors.base00, bg = colors.base0B } },
+                  command = { a = { fg = colors.base00, bg = colors.base0C } },
+
+                  inactive = { 
+                    a = { fg = colors.base05, bg = colors.base00 },
+                    b = { fg = colors.base05, bg = colors.base00 },
+                    c = { fg = colors.base05, bg = colors.base00 },
+
+                    x = { fg = colors.base05, bg = colors.base00 },
+                    y = { fg = colors.base05, bg = colors.base00 },
+                    z = { fg = colors.base05, bg = colors.base00 },
+                  },
+                }
+	            }
             })
           '';
         };
       };
     };
   };
+
+  xdg.configFile."noctalia/templates/nvim-colors.lua".text = ''
+    local M = {}
+
+    function M.setup()
+      require('base16-colorscheme').setup({
+        -- Background tones
+        base00 = '{{colors.surface.default.hex}}', -- Default Background
+        base01 = '{{colors.surface_container.default.hex}}', -- Lighter Background (status bars)
+        base02 = '{{colors.surface_container_high.default.hex}}', -- Selection Background
+        base03 = '{{colors.outline.default.hex}}', -- Comments, Invisibles
+        -- Foreground tones
+        base04 = '{{colors.on_surface_variant.default.hex}}', -- Dark Foreground (status bars)
+        base05 = '{{colors.on_surface.default.hex}}', -- Default Foreground
+        base06 = '{{colors.on_surface.default.hex}}', -- Light Foreground
+        base07 = '{{colors.on_background.default.hex}}', -- Lightest Foreground
+        -- Accent colors
+        base08 = '{{colors.error.default.hex}}', -- Variables, XML Tags, Errors
+        base09 = '{{colors.tertiary.default.hex}}', -- Integers, Constants
+        base0A = '{{colors.secondary.default.hex}}', -- Classes, Search Background
+        base0B = '{{colors.primary.default.hex}}', -- Strings, Diff Inserted
+        base0C = '{{colors.tertiary_fixed_dim.default.hex}}', -- Regex, Escape Chars
+        base0D = '{{colors.primary_fixed_dim.default.hex}}', -- Functions, Methods
+        base0E = '{{colors.secondary_fixed_dim.default.hex}}', -- Keywords, Storage
+        base0F = '{{colors.error_container.default.hex}}', -- Deprecated, Embedded Tags
+      })
+    end
+
+    vim.uv.new_signal():start('sigusr1',
+      vim.schedule_wrap(function()
+        package.loaded['noctalia'] = nil
+        require('noctalia').setup()
+      end)
+    )
+
+    return M
+  '';
 }

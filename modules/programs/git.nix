@@ -41,15 +41,15 @@
     # "diff-so-fancy" = {
     #   markEmptyLines = false;
     # };
-    color = {
-      "diff" = {
-        meta = "black bold";
-        frag = "magenta";
-        context = "white";
-        whitespace = "yellow reverse";
-        old = "red";
-      };
-    };
+    # color = {
+    #   "diff" = {
+    #     meta = "black bold";
+    #     frag = "magenta";
+    #     context = "white";
+    #     whitespace = "yellow reverse";
+    #     old = "red";
+    #   };
+    # };
     status = {
       branch = true;
       short = true;
@@ -76,7 +76,6 @@
     };
     credential.helper = [
       "cache"
-      "!type pass-git-helper >/dev/null && pass-git-helper $@"
     ];
   };
 }

@@ -56,7 +56,7 @@ in
           {
             "Name" = "Startpage";
             "Method" = "POST";
-            "URLTemplate" = "https://www.startpage.com/do/search";
+            "URLTemplate" = "https://www.startpage.com/sp/search";
             "IconURL" = "https://www.startpage.com/sp/search";
             "PostData" = "query={searchTerms}&cat=web&t=device";
             "SuggestURLTemplate" = "https://www.startpage.com/osuggestions?q={searchTerm}";
@@ -202,7 +202,7 @@ in
           };
         }
       ) 8);
-      keyboardShortcutsVersion = 19;
+      keyboardShortcutsVersion = 20;
 
       containersForce = true;
       containers = {
@@ -256,7 +256,9 @@ in
         "72f8f48d-86b9-4487-acea-eb4977b18f21" # Better Ctrl Tab Panel
         "253a3a74-0cc4-47b7-8b82-996a64f030d5" # Floating History
         "c01d3e22-1cee-45c1-a25e-53c0f180eea8" # Ghost Tabs
-        "3ff55ba7-4690-4f74-96a8-9e4416685e4e" # Colored Container Tab
+        "642854b5-88b4-4c40-b256-e035532109df" # Transparent Zen
+        "4a222d82-2803-4ed2-a390-90abfce4f195" # Back Fwd Always Hidden
+        "cb5efa80-f1e1-43ce-8c0b-fece8462d225" # Container Halo
         "1e86cf37-a127-4f24-b919-d265b5ce29a0" # Lean
         "4c2bec61-7f6c-4e5c-bdc6-c9ad1aba1827" # Vertical Tab Split Groups
         "4ab93b88-151c-451b-a1b7-a1e0e28fa7f8" # No Sidebar Scrollbar

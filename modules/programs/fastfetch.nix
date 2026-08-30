@@ -45,8 +45,7 @@
         (mkField 1 "{icon}" "os" "os" { })
         (mkField 2 "" "kernel" "kernel" { })
         (mkField 3 "" "packages" "packages" { })
-        (mkField 4 "󰝚" "media" "media" { })
-        (mkField 5 "󰩟" "network" "localip" { format = "{ipv4} ({ifname})"; })
+        (mkField 4 "󰩟" "network" "localip" { format = "{ipv4} ({ifname})"; })
         {
           key = "├{$1}┤";
           type = "custom";
@@ -58,23 +57,23 @@
           key = "├{$1}┤";
           type = "custom";
         }
-        (mkField 6 "" "wm" "wm" { })
-        (mkField 1 "󰉼" "theme" "theme" { })
-        (mkField 2 "" "icons" "icons" { })
-        (mkField 4 "" "term" "terminal" { })
-        (mkField 5 "" "shell" "shell" { })
+        (mkField 5 "" "wm" "wm" { })
+        (mkField 6 "󰉼" "theme" "theme" { })
+        (mkField 1 "" "icons" "icons" { })
+        (mkField 2 "" "term" "terminal" { })
+        (mkField 3 "" "shell" "shell" { })
         {
           key = "├{$1}┤";
           type = "custom";
         }
-        (mkField 1 "󰍛" "cpu" "cpu" { showPeCoreCount = true; })
-        (mkField 2 "󰾲" "gpu" "gpu" { })
-        (mkField 3 "" "disk" "disk" {
+        (mkField 4 "󰍛" "cpu" "cpu" { showPeCoreCount = true; })
+        (mkField 5 "󰾲" "gpu" "gpu" { })
+        (mkField 6 "" "disk" "disk" {
           folders = "/";
           bar = true;
         })
-        (mkField 4 "" "memory" "memory" { })
-        (mkField 5 "󰓡" "swap" "swap" { })
+        (mkField 1 "" "memory" "memory" { })
+        (mkField 2 "󰓡" "swap" "swap" { })
         {
           key = "├{$1}┤";
           type = "custom";
