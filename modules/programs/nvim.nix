@@ -763,13 +763,13 @@ in
                   command = { a = { fg = colors.base00, bg = colors.base0C } },
 
                   inactive = { 
-                    a = { fg = colors.base05, bg = colors.base00 },
+                    a = { fg = colors.base00, bg = colors.base05 },
                     b = { fg = colors.base05, bg = colors.base00 },
                     c = { fg = colors.base05, bg = colors.base00 },
 
                     x = { fg = colors.base05, bg = colors.base00 },
                     y = { fg = colors.base05, bg = colors.base00 },
-                    z = { fg = colors.base05, bg = colors.base00 },
+                    z = { fg = colors.base00, bg = colors.base05 },
                   },
                 }
 	            }

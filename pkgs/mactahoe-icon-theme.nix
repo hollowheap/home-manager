@@ -7,7 +7,7 @@ stdenvNoCC.mkDerivation (_: {
     owner = "vinceliuice";
     repo = "MacTahoe-icon-theme";
     rev = "main";
-    hash = "sha256-Ho71thvHpgQICfC0c67ClKRONdDeNVfg0bGU6ZjM3S8=";
+    hash = "sha256-chsVKiRKh84drSXiIYmsNbyxi3cICtNF2fClBFNfK8c=";
   };
 
   nativeBuildInputs = [

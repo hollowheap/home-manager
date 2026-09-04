@@ -9,12 +9,13 @@
 
     # Desktop Applications
     nautilus
-    chromium
+    # chromium
     steam
     pear-desktop
+    zrythm
+    zoom-us
 
     # Utilities
-    tmux
     satty
     tdf
     jq

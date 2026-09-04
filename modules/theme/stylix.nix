@@ -40,6 +40,10 @@
 
       ghostty.enable = true;
       ghostty.colors.enable = false;
+
+      zen-browser.enable = true;
+      zen-browser.profileNames = [ "default" ];
+      zen-browser.colors.enable = false;
     };
 
     cursor = {

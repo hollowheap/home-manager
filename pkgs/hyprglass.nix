@@ -11,8 +11,8 @@ hyprlandPlugins.mkHyprlandPlugin (_: {
   src = fetchFromGitHub {
     owner = "hyprnux";
     repo = "hyprglass";
-    rev = "v0.7.0";
-    hash = "sha256-x/584kY+XXlU/OWKtZAFo89VtowjLXs1DiP9PC0o0Os=";
+    rev = "8a4c0d3b9d880bd16676bb9026eca4a0435da7c9";
+    hash = "sha256-I/1TfD8VtDE44Jk3XsAYWk/Df/aTySMt0UIgs+gipx8=";
   };
 
   nativeBuildInputs = [

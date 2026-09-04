@@ -15,7 +15,7 @@ stdenvNoCC.mkDerivation (_: {
     owner = "vinceliuice";
     repo = "MacTahoe-gtk-theme";
     rev = "main";
-    hash = "sha256-yiH83S5GYfadANEr6xv9S5m6ZGjEy/+gnfrVAvgOojM=";
+    hash = "sha256-v87Lesf9EjOEZUZ5y90GHECVc6IaHhixI2sZ/9EE07A=";
   };
 
   nativeBuildInputs = [
@@ -32,7 +32,7 @@ stdenvNoCC.mkDerivation (_: {
   patchPhase = ''
     sed -i 's/MY_USERNAME=.*/MY_USERNAME="nixbld"/' libs/lib-core.sh
     sed -i 's/MY_HOME=.*/MY_HOME="\/build"/' libs/lib-core.sh
-    sed -i 's/SUDO_BIN="$(which sudo)"/SUDO_BIN=""/' libs/lib-core.sh
+    sed -i 's/SUDO_BIN="$(command -v sudo)"/SUDO_BIN=""/' libs/lib-core.sh
     sed -i 's/exec 2>.*/# removed exec/' libs/lib-core.sh
 
     # Disable animations and terminal clearing

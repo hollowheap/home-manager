@@ -25,6 +25,7 @@
           "discord"
           "steam"
           "bat"
+          "zen-browser"
         ];
 
         user = {

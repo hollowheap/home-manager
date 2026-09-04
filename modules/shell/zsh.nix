@@ -171,7 +171,7 @@
       zstyle ':completion:*:manuals.(^1*)' insert-sections true
 
       zstyle ':fzf-tab:*' fzf-flags \
-        --height=40% \
+        --tmux \
         --layout=reverse \
         --border=rounded \
         --border-label=" Completions " \
@@ -179,7 +179,8 @@
         --preview-window='right:60%,border-rounded' \
         --prompt="❯ " \
         --marker="❯" \
-        --pointer="❯" \
+        --pointer="❯"
+      # --height=40% \
 
       bindkey -r "^R"
 

@@ -47,6 +47,7 @@
         "antigravity-cli"
         "steam"
         "steam-unwrapped"
+        "zoom"
       ];
 
       packageConfig = {

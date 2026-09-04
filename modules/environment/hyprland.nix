@@ -251,6 +251,9 @@ in
             float = true;
             opaque = true;
           }
+          (mkFloatRule "zoom" {
+            class = "zoom";
+          })
           (mkFloatRule "discord-updater" {
             class = "discord";
             initial_title = "Discord Updater";
