@@ -12,33 +12,48 @@ let
       skills ? [ ],
       instructions ? "",
     }:
+    let
+      yamlFrontmatter = lib.generators.toYAML { } {
+        inherit
+          name
+          description
+          mainAgent
+          subagent
+          permissionMode
+          commandExecutionPolicy
+          ;
+        inherit tools skills;
+      };
+    in
     {
-      name = ".gemini/config/agents/${name}.md";
+      name = ".gemini/config/agents/${name}/agent.md";
       value.text = ''
         ---
-        ${
-          lib.generators.toYAML { } {
-            inherit
-              name
-              description
-              mainAgent
-              subagent
-              permissionMode
-              commandExecutionPolicy
-              ;
-            inherit tools skills;
-          }
-        }---
+        ${yamlFrontmatter}
+        ---
 
         # Instructions
         ${instructions}
       '';
     };
 
-  mkSkill = { name, content }: {
-    name = ".gemini/config/skills/${name}.md";
-    value.text = content;
-  };
+  mkSkill =
+    {
+      name,
+      description,
+      content,
+    }:
+    {
+      name = ".gemini/config/skills/${name}/SKILL.md";
+      value.text = ''
+        ---
+        name: ${name}
+        description: ${description}
+        ---
+
+        ${content}
+      '';
+    };
 
   agents = [
     {
@@ -51,11 +66,11 @@ let
       tools = [
         "view_file"
         "grep_search"
-        "find_files"
+        "find_by_name"
       ];
       skills = [
-        "skills/nix-conventions"
-        "skills/architecture-planning"
+        "nix-conventions"
+        "architecture-planning"
       ];
       instructions = ''
         You are an architectural planner.
@@ -74,9 +89,9 @@ let
       tools = [
         "view_file"
         "grep_search"
-        "find_files"
+        "find_by_name"
       ];
-      skills = [ "skills/nix-conventions" ];
+      skills = [ "nix-conventions" ];
       instructions = ''
         You are a read-only technical Q&A assistant.
         - Inspect files to answer questions without modifying state.
@@ -94,9 +109,9 @@ let
       tools = [
         "view_file"
         "grep_search"
-        "find_files"
+        "find_by_name"
       ];
-      skills = [ "skills/code-review" ];
+      skills = [ "code-review" ];
       instructions = ''
         You are a code reviewer.
         - Evaluate staged changes and pull requests against repository conventions.
@@ -115,9 +130,9 @@ let
         "view_file"
         "replace_file_content"
         "run_command"
-        "find_files"
+        "find_by_name"
       ];
-      skills = [ "skills/testing-discipline" ];
+      skills = [ "testing-discipline" ];
       instructions = ''
         You are an automated test runner.
         - Run local test harnesses using `run_command`.
@@ -137,9 +152,9 @@ let
         "replace_file_content"
         "write_to_file"
         "grep_search"
-        "find_files"
+        "find_by_name"
       ];
-      skills = [ "skills/nix-conventions" ];
+      skills = [ "nix-conventions" ];
       instructions = ''
         You are a refactoring engine.
         - Perform mechanical updates and API migrations across files.
@@ -158,9 +173,9 @@ let
         "view_file"
         "replace_file_content"
         "write_to_file"
-        "find_files"
+        "find_by_name"
       ];
-      skills = [ "skills/documentation-standards" ];
+      skills = [ "documentation-standards" ];
       instructions = ''
         You are a documentation generator.
         - Generate and update API reference docs, CHANGELOG files, and inline docstrings.
@@ -179,9 +194,9 @@ let
         "view_file"
         "grep_search"
         "run_command"
-        "find_files"
+        "find_by_name"
       ];
-      skills = [ "skills/security-policy" ];
+      skills = [ "security-policy" ];
       instructions = ''
         You are a security auditor.
         - Scan files for leaked API keys, tokens, and insecure permissions.
@@ -200,7 +215,7 @@ let
         "view_file"
         "run_command"
       ];
-      skills = [ "skills/git-conventions" ];
+      skills = [ "git-conventions" ];
       instructions = ''
         You are a Git workflow automator.
         - Inspect `git diff` outputs to craft Conventional Commits.
@@ -213,6 +228,7 @@ let
   skills = [
     {
       name = "nix-conventions";
+      description = "Best practices and declarative patterns for Nix and Home Manager configurations.";
       content = ''
         # Nix Conventions
         - Adhere to pure declarative patterns without inline scripts where native options exist.
@@ -222,6 +238,7 @@ let
     }
     {
       name = "architecture-planning";
+      description = "Architectural planning methodology for deconstructing complex features into atomic steps.";
       content = ''
         # Architecture Planning
         - Structure all solutions into prerequisite checks, implementation steps, and validation stages.
@@ -230,6 +247,7 @@ let
     }
     {
       name = "code-review";
+      description = "Code review standards for detecting race conditions, boundary failures, and anti-patterns.";
       content = ''
         # Code Review Standards
         - Audit for memory leaks, unhandled errors, and unexpected type coercions.
@@ -238,6 +256,7 @@ let
     }
     {
       name = "testing-discipline";
+      description = "Guidelines for running test harnesses, isolating regressions, and applying minimal test fixes.";
       content = ''
         # Testing Discipline
         - Always run targeted tests before running full test suites.
@@ -247,6 +266,7 @@ let
     }
     {
       name = "documentation-standards";
+      description = "Standards for writing clean Markdown documentation, inline docstrings, and changelogs.";
       content = ''
         # Documentation Standards
         - Document why code exists, not merely what it does.
@@ -255,6 +275,7 @@ let
     }
     {
       name = "security-policy";
+      description = "Security audit procedures for scanning secrets, credentials, and obsolete dependencies.";
       content = ''
         # Security Policy
         - Inspect for hardcoded keys, cleartext passwords, and insecure socket mappings.
@@ -263,6 +284,7 @@ let
     }
     {
       name = "git-conventions";
+      description = "Conventional commit message standards and Git branch maintenance rules.";
       content = ''
         # Git Conventions
         - Enforce Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`).
@@ -272,7 +294,9 @@ let
   ];
 in
 {
-  programs.antigravity-cli.enable = true;
+  programs.antigravity-cli = {
+    enable = true;
+  };
 
   home.file = builtins.listToAttrs ((map mkAgent agents) ++ (map mkSkill skills));
 }
