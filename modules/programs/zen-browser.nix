@@ -32,7 +32,10 @@ in
       PrimaryPassword = false;
       DisableMasterPasswordCreation = false;
 
-      DNSOverHTTPS = true;
+      DNSOverHTTPS = {
+        Enabled = true;
+        Locked = true;
+      };
 
       # User and form data
       AutofillAddressEnabled = true;
