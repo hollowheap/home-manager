@@ -7,6 +7,8 @@
       signByDefault = true;
     };
     settings = {
+      commit.gpgSign = true;
+      tag.gpgSign = true;
       alias = {
         i = "init";
         cl = "clone";
