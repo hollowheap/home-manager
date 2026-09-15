@@ -18,6 +18,17 @@ let
       Type = "oneshot";
       ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${config.home.homeDirectory}/Drive/${remote}";
       ExecStart = "${pkgs.rclone}/bin/rclone sync ${remote}: ${config.home.homeDirectory}/Drive/${remote} --fast-list --transfers 4 --checkers 8 --log-level NOTICE";
+
+      NoNewPrivileges = true;
+      ProtectSystem = "strict";
+      ProtectHome = "read-only";
+      ReadWritePaths = [ "${config.home.homeDirectory}/Drive/${remote}" ];
+      PrivateTmp = true;
+      ProtectControlGroups = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+      RestrictRealtime = true;
+      RestrictNamespaces = true;
     };
   };
 
