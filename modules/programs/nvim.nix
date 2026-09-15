@@ -100,6 +100,7 @@ in
           enableFormat = true;
           enableTreesitter = true;
 
+          clang.enable = true;
           nix.enable = true;
           python.enable = true;
           tsx.enable = true;

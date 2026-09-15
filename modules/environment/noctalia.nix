@@ -10,7 +10,7 @@
     theme = {
       mode = lib.mkForce "dark";
       source = lib.mkForce "wallpaper";
-      wallpaper_scheme = "m3-content";
+      wallpaper_scheme = "m3-fruit-salad";
       pure_black_dark = true;
       templates = {
         builtin_ids = [

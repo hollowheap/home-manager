@@ -17,9 +17,9 @@
       fill.symbol = " ";
       line_break.disabled = true;
       character = {
-        success_symbol = "[λ](bold green)";
-        error_symbol = "[✘](bold red)";
-        vimcmd_symbol = "[](bold green)";
+        success_symbol = "[λ ::](bold green)";
+        error_symbol = "[✘ ::](bold red)";
+        vimcmd_symbol = "[ ::](bold green)";
       };
       directory = {
         style = "cyan";

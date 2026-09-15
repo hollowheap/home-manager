@@ -38,7 +38,7 @@ in
 
     settings = {
       colors = {
-        _var = mkLuaInline ''require("noctalia")'';
+       _var = mkLuaInline ''require("noctalia")'';
       };
 
       monitor = [
@@ -51,6 +51,11 @@ in
           output = "DP-1";
           mode = "1920x1080@320";
           position = "1920x0";
+        }
+        {
+          output = "eDP-1";
+          mode = "1920x1080@144";
+          scale = 1;
         }
       ];
 

@@ -10,28 +10,24 @@
     md = "mkdir -pv";
     rmd = "rm -rf";
 
-    eza = "eza --git-ignore --icons=auto -o";
-
-    l = "eza";
-    ls = "eza";
-    la = "eza -lAhH";
+    l = "eza --icons=auto --short-nix -olahH";
 
     # tree view
-    l1 = "la -TL 1";
-    l2 = "la -TL 2";
-    l3 = "la -TL 3";
-    l4 = "la -TL 4";
-    l5 = "la -TL 5";
-    l6 = "la -TL 6";
-    l7 = "la -TL 7";
-    l8 = "la -TL 8";
-    l9 = "la -TL 9";
-    l0 = "la -TL 10";
+    l1 = "l -TL 1";
+    l2 = "l -TL 2";
+    l3 = "l -TL 3";
+    l4 = "l -TL 4";
+    l5 = "l -TL 5";
+    l6 = "l -TL 6";
+    l7 = "l -TL 7";
+    l8 = "l -TL 8";
+    l9 = "l -TL 9";
+    l0 = "l -TL 10";
 
     nv = "nvim";
     g = "git";
-    sc = "systemctl";
-    scu = "sc --user";
+    sc = "_ systemctl";
+    scu = "systemctl --user";
 
     nixos-rb = "_ nixos-rebuild switch --flake .";
     nix-gc = "_ nix store gc";
@@ -89,7 +85,7 @@
           owner = "Freed-Wu";
           repo = "fzf-tab-source";
           rev = "master";
-          sha256 = "sha256-dH8wMJYnDqJxYGyT6TQ/EJCS77keV4ie8Q6vTtwDEak=";
+          sha256 = "sha256-d7+yKrHp4Vcl5WlQfQ/UMNK5j3wz8Ls168Cuj1LYTgI=";
         };
         file = "share/fzf-tab-source/fzf-tab-source.plugin.zsh";
       }

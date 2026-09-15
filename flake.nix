@@ -70,14 +70,13 @@
         };
       };
 
+      pkgs = import inputs.nixpkgs packageConfig;
+
       hmConfigurations =
         with inputs;
         usernames:
         nixpkgs.lib.genAttrs usernames (
           name:
-          let
-            pkgs = import nixpkgs packageConfig;
-          in
           home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
 
@@ -100,5 +99,52 @@
     in
     {
       homeConfigurations = hmConfigurations [ "hollowheap" ];
+
+      devShells.x86_64-linux =
+        let
+          pico-sdk = pkgs.pico-sdk.override { withSubmodules = true; };
+        in
+        {
+          pico = pkgs.mkShell {
+            name = "pico-dev";
+            packages = with pkgs; [
+              cmake
+              gnumake
+              gcc-arm-embedded
+              pico-sdk
+              python3
+            ];
+            env = {
+              PICO_SDK_PATH = "${pico-sdk}/lib/pico-sdk";
+            };
+          };
+
+          python = pkgs.mkShell {
+            name = "python-dev";
+            packages = with pkgs; [
+              python3
+              uv
+            ];
+          };
+
+          rust = pkgs.mkShell {
+            name = "rust-dev";
+            packages = with pkgs; [
+              cargo
+              rustc
+              rustfmt
+              clippy
+              rust-analyzer
+            ];
+          };
+
+          nix = pkgs.mkShell {
+            name = "nix-dev";
+            packages = with pkgs; [
+              nil
+              nixfmt-rfc-style
+            ];
+          };
+        };
     };
 }

@@ -58,7 +58,8 @@ in
             "Method" = "POST";
             "URLTemplate" = "https://www.startpage.com/sp/search";
             "IconURL" = "https://www.startpage.com/sp/search";
-            "PostData" = "query={searchTerms}&cat=web&t=device";
+            "PostData" =
+              "query={searchTerms}&cat=web&t=devic&segment=startpage.apex.desktop&prfe=3e1a53333ebb17d8c9e68e19d8eb8957cffa9bb8412427f6a48ef8147f4602bd734547fb39acd86a1b3ce46801d30fb83e2913f3cacabeb34f962e3d3f5da410bf92cd3c92fa4a2ee5857c7a05c0abc0";
             "SuggestURLTemplate" = "https://www.startpage.com/osuggestions?q={searchTerm}";
           }
         ];
@@ -73,15 +74,20 @@ in
       };
 
       ExtensionSettings =
-        lib.attrsets.genAttrs
-          [
-            "uBlock0@raymondhill.net"
-            "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}"
-            "sponsorBlocker@ajay.app"
-          ]
-          (pluginId: {
+        builtins.mapAttrs
+          (_: pluginId: {
             install_url = "https://addons.mozilla.org/firefox/downloads/latest/${pluginId}/latest.xpi";
-          });
+            installation_mode = "force_installed";
+          })
+          {
+            "sponsorBlocker@ajay.app" = "sponsorblock";
+            "uBlock0@raymondhill.net" = "ublock-origin";
+            "{b86e4813-687a-43e6-ab65-0bde4ab75758}" = "localcdn-fork-of-decentraleyes";
+            "{762f9885-5a13-4abd-9c77-433dcd38b8fd}" = "return-youtube-dislikes";
+            "enhancerforyoutube@maximerf.addons.mozilla.org" = "enhanced-for-youtube";
+            "gdpr@cavi.au.dk" = "consent-o-matic";
+            "{91aa3897-2634-4a8a-9092-279db23a7689}" = "zen-internet";
+          };
 
       Preferences = mkLockedAttrs {
         "browser.aboutConfig.showWarning" = false;
@@ -211,21 +217,20 @@ in
           color = "blue";
           icon = "fingerprint";
         };
-        Work = {
+        School = {
           id = 2;
-          color = "yellow";
+          color = "purple";
           icon = "briefcase";
         };
-        School = {
+        Entertainment = {
           id = 3;
-          color = "purple";
-          icon = "tree";
+          color = "red";
+          icon = "chill";
         };
         Social = {
           id = 4;
-        };
-        Entertainment = {
-          id = 5;
+          color = "green";
+          icon = "tree";
         };
       };
 
@@ -239,18 +244,116 @@ in
             position = 1000;
             container = containers.Personal.id;
             id = "4ee215ee-c47c-429a-9480-576f8b1a624e";
-          };
-          Work = {
-            position = 2000;
-            container = containers.Work.id;
-            id = "6c9a5583-86cb-4578-876b-e7619e192bc6";
+            icon = "chrome://browser/skin/zen-icons/selectable/lightning.svg";
+            pins = {
+              "Gemini" = {
+                url = "https://gemini.google.com";
+                id = "e86cf37-a127-4f24-b919-d265b5ce29a2";
+                position = 100;
+                isEssential = true;
+                container = containers.Personal.id;
+              };
+              "MyNixOS" = {
+                url = "https://mynixos.com";
+                id = "e86cf37-a127-4f24-b919-d265b5ce29a5";
+                position = 100;
+                container = containers.Personal.id;
+              };
+            };
+            routes = {
+              "github" = {
+                reference = "github.com";
+              };
+              "gemini" = {
+                reference = "gemini.google.com";
+              };
+              "mynixos" = {
+                reference = "mynixos.com";
+              };
+            };
           };
           School = {
-            position = 3000;
+            position = 2000;
             container = containers.School.id;
+            id = "6c9a5583-86cb-4578-876b-e7619e192bc6";
+            icon = "chrome://browser/skin/zen-icons/selectable/school.svg";
+            routes = {
+              "lms" = {
+                reference = "xsite.singaporetech.edu.sg";
+              };
+              "portal" = {
+                reference = "in4sit.singaporetech.edu.sg";
+              };
+            };
+            pins = {
+              "xSITe" = {
+                url = "https://xsite.singaporetech.edu.sg";
+                id = "e86cf37-a127-4f24-b919-d265b5ce29a3";
+                position = 100;
+                container = containers.School.id;
+              };
+              "In4SIT" = {
+                url = "https://in4sit.singaporetech.edu.sg";
+                id = "e86cf37-a127-4f24-b919-d265b5ce29a4";
+                position = 200;
+                container = containers.School.id;
+              };
+            };
+          };
+          Entertainment = {
+            position = 3000;
+            container = containers.Entertainment.id;
             id = "7f6c77b3-6de3-4d36-9e7c-63960006197d";
+            icon = "chrome://browser/skin/zen-icons/selectable/game-controller.svg";
+
+            pins = {
+              "Youtube" = {
+                url = "https://www.youtube.com";
+                id = "6c9a5583-86cb-4578-876b-e7619e192bc5";
+                position = 200;
+                isEssential = true;
+                container = containers.Entertainment.id;
+              };
+            };
+
+            routes = {
+              "youtube" = {
+                reference = "www.youtube.com";
+              };
+            };
+          };
+          Social = {
+            position = 4000;
+            container = containers.Social.id;
+            icon = "chrome://browser/skin/zen-icons/selectable/chat.svg";
+            id = "50414e4d-873d-4940-8ed4-8145c4a95bc6";
+
+            pins = {
+              "Telegram" = {
+                url = "https://web.telegram.org";
+                id = "6c9a5583-86cb-4578-876b-e7619e192bc7";
+                position = 300;
+                isEssential = true;
+                container = containers.Social.id;
+              };
+              "WhatsApp" = {
+                url = "https://web.whatsapp.com";
+                id = "6c9a5583-86cb-4578-876b-e7619e192bc8";
+                position = 400;
+                isEssential = true;
+                container = containers.Social.id;
+              };
+            };
+
+            routes = {
+              "telegram" = {
+                reference = "web.telegram.org";
+              };
+            };
           };
         };
+
+      pinsForce = true;
 
       mods = [
         "72f8f48d-86b9-4487-acea-eb4977b18f21" # Better Ctrl Tab Panel
