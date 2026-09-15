@@ -32,7 +32,7 @@
   };
 
   nixConfig = {
-    extra-substituters = [ "http://noctalia.cachix.org" ];
+    extra-substituters = [ "https://noctalia.cachix.org" ];
     extra-trusted-public-keys = [
       "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
     ];
@@ -45,6 +45,8 @@
         "modrinth-app"
         "modrinth-app-unwrapped"
         "antigravity-cli"
+        "kiro-cli"
+        "kiro-cli-unwrapped"
         "steam"
         "steam-unwrapped"
         "zoom"
@@ -54,7 +56,7 @@
         localSystem = "x86_64-linux";
 
         config.allowUnfreePredicate = pkg: builtins.elem (inputs.nixpkgs.lib.getName pkg) unfreePackages;
-        config.permittedInsecurePackages = [ "electron-40.10.5" ];
+        # config.permittedInsecurePackages = [ "electron-40.10.5" ];
 
         overlays = [ (_: prev: import ./pkgs/default.nix prev) ];
       };
@@ -117,6 +119,16 @@
             env = {
               PICO_SDK_PATH = "${pico-sdk}/lib/pico-sdk";
             };
+            shellHook = ''
+              rm -f .clangd
+              cat << EOF > .clangd
+CompileFlags:
+  CompilationDatabase: build
+  Add:
+    - -isystem
+    - ${pkgs.gcc-arm-embedded}/arm-none-eabi/include
+EOF
+            '';
           };
 
           python = pkgs.mkShell {
