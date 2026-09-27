@@ -76,7 +76,7 @@
           insteadOf = [
             "gh@"
           ];
-          # pushInsteadOf = "https://github.com/";
+          pushInsteadOf = "https://github.com/";
         };
       };
       credential.helper = [
