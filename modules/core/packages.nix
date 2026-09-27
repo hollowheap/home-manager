@@ -1,11 +1,15 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    # Development
+    # Development & AI Code Indexing
     gcc
     gdb
     uv
     nodejs
+    ast-grep
+    universal-ctags
+    tree-sitter
+    repomap
 
     # Desktop Applications
     nautilus
@@ -21,6 +25,5 @@
     jq
     ddcutil
     harlequin
-    moserial
   ];
 }
