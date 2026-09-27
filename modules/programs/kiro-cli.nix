@@ -24,7 +24,12 @@ let
   # and authorization (permissions.rules) layers, and deny-overrides
   # guarantees the boundary even against injected instructions.
   kiroToolsFor =
-    caps: [ "read" ] ++ (optionals caps.write [ "write" ]) ++ (optionals caps.execute [ "shell" ]);
+    caps:
+    [ "read" ]
+    ++ (optionals caps.write [ "write" ])
+    ++ (optionals caps.execute [ "shell" ])
+    ++ (optionals caps.delegate [ "subagent" ])
+    ++ (optionals caps.mcp [ "@mcp" ]);
 
   kiroExcludedFor =
     caps: (optionals (!caps.write) [ "write" ]) ++ (optionals (!caps.execute) [ "shell" ]);
@@ -44,6 +49,20 @@ let
         match = [ "*" ];
         effect = "deny";
       }
+    ])
+    ++ (optionals caps.delegate [
+      {
+        capability = "subagent";
+        match = [ "*" ];
+        effect = "allow";
+      }
+    ])
+    ++ (optionals (!caps.mcp) [
+      {
+        capability = "mcp";
+        match = [ "*" ];
+        effect = "deny";
+      }
     ]);
 
   mkKiroAgent =
@@ -59,14 +78,23 @@ let
     in
     {
       name = ".kiro/agents/${name}.json";
-      value.text = lib.generators.toJSON { } {
-        inherit (agent) description;
-        prompt = agent.instructions;
-        tools = kiroToolsFor caps;
-        excludedTools = kiroExcludedFor caps;
-        permissions.rules = kiroRulesFor caps;
-        resources = skillResources ++ repomapResource;
-      };
+      value.text = lib.generators.toJSON { } (
+        {
+          inherit (agent) description;
+          prompt = agent.instructions;
+          tools = kiroToolsFor caps;
+          excludedTools = kiroExcludedFor caps;
+          permissions.rules = kiroRulesFor caps;
+          resources = skillResources ++ repomapResource;
+          includeMcpJson = caps.mcp;
+        }
+        // (lib.optionalAttrs caps.delegate {
+          toolsSettings.subagent = {
+            availableAgents = agent.availableAgents;
+            trustedAgents = agent.trustedAgents;
+          };
+        })
+      );
     };
 in
 {

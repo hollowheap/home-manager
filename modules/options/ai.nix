@@ -36,10 +36,30 @@ let
               default = false;
               description = "Whether the agent may run shell commands.";
             };
+            delegate = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Whether the agent may spawn and delegate to sub-agents.";
+            };
+            mcp = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Whether the agent may use MCP server tools.";
+            };
           };
         };
         default = { };
         description = "Harness-neutral capability boundary. Each harness renderer translates these into its own tool vocabulary and permission model.";
+      };
+      availableAgents = mkOption {
+        type = types.listOf types.str;
+        default = [ ];
+        description = "Glob patterns of sub-agents this agent may spawn (requires capabilities.delegate). Empty means all agents are allowed.";
+      };
+      trustedAgents = mkOption {
+        type = types.listOf types.str;
+        default = [ ];
+        description = "Sub-agents that run without permission prompts when spawned by this agent.";
       };
       skills = mkOption {
         type = types.listOf types.str;
@@ -84,6 +104,45 @@ in
 
   config.ai = {
     agents = {
+      orchestrator = {
+        description = "Coordinates work by delegating to specialized sub-agents; does not write or execute directly.";
+        mainAgent = true;
+        subagent = false;
+        capabilities = {
+          read = true;
+          write = false;
+          execute = false;
+          delegate = true;
+          mcp = false;
+        };
+        availableAgents = [
+          "ask-only"
+          "code-reviewer"
+          "test-runner"
+          "refactorer"
+          "docs-generator"
+          "security-scanner"
+          "git-automator"
+        ];
+        trustedAgents = [
+          "ask-only"
+          "code-reviewer"
+          "security-scanner"
+        ];
+        skills = [ "planning" ];
+        instructions = ''
+          You are an orchestrator. You coordinate work; you do not perform it directly.
+          - Decompose the objective into discrete units and delegate each to the
+            most appropriate specialized sub-agent.
+          - Never write files or run commands yourself; you have neither capability.
+            If a task needs writing or execution, delegate it.
+          - Read and inspect only enough to plan delegation and to verify that
+            sub-agent results meet the objective.
+          - Sequence dependent work; parallelize independent work across sub-agents.
+          - Synthesize sub-agent outputs into a coherent result for the user.
+        '';
+      };
+
       ask-only = {
         description = "Read-only inspection and contextual explanation of the workspace.";
         mainAgent = true;
@@ -227,9 +286,66 @@ in
       planning = {
         description = "Project planning methodology for turning objectives into structured, atomic execution roadmaps.";
         content = ''
-          # Architecture Planning
-          - Structure all solutions into prerequisite checks, implementation steps, and validation stages.
-          - Ensure minimal state leakage between systems.
+          # Planning
+
+          Produce a plan using the structure below. Treat sections as adaptive:
+          include one only when it carries real content, but ALWAYS keep
+          "Open Questions & Notes" so anything that does not fit elsewhere is
+          never silently dropped. Prefer the smallest plan that fully meets the
+          objective.
+
+          ## Template
+
+          # Project Plan
+
+          ## Objective
+          Purpose, core focus, and target outcome. State measurable success
+          criteria; if success is not measurable, say so explicitly.
+
+          ## Master List of Goals
+          - [ ] [High-level goal]
+
+          ## Tasks
+          Actionable, atomic items. Note ordering and dependencies where they
+          matter; do not list a dependent task before its prerequisite.
+          - [ ] [Task item]
+
+          ## Validation
+          How each goal/task is verified (build, tests, manual checks). A task
+          is not "done" until its acceptance criteria are defined and met.
+          - [ ] [Acceptance criterion]
+
+          ## Architecture
+          * [Component]: design pattern, data flow, module boundaries, or
+            interface contracts.
+
+          ## Scope
+          ### Included
+          * [Component or workflow within scope]
+          ### Excluded
+          * [Explicitly omitted component, platform, or workflow]
+
+          ## Tech Stack
+          * Languages: [...]
+          * Frameworks and Libraries: [...]
+          * Tools: [...]
+
+          ## Risks & Rollback
+          Forward-looking failure modes and how to reverse changes if they go
+          wrong. (Distinct from Known Issues, which are already-observed.)
+          - [ ] [Risk and mitigation]
+
+          ## Known Issues
+          - [ ] [Documented bug, upstream conflict, or runtime limitation]
+
+          ## Open Questions & Notes
+          Unresolved items, assumptions made, and anything that does not fit the
+          sections above. NEVER omit this section.
+
+          ## Discipline
+          - Never write implementation code while planning; produce the roadmap first.
+          - Structure work into prerequisites, atomic steps, and validation stages.
+          - Ensure minimal state leakage between systems; prefer clear boundaries.
         '';
       };
 
