@@ -154,7 +154,7 @@ EOF
             name = "nix-dev";
             packages = with pkgs; [
               nil
-              nixfmt-rfc-style
+              nixfmt
             ];
           };
         };
