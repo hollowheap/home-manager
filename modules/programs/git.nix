@@ -74,7 +74,7 @@
         };
         "git@github.com:" = {
           insteadOf = [
-            "gh@"
+            "gh@:"
           ];
           pushInsteadOf = "https://github.com/";
         };
