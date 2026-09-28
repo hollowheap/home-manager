@@ -90,6 +90,7 @@ in
             "enhancerforyoutube@maximerf.addons.mozilla.org" = "enhanced-for-youtube";
             "gdpr@cavi.au.dk" = "consent-o-matic";
             "{91aa3897-2634-4a8a-9092-279db23a7689}" = "zen-internet";
+            "{446900e4-71c2-419f-a6a7-df9c091e268b}" = "bitwarden-password-manager";
           };
 
       Preferences = mkLockedAttrs {
@@ -262,6 +263,12 @@ in
                 position = 100;
                 container = containers.Personal.id;
               };
+              "Key BR" = {
+                url = "https://keybr.com";
+                id = "e86cf37-a127-4f24-b919-d265b5ce29a6";
+                position = 200;
+                container = containers.Personal.id;
+              };
             };
             routes = {
               "github" = {
@@ -292,7 +299,8 @@ in
               "xSITe" = {
                 url = "https://xsite.singaporetech.edu.sg";
                 id = "e86cf37-a127-4f24-b919-d265b5ce29a3";
-                position = 100;
+                position = 500;
+                isEssential = true;
                 container = containers.School.id;
               };
               "In4SIT" = {
