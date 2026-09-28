@@ -32,13 +32,14 @@ in
     portalPackage = null;
     systemd.enable = false;
 
-    plugins = with pkgs; [
+    plugins = with pkgs.hyprlandPlugins; [
+      hypr-dynamic-cursors
       hyprglass
     ];
 
     settings = {
       colors = {
-       _var = mkLuaInline ''require("noctalia")'';
+        _var = mkLuaInline ''require("noctalia")'';
       };
 
       monitor = [
@@ -151,6 +152,15 @@ in
         quirks = {
           prefer_hdr = 1;
         };
+
+        # plugin.dynamic_cursors = {
+        #   enabled = true;
+        #   mode = "stretch";
+        #
+        #   shake.enabled = true;
+        #
+        #   hyprcursor.enabled = true;
+        # };
       };
 
       "plugin\.hyprglass\.config" = {
