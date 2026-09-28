@@ -1,9 +1,7 @@
 { config, lib, ... }:
 let
-  inherit (lib) mkIf mapAttrsToList optionals;
+  inherit (lib) mkIf mapAttrsToList optionals filterAttrs concatStringsSep;
 
-  # Translate harness-neutral capabilities into Antigravity's tool vocabulary
-  # and permission/command policies.
   agToolsFor =
     caps:
     (optionals caps.read [
@@ -59,6 +57,22 @@ let
       ${skill.content}
     '';
   };
+
+  agDisciplines = filterAttrs (_: d: d.antigravity != "") config.ai.disciplines;
+
+  disciplineSection = name: d: ''
+    ## ${name}
+    ${d.description}
+
+    ${d.antigravity}
+  '';
+
+  disciplineFile = ''
+    # Disciplines
+    Global code-writing rules that complement Antigravity's built-in defaults.
+
+    ${concatStringsSep "\n" (mapAttrsToList disciplineSection agDisciplines)}
+  '';
 in
 {
   programs.antigravity-cli = {
@@ -69,5 +83,8 @@ in
     builtins.listToAttrs (
       (mapAttrsToList mkAgent config.ai.agents) ++ (mapAttrsToList mkSkill config.ai.skills)
     )
+    // {
+      ".gemini/config/AGENTS.md".text = disciplineFile;
+    }
   );
 }

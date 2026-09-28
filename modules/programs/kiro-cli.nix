@@ -5,9 +5,8 @@
   ...
 }:
 let
-  inherit (lib) mkIf mapAttrsToList optionals;
+  inherit (lib) mkIf mapAttrsToList optionals filterAttrs concatStringsSep;
 
-  # Skills render to Kiro steering rules (always-on context).
   mkSteeringRule = name: skill: {
     name = ".kiro/steering/${name}.md";
     value.text = ''
@@ -18,21 +17,36 @@ let
     '';
   };
 
-  # Translate harness-neutral capabilities into Kiro's V3 tool vocabulary
-  # and capability-based permission rules. Kiro is read-only by default;
-  # write/shell must be explicitly granted at BOTH the visibility (tools)
-  # and authorization (permissions.rules) layers, and deny-overrides
-  # guarantees the boundary even against injected instructions.
+  kiroDisciplines = filterAttrs (_: d: d.kiro != "") config.ai.disciplines;
+
+  disciplineSection = name: d: ''
+    ## ${name}
+    ${d.description}
+
+    ${d.kiro}
+  '';
+
+  disciplineFile = ''
+    # Disciplines
+    Global code-writing rules that complement Kiro's built-in defaults.
+
+    ${concatStringsSep "\n" (mapAttrsToList disciplineSection kiroDisciplines)}
+  '';
+
   kiroToolsFor =
     caps:
     [ "read" ]
     ++ (optionals caps.write [ "write" ])
     ++ (optionals caps.execute [ "shell" ])
     ++ (optionals caps.delegate [ "subagent" ])
-    ++ (optionals caps.mcp [ "@mcp" ]);
+    ++ (optionals caps.mcp [ "@mcp" ])
+    ++ (optionals caps.web [ "web" ]);
 
   kiroExcludedFor =
-    caps: (optionals (!caps.write) [ "write" ]) ++ (optionals (!caps.execute) [ "shell" ]);
+    caps:
+    (optionals (!caps.write) [ "write" ])
+    ++ (optionals (!caps.execute) [ "shell" ])
+    ++ (optionals (!caps.web) [ "web" ]);
 
   kiroRulesFor =
     caps:
@@ -60,6 +74,18 @@ let
     ++ (optionals (!caps.mcp) [
       {
         capability = "mcp";
+        match = [ "*" ];
+        effect = "deny";
+      }
+    ])
+    ++ (optionals (!caps.web) [
+      {
+        capability = "web_search";
+        match = [ "*" ];
+        effect = "deny";
+      }
+      {
+        capability = "web_fetch";
         match = [ "*" ];
         effect = "deny";
       }
@@ -108,9 +134,8 @@ in
       (mapAttrsToList mkSteeringRule config.ai.skills) ++ (mapAttrsToList mkKiroAgent config.ai.agents)
     )
     // {
-      # Regenerate the repository outline at session start so read-only agents
-      # (which cannot run `repomap` themselves) receive a fresh map via their
-      # file://.kiro/repomap.md resource.
+      ".kiro/steering/discipline.md".text = disciplineFile;
+
       ".kiro/hooks/repomap-refresh.json".text = lib.generators.toJSON { } {
         version = "v1";
         hooks = [
