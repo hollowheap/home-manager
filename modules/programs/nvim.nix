@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  config,
   ...
 }:
 let
@@ -125,7 +126,17 @@ in
         };
 
         diagnostics = {
-          config.virtual_text = true;
+          config = {
+            virtual_text = {
+              prefix = "●";
+              spacing = 4;
+              source = "if_many";
+            };
+            signs = true;
+            underline = true;
+            update_in_insert = false;
+            severity_sort = true;
+          };
         };
 
         debugger = {
@@ -136,20 +147,71 @@ in
         assistant = {
           avante-nvim.enable = true;
           avante-nvim.setupOpts = {
-            # provider = "copilot";
+            provider = "deepseek";
+            auto_suggestions_provider = "deepseek";
+            system_prompt = ''
+              You are an expert AI programming assistant integrated with Neovim.
+              Strictly adhere to the following rules:
+              - Diff Discipline: NEVER rewrite whole files. Always apply targeted, minimal hunk changes.
+              - Modularity: Keep code declarative, modular, and maintainable.
+            '';
+            providers = {
+              deepseek = {
+                __inherited_from = "openai";
+                api_key_name = "DEEPSEEK_API_KEY";
+                endpoint = "https://api.deepseek.com";
+                model = "deepseek-chat";
+                timeout = 30000;
+                extra_request_body = {
+                  max_tokens = 8192;
+                  temperature = 0;
+                };
+              };
+              "deepseek-r1" = {
+                __inherited_from = "openai";
+                api_key_name = "DEEPSEEK_API_KEY";
+                endpoint = "https://api.deepseek.com";
+                model = "deepseek-reasoner";
+                timeout = 30000;
+                extra_request_body = {
+                  max_tokens = 8192;
+                  temperature = 0;
+                };
+              };
+            };
           };
 
-          supermaven-nvim.enable = true;
-          supermaven-nvim.setupOpts = {
-            disable_keymaps = true;
+          supermaven-nvim = {
+            # enable = true;
+            setupOpts = {
+              disable_keymaps = true;
+              disable_inline_completion = true;
+            };
           };
         };
 
         autocomplete.blink-cmp = {
           enable = true;
+          setupOpts = {
+            completion = {
+              ghost_text.enabled = true;
+              documentation = {
+                auto_show = true;
+                auto_show_delay_ms = 200;
+              };
+              menu = {
+                auto_show = true;
+              };
+            };
+          };
           mappings = {
             previous = "<S-Tab>";
             next = "<Tab>";
+            confirm = "<CR>";
+            complete = "<C-Space>";
+            close = "<C-e>";
+            scrollDocsUp = "<C-b>";
+            scrollDocsDown = "<C-f>";
           };
           sourcePlugins = {
             blink-cmp-avante = {
@@ -212,12 +274,6 @@ in
                   key = "r";
                   desc = "Recent Files";
                   action = ":lua Snacks.dashboard.pick('oldfiles')";
-                }
-                {
-                  icon = " ";
-                  key = "c";
-                  desc = "Config";
-                  action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.expand('~/.config/home-manager/')})";
                 }
                 {
                   icon = " ";
@@ -297,6 +353,7 @@ in
             enable = true;
             setupOpts = {
               preset = "helix";
+              filter = mkLuaInline "function(mapping) return mapping.desc and mapping.desc ~= '' and mapping.desc ~= '<Nop>' and not mapping.hidden end";
             };
             register = {
               "p" = "Paste after";
@@ -315,6 +372,15 @@ in
               "<leader>" = "+Menu";
 
               "<leader>a" = "+Agent";
+              "<leader>aa" = "Ask prompt";
+              "<leader>ae" = "Edit selection";
+              "<leader>at" = "Toggle sidebar";
+              "<leader>af" = "Focus sidebar";
+              "<leader>ar" = "Refresh repomap";
+              "<leader>an" = "New chat session";
+              "<leader>ah" = "Select history";
+              "<leader>as" = "Toggle suggestion";
+
               "<leader>l" = "+LSP";
               "<leader>lg" = "+Go to";
               "<leader>lt" = "+Toggle";
@@ -323,6 +389,15 @@ in
               "<leader>s" = "+Search";
               "<leader>sx" = "+Diagnostics";
               "<leader>d" = "+Debugger";
+              "<leader>db" = "Toggle Breakpoint";
+              "<leader>dc" = "Continue / Start";
+              "<leader>di" = "Step Into";
+              "<leader>do" = "Step Over";
+              "<leader>dO" = "Step Out";
+              "<leader>dt" = "Terminate Debugger";
+              "<leader>dr" = "Restart Debugger";
+              "<leader>du" = "Toggle DAP UI";
+              "<leader>dp" = "Toggle Profiler";
               "<leader>q" = "+Quit";
             };
           };
@@ -375,63 +450,65 @@ in
           #     colors = "require('base16-colorscheme').colors";
           #   in
           #   mkLuaInline "";
-          icons.enable = true;
-          sectionSeparator = {
-            left = "";
-            right = "";
-          };
-          componentSeparator = {
-            left = "";
-            right = "";
-          };
-          activeSection =
-            let
-              separator = ''separator = { left = "", right = "" }'';
-            in
-            {
-              a = [
-                ''
-                  { "mode", ${separator} }
-                ''
-              ];
-              b = [
-                ''
-                  { "filename", ${separator}, symbols = { modified = " ", readonly = " " }, onclick = function() Snacks.picker.buffers() end }
-                ''
-                ''
-                  { "branch", ${separator}, icon = " •", right_padding = 1, onclick = function() Snacks.picker.git_branches() end }
-                ''
-              ];
-              c = [
-                ''
-                  { "diff", ${separator}, colored = false, symbols = { added = "+ ", modified = "~ ", removed = "- " } }
-                ''
-                "diagnostics"
-              ];
-              x = [
-                ''
-                  { "filetype", icon_only = true, icon = { align = "left" } }
-                ''
-              ];
-              y = [
-                ''{ "searchcount" }''
-              ];
-              z = [
-                ''
-                  { "progress", left_padding = 2 }
-                ''
-                ''
-                  { "location", separator = { right = "" } }
-                ''
-              ];
+          setupOpts = {
+            icons.enable = true;
+            sectionSeparator = {
+              left = "";
+              right = "";
             };
-          inactiveSection = {
-            a = [ "filename" ];
-            b = [ ];
-            c = [ ];
-            x = [ ];
-            y = [ ];
-            z = [ ];
+            componentSeparator = {
+              left = "";
+              right = "";
+            };
+            section =
+              let
+                separator = ''separator = { left = "", right = "" }'';
+              in
+              {
+                a = [
+                  ''
+                    { "mode", ${separator} }
+                  ''
+                ];
+                b = [
+                  ''
+                    { "filename", ${separator}, symbols = { modified = " ", readonly = " " }, onclick = function() Snacks.picker.buffers() end }
+                  ''
+                  ''
+                    { "branch", ${separator}, icon = " •", right_padding = 1, onclick = function() Snacks.picker.git_branches() end }
+                  ''
+                ];
+                c = [
+                  ''
+                    { "diff", ${separator}, colored = false, symbols = { added = "+ ", modified = "~ ", removed = "- " } }
+                  ''
+                  "diagnostics"
+                ];
+                x = [
+                  ''
+                    { "filetype", icon_only = true, icon = { align = "left" } }
+                  ''
+                ];
+                y = [
+                  ''{ "searchcount" }''
+                ];
+                z = [
+                  ''
+                    { "progress", left_padding = 2 }
+                  ''
+                  ''
+                    { "location", separator = { right = "" } }
+                  ''
+                ];
+              };
+            inactive_section = {
+              a = [ "filename" ];
+              b = [ ];
+              c = [ ];
+              x = [ ];
+              y = [ ];
+              z = [ ];
+            };
           };
         };
 
@@ -655,6 +732,131 @@ in
               desc = "Quickfix List [snacks]";
             }
 
+            # Smart-Splits Alt-Key Navigation
+            {
+              key = "<M-h>";
+              lua = true;
+              action = "function() require('smart-splits').move_cursor_left() end";
+              mode = modes.nvo;
+              desc = "Focus Left Window/Pane";
+            }
+            {
+              key = "<M-j>";
+              lua = true;
+              action = "function() require('smart-splits').move_cursor_down() end";
+              mode = modes.nvo;
+              desc = "Focus Below Window/Pane";
+            }
+            {
+              key = "<M-k>";
+              lua = true;
+              action = "function() require('smart-splits').move_cursor_up() end";
+              mode = modes.nvo;
+              desc = "Focus Above Window/Pane";
+            }
+            {
+              key = "<M-l>";
+              lua = true;
+              action = "function() require('smart-splits').move_cursor_right() end";
+              mode = modes.nvo;
+              desc = "Focus Right Window/Pane";
+            }
+
+            # Smart-Splits Ctrl-Key Resizing
+            {
+              key = "<C-h>";
+              lua = true;
+              action = "function() require('smart-splits').resize_left() end";
+              mode = "n";
+              desc = "Resize Window Left";
+            }
+            {
+              key = "<C-j>";
+              lua = true;
+              action = "function() require('smart-splits').resize_down() end";
+              mode = "n";
+              desc = "Resize Window Down";
+            }
+            {
+              key = "<C-k>";
+              lua = true;
+              action = "function() require('smart-splits').resize_up() end";
+              mode = "n";
+              desc = "Resize Window Up";
+            }
+            {
+              key = "<C-l>";
+              lua = true;
+              action = "function() require('smart-splits').resize_right() end";
+              mode = "n";
+              desc = "Resize Window Right";
+            }
+
+            # DAP Debugger Keymaps
+            {
+              key = "<leader>db";
+              lua = true;
+              action = "function() require('dap').toggle_breakpoint() end";
+              mode = "n";
+              desc = "Toggle Breakpoint";
+            }
+            {
+              key = "<leader>dc";
+              lua = true;
+              action = "function() require('dap').continue() end";
+              mode = "n";
+              desc = "Continue / Start";
+            }
+            {
+              key = "<leader>di";
+              lua = true;
+              action = "function() require('dap').step_into() end";
+              mode = "n";
+              desc = "Step Into";
+            }
+            {
+              key = "<leader>do";
+              lua = true;
+              action = "function() require('dap').step_over() end";
+              mode = "n";
+              desc = "Step Over";
+            }
+            {
+              key = "<leader>dO";
+              lua = true;
+              action = "function() require('dap').step_out() end";
+              mode = "n";
+              desc = "Step Out";
+            }
+            {
+              key = "<leader>dt";
+              lua = true;
+              action = "function() require('dap').terminate() end";
+              mode = "n";
+              desc = "Terminate Debugger";
+            }
+            {
+              key = "<leader>dr";
+              lua = true;
+              action = "function() require('dap').restart() end";
+              mode = "n";
+              desc = "Restart Debugger";
+            }
+            {
+              key = "<leader>du";
+              lua = true;
+              action = "function() require('dapui').toggle() end";
+              mode = "n";
+              desc = "Toggle DAP UI";
+            }
+            {
+              key = "<leader>dp";
+              lua = true;
+              action = "function() Snacks.profiler.toggle() end";
+              mode = "n";
+              desc = "Toggle Profiler";
+            }
+
           ];
 
         lineNumberMode = "relNumber";
@@ -731,49 +933,61 @@ in
         ];
         luaConfigRC = {
           startupTime = ''
-            package.preload["lazy.stats"] = function()
-              return {
-                stats = function()
-                  return {
-                    startuptime = _G.lazy_startup_time or vim.uv.now() / 1e12,
-                    count = #vim.fn.globpath(vim.o.packpath, "pack/*/*/*", 0, 1),
-                    loaded = #vim.fn.globpath(vim.o.packpath, "pack/*/start/*", 0, 1)
-                  }
-                end
-              }
-            end
+                        package.preload["lazy.stats"] = function()
+                          return {
+                            stats = function()
+                              return {
+                                startuptime = _G.lazy_startup_time or vim.uv.now() / 1e12,
+                                count = #vim.fn.globpath(vim.o.packpath, "pack/*/*/*", 0, 1),
+                                loaded = #vim.fn.globpath(vim.o.packpath, "pack/*/start/*", 0, 1)
+                              }
+                            end
+                          }
+                        end
 
-            require("noctalia").setup()
+                        require("noctalia").setup()
 
-            local colors = require("base16-colorscheme").colors
-            require("lualine").setup({
-	            options = {
-                theme = {
-                  normal = {
-                    a = { fg = colors.base00, bg = colors.base08 },
-                    b = { fg = colors.base05, bg = colors.base00 },
-                    c = { fg = colors.base05, bg = colors.base00 },
+                        local colors = require("base16-colorscheme").colors
+                        require("lualine").setup({
+            	            options = {
+                            theme = {
+                              normal = {
+                                a = { fg = colors.base00, bg = colors.base08 },
+                                b = { fg = colors.base05, bg = colors.base00 },
+                                c = { fg = colors.base05, bg = colors.base00 },
 
-                    x = { fg = colors.base05, bg = colors.base00 },
-                    y = { fg = colors.base05, bg = colors.base00 },
-                    z = { fg = colors.base00, bg = colors.base05 },
-                  },
-                  insert = { a = { fg = colors.base00, bg = colors.base09 } },
-                  visual = { a = { fg = colors.base00, bg = colors.base0A } },
-                  replace = { a = { fg = colors.base00, bg = colors.base0B } },
-                  command = { a = { fg = colors.base00, bg = colors.base0C } },
+                                x = { fg = colors.base05, bg = colors.base00 },
+                                y = { fg = colors.base05, bg = colors.base00 },
+                                z = { fg = colors.base00, bg = colors.base05 },
+                              },
+                              insert = { a = { fg = colors.base00, bg = colors.base09 } },
+                              visual = { a = { fg = colors.base00, bg = colors.base0A } },
+                              replace = { a = { fg = colors.base00, bg = colors.base0B } },
+                              command = { a = { fg = colors.base00, bg = colors.base0C } },
 
-                  inactive = { 
-                    a = { fg = colors.base00, bg = colors.base05 },
-                    b = { fg = colors.base05, bg = colors.base00 },
-                    c = { fg = colors.base05, bg = colors.base00 },
+                              inactive = { 
+                                a = { fg = colors.base00, bg = colors.base05 },
+                                b = { fg = colors.base05, bg = colors.base00 },
+                                c = { fg = colors.base05, bg = colors.base00 },
 
-                    x = { fg = colors.base05, bg = colors.base00 },
-                    y = { fg = colors.base05, bg = colors.base00 },
-                    z = { fg = colors.base00, bg = colors.base05 },
-                  },
-                }
-	            }
+                                x = { fg = colors.base05, bg = colors.base00 },
+                                y = { fg = colors.base05, bg = colors.base00 },
+                                z = { fg = colors.base00, bg = colors.base05 },
+                              },
+                            }
+            	            }
+                        })
+          '';
+          which-key = ''
+            local wk = require("which-key")
+            wk.add({
+              { "<C-r>", hidden = true },
+              { "<C-e>", hidden = true },
+              { "<C-y>", hidden = true },
+              { "ge",    hidden = true },
+              { "gE",    hidden = true },
+              { "gg",    hidden = true },
+              { "G",     hidden = true },
             })
           '';
         };
