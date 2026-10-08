@@ -33,8 +33,8 @@ in
     systemd.enable = false;
 
     plugins = with pkgs.hyprlandPlugins; [
-      hypr-dynamic-cursors
-      hyprglass
+      # hypr-dynamic-cursors
+      # hyprglass
     ];
 
     settings = {
@@ -163,24 +163,24 @@ in
         # };
       };
 
-      "plugin\.hyprglass\.config" = {
-        blur_strength = 0.5;
-        blur_iterations = 3;
-        lens_distortion = 1;
-        refraction_strength = 2;
-        chromatic_aberration = 0.1;
-        tint_color = 4294967040;
-        fresnel_strength = 1;
-        specular_strength = 1;
-        dark = {
-          brightness = 1;
-          adaptive_dim = 0;
-        };
-        light = {
-          brightness = 1;
-          adaptive_boost = 0;
-        };
-      };
+      # "plugin\.hyprglass\.config" = {
+      #   blur_strength = 0.5;
+      #   blur_iterations = 3;
+      #   lens_distortion = 1;
+      #   refraction_strength = 2;
+      #   chromatic_aberration = 0.1;
+      #   tint_color = 4294967040;
+      #   fresnel_strength = 1;
+      #   specular_strength = 1;
+      #   dark = {
+      #     brightness = 1;
+      #     adaptive_dim = 0;
+      #   };
+      #   light = {
+      #     brightness = 1;
+      #     adaptive_boost = 0;
+      #   };
+      # };
 
       animation = mkArgs [
         {
@@ -194,7 +194,7 @@ in
 
       on = mkArgs [
         "hyprland.start"
-        (mkLuaFn "hl.exec_cmd(\"uwsm app noctalia\")")
+        (mkLuaFn "hl.exec_cmd(\"uwsm app -- noctalia\")")
       ];
 
       layer_rule = [
@@ -520,21 +520,6 @@ in
     };
   };
 
-  xdg.configFile."noctalia/templates/hypr-colors.lua".text = ''
-    return {
-      active_border = {
-        colors = {
-          "rgba({{ colors.primary.default.hex_stripped }}ee)",
-          "rgba({{ colors.secondary.default.hex_stripped }}ee)",
-          "rgba({{ colors.tertiary.default.hex_stripped }}ee)",
-          "rgba({{ colors.primary_container.default.hex_stripped }}ee)",
-          "rgba({{ colors.secondary_container.default.hex_stripped }}ee)"
-        },
-        angle = 45
-      },
-      inactive_border = "rgba({{ colors.surface_variant.default.hex_stripped }}aa)",
-      active_shadow = "rgba({{ colors.shadow.default.hex_stripped }}ee)",
-      inactive_shadow = "rgba({{ colors.shadow.default.hex_stripped }}aa)"
-    }
-  '';
+  xdg.configFile."noctalia/templates/hypr-colors.lua".source =
+    ../../assets/noctalia-templates/hypr-colors.lua;
 }

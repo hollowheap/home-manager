@@ -1,0 +1,176 @@
+# : Manager [[[
+
+[mgr]
+cwd = { fg = "#ffffff" }
+
+# Find
+find_keyword  = { fg = "{{color3}}", bold = true, italic = true, underline = true }
+find_position = { fg = "{{color6}}", bold = true, italic = true }
+
+# Marker
+marker_copied   = { fg = "{{color2}}", bg = "{{color2}}" }
+marker_cut      = { fg = "{{color1}}", bg = "{{color1}}" }
+marker_marked   = { fg = "{{color3}}", bg = "{{color3}}" }
+marker_selected = { fg = "{{color4}}", bg = "{{color4}}" }
+
+# Count
+count_copied   = { fg = "#000000", bg = "{{color2}}" }
+count_cut      = { fg = "#000000", bg = "{{color1}}" }
+count_selected = { fg = "#000000", bg = "{{color4}}" }
+
+# Border
+border_style = { fg = "{{color4}}" }
+
+# : ]]]
+
+
+# : Status [[[
+
+[status]
+overall = { fg = "#ffffff" }
+sep_left  = { open = "", close = "" }
+sep_right = { open = "", close = "" }
+
+# Progress
+progress_label  = { bold = true }
+progress_normal = { fg = "{{color4}}", bg = "#000000" }
+progress_error  = { fg = "{{color1}}", bg = "#000000" }
+
+# Permissions
+perm_type  = { fg = "{{color4}}" }
+perm_write = { fg = "{{color1}}" }
+perm_exec  = { fg = "{{color2}}" }
+perm_read  = { fg = "{{color3}}" }
+perm_sep   = { fg = "{{color8}}" }
+
+# : ]]]
+
+
+# : Mode [[[
+
+[mode]
+
+normal_main = { bg = "{{color4}}", fg = "#000000", bold = true }
+normal_alt  = { bg = "{{color8}}", fg = "#ffffff" }
+
+select_main = { bg = "{{color2}}", fg = "#000000", bold = true }
+select_alt  = { bg = "{{color8}}", fg = "#ffffff" }
+
+unset_main = { bg = "{{color3}}", fg = "#000000", bold = true }
+unset_alt  = { bg = "{{color8}}", fg = "#ffffff" }
+
+# : ]]]
+
+
+# : Input [[[
+
+[input]
+border   = { fg = "{{color4}}" }
+title    = {}
+value    = { fg = "#ffffff" }
+selected = { reversed = true }
+
+# : ]]]
+
+
+# : Tabs [[[
+
+[tabs]
+active    = { fg = "#000000", bold = true, bg = "{{color4}}" }
+inactive  = { fg = "{{color7}}", bg = "#000000" }
+sep_inner = { open = "", close = "" }
+
+# : ]]]
+
+
+# : Completion [[[
+
+[cmp]
+border = { fg = "{{color4}}", bg = "#000000" }
+
+# : ]]]
+
+
+# : Tasks [[[
+
+[tasks]
+border  = { fg = "{{color4}}" }
+title   = {}
+hovered = { fg = "{{color6}}", underline = true }
+
+# : ]]]
+
+
+# : Which [[[
+
+[which]
+cols            = 3
+mask            = { bg = "#000000" }
+cand            = { fg = "{{color4}}" }
+rest            = { fg = "{{color5}}" }
+desc            = { fg = "#ffffff" }
+separator       = " ▶ "
+separator_style = { fg = "{{color8}}" }
+
+# : ]]]
+
+
+# : Spotter [[[
+
+[spot]
+border   = { fg = "{{color4}}" }
+title    = { fg = "{{color4}}" }
+tbl_col  = { fg = "#ffffff" }
+tbl_cell = { fg = "#ffffff", bg = "#000000" }
+
+# : ]]]
+
+
+# : Help [[[
+
+[help]
+on      = { fg = "#ffffff" }
+run     = { fg = "#ffffff" }
+hovered = { reversed = true, bold = true }
+footer  = { fg = "#000000", bg = "{{color4}}" }
+
+# : ]]]
+
+
+# : Notify [[[
+
+[notify]
+title_info  = { fg = "{{color4}}" }
+title_warn  = { fg = "{{color3}}" }
+title_error = { fg = "{{color1}}" }
+
+# : ]]]
+
+
+# : File-specific styles [[[
+
+[filetype]
+
+rules = [
+    # Images
+    { mime = "image/*", fg = "{{color5}}" },
+
+    # Media
+    { mime = "{audio,video}/*", fg = "{{color3}}" },
+
+    # Archives
+    { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", fg = "{{color1}}" },
+
+    # Documents
+    { mime = "application/{pdf,doc,rtf}", fg = "{{color6}}" },
+
+    # Special files
+    { mime = "*", is = "orphan", fg = "{{color1}}", bg = "#000000" },
+    { mime = "application/*exec*", fg = "{{color2}}" },
+
+    # Fallback
+    { url = "*", fg = "#ffffff" },
+    { url = "*/", fg = "{{color4}}" },
+]
+
+# : ]]]

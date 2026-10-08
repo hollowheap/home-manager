@@ -1,4 +1,4 @@
-{ ... }:
+{ config, ... }:
 {
   programs.lazygit = {
     enable = true;
@@ -10,5 +10,9 @@
         }
       ];
     };
+  };
+
+  home.sessionVariables = {
+    LG_CONFIG_FILE = "${config.xdg.configHome}/lazygit/config.yml,${config.xdg.configHome}/lazygit/theme.yml";
   };
 }

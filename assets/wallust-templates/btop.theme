@@ -1,0 +1,76 @@
+# Main background, empty for terminal default, need to be empty if you want transparent background
+theme[main_bg]="#000000"
+
+# Main text color
+theme[main_fg]="#ffffff"
+
+# Title color for boxes
+theme[title]="{{color4}}"
+
+# Highlight color for keyboard shortcuts
+theme[hi_fg]="{{color6}}"
+
+# Background color of selected item in processes box
+theme[selected_bg]="{{color8}}"
+
+# Foreground color of selected item in processes box
+theme[selected_fg]="#ffffff"
+
+# Color of inactive/disabled text
+theme[inactive_fg]="{{color7}}"
+
+# Color of text appearing on top of graphs, i.e uptime and current network
+theme[graph_text]="{{color7}}"
+
+# Misc process colors
+theme[proc_misc]="{{color5}}"
+
+# Box outline color
+theme[cpu_box]="{{color8}}"
+theme[mem_box]="{{color8}}"
+theme[net_box]="{{color8}}"
+theme[proc_box]="{{color8}}"
+
+# Box divider line and small boxes line color
+theme[div_line]="{{color8}}"
+
+# Temperature graph colors
+theme[temp_start]="{{color2}}"
+theme[temp_mid]="{{color3}}"
+theme[temp_end]="{{color1}}"
+
+# CPU graph colors
+theme[cpu_start]="{{color2}}"
+theme[cpu_mid]="{{color3}}"
+theme[cpu_end]="{{color1}}"
+
+# Mem colors
+theme[free_start]="{{color2}}"
+theme[free_mid]="{{color3}}"
+theme[free_end]="{{color1}}"
+
+theme[cached_start]="{{color4}}"
+theme[cached_mid]="{{color5}}"
+theme[cached_end]="{{color1}}"
+
+theme[available_start]="{{color2}}"
+theme[available_mid]="{{color3}}"
+theme[available_end]="{{color1}}"
+
+theme[used_start]="{{color2}}"
+theme[used_mid]="{{color3}}"
+theme[used_end]="{{color1}}"
+
+# Download / Upload colors
+theme[download_start]="{{color4}}"
+theme[download_mid]="{{color6}}"
+theme[download_end]="{{color2}}"
+
+theme[upload_start]="{{color5}}"
+theme[upload_mid]="{{color3}}"
+theme[upload_end]="{{color1}}"
+
+# Process box color gradient for threads, mem and cpu usage
+theme[process_start]="{{color2}}"
+theme[process_mid]="{{color3}}"
+theme[process_end]="{{color1}}"

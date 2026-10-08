@@ -3,6 +3,6 @@
   programs.ghostty = {
     enable = true;
     enableZshIntegration = true;
-    settings.theme = "noctalia";
+    settings.theme = "wallust";
   };
 }

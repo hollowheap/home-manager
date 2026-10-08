@@ -195,6 +195,11 @@
       bindkey -M vicmd 'k' fzf-history-widget
       bindkey -M vicmd 'j' fzf-history-widget
 
+      # Source wallust terminal sequences
+      if [[ -t 1 && -f "$HOME/.cache/wallust/sequences" ]]; then
+        cat "$HOME/.cache/wallust/sequences"
+      fi
+
       (( ''${+commands[fastfetch]} )) && fastfetch
     '';
   };

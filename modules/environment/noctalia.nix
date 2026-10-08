@@ -10,21 +10,14 @@
     theme = {
       mode = lib.mkForce "dark";
       source = lib.mkForce "wallpaper";
-      wallpaper_scheme = "m3-fruit-salad";
+      wallpaper_scheme = "m3-content";
       pure_black_dark = true;
       templates = {
-        builtin_ids = [
-          "btop"
-          "ghostty"
-          "starship"
-        ];
+        builtin_ids = [ ];
         community_ids = [
-          "yazi"
-          "lazygit"
           "pear-desktop"
           "discord"
           "steam"
-          "bat"
           "zen-browser"
         ];
 
@@ -35,11 +28,20 @@
             output_path = "$XDG_CONFIG_HOME/hypr/noctalia.lua";
             post_hook = "hyprctl reload config-only";
           };
-          neovim = {
+
+          wallust = {
             enabled = true;
-            input_path = "$XDG_CONFIG_HOME/noctalia/templates/nvim-colors.lua";
-            output_path = "$XDG_CONFIG_HOME/nvf/lua/noctalia.lua";
-            post_hook = "pkill -SIGUSR1 nvim";
+            input_path = "$XDG_CONFIG_HOME/noctalia/templates/wallust.dummy";
+            output_path = "$XDG_CACHE_HOME/noctalia/wallust.dummy";
+            post_hook = ''
+              st="${config.home.homeDirectory}/.local/state/noctalia/settings.toml"
+              if [ -r "$st" ]; then
+                img="$(${pkgs.gnused}/bin/sed -n '/^\[wallpaper\.last\]/,/^\[/p' "$st" | ${pkgs.gnugrep}/bin/grep -m1 '^path *=' | ${pkgs.gnused}/bin/sed -E 's/^path *= *"(.*)"$/\1/' || true)"
+                if [ -n "$img" ] && [ -r "$img" ]; then
+                  ${pkgs.wallust}/bin/wallust run "$img" -s
+                fi
+              fi
+            '';
           };
         };
       };
@@ -174,4 +176,12 @@
       };
     };
   };
+
+  home.packages = with pkgs; [
+    ddcutil
+    satty
+    wl-clipboard
+  ];
+
+  xdg.configFile."noctalia/templates/wallust.dummy".text = "dummy";
 }

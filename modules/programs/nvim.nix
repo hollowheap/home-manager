@@ -945,38 +945,46 @@ in
                           }
                         end
 
-                        require("noctalia").setup()
+                        local ok, wallust = pcall(require, "wallust")
+                        if ok then
+                          wallust.setup()
+                        end
 
-                        local colors = require("base16-colorscheme").colors
-                        require("lualine").setup({
-            	            options = {
-                            theme = {
-                              normal = {
-                                a = { fg = colors.base00, bg = colors.base08 },
-                                b = { fg = colors.base05, bg = colors.base00 },
-                                c = { fg = colors.base05, bg = colors.base00 },
+                        _G.update_lualine_theme = function()
+                          local colors = require("base16-colorscheme").colors
+                          local lualine_theme = {
+                            normal = {
+                              a = { fg = colors.base00, bg = colors.base08 },
+                              b = { fg = colors.base05, bg = colors.base00 },
+                              c = { fg = colors.base05, bg = colors.base00 },
 
-                                x = { fg = colors.base05, bg = colors.base00 },
-                                y = { fg = colors.base05, bg = colors.base00 },
-                                z = { fg = colors.base00, bg = colors.base05 },
-                              },
-                              insert = { a = { fg = colors.base00, bg = colors.base09 } },
-                              visual = { a = { fg = colors.base00, bg = colors.base0A } },
-                              replace = { a = { fg = colors.base00, bg = colors.base0B } },
-                              command = { a = { fg = colors.base00, bg = colors.base0C } },
+                              x = { fg = colors.base05, bg = colors.base00 },
+                              y = { fg = colors.base05, bg = colors.base00 },
+                              z = { fg = colors.base00, bg = colors.base05 },
+                            },
+                            insert = { a = { fg = colors.base00, bg = colors.base09 } },
+                            visual = { a = { fg = colors.base00, bg = colors.base0A } },
+                            replace = { a = { fg = colors.base00, bg = colors.base0B } },
+                            command = { a = { fg = colors.base00, bg = colors.base0C } },
 
-                              inactive = { 
-                                a = { fg = colors.base00, bg = colors.base05 },
-                                b = { fg = colors.base05, bg = colors.base00 },
-                                c = { fg = colors.base05, bg = colors.base00 },
+                            inactive = {
+                              a = { fg = colors.base00, bg = colors.base05 },
+                              b = { fg = colors.base05, bg = colors.base00 },
+                              c = { fg = colors.base05, bg = colors.base00 },
 
-                                x = { fg = colors.base05, bg = colors.base00 },
-                                y = { fg = colors.base05, bg = colors.base00 },
-                                z = { fg = colors.base00, bg = colors.base05 },
-                              },
-                            }
-            	            }
-                        })
+                              x = { fg = colors.base05, bg = colors.base00 },
+                              y = { fg = colors.base05, bg = colors.base00 },
+                              z = { fg = colors.base00, bg = colors.base05 },
+                            },
+                          }
+                          require("lualine").setup({
+                            options = {
+                              theme = lualine_theme,
+                            },
+                          })
+                        end
+
+                        _G.update_lualine_theme()
           '';
           which-key = ''
             local wk = require("which-key")
@@ -994,41 +1002,4 @@ in
       };
     };
   };
-
-  xdg.configFile."noctalia/templates/nvim-colors.lua".text = ''
-    local M = {}
-
-    function M.setup()
-      require('base16-colorscheme').setup({
-        -- Background tones
-        base00 = '{{colors.surface.default.hex}}', -- Default Background
-        base01 = '{{colors.surface_container.default.hex}}', -- Lighter Background (status bars)
-        base02 = '{{colors.surface_container_high.default.hex}}', -- Selection Background
-        base03 = '{{colors.outline.default.hex}}', -- Comments, Invisibles
-        -- Foreground tones
-        base04 = '{{colors.on_surface_variant.default.hex}}', -- Dark Foreground (status bars)
-        base05 = '{{colors.on_surface.default.hex}}', -- Default Foreground
-        base06 = '{{colors.on_surface.default.hex}}', -- Light Foreground
-        base07 = '{{colors.on_background.default.hex}}', -- Lightest Foreground
-        -- Accent colors
-        base08 = '{{colors.error.default.hex}}', -- Variables, XML Tags, Errors
-        base09 = '{{colors.tertiary.default.hex}}', -- Integers, Constants
-        base0A = '{{colors.secondary.default.hex}}', -- Classes, Search Background
-        base0B = '{{colors.primary.default.hex}}', -- Strings, Diff Inserted
-        base0C = '{{colors.tertiary_fixed_dim.default.hex}}', -- Regex, Escape Chars
-        base0D = '{{colors.primary_fixed_dim.default.hex}}', -- Functions, Methods
-        base0E = '{{colors.secondary_fixed_dim.default.hex}}', -- Keywords, Storage
-        base0F = '{{colors.error_container.default.hex}}', -- Deprecated, Embedded Tags
-      })
-    end
-
-    vim.uv.new_signal():start('sigusr1',
-      vim.schedule_wrap(function()
-        package.loaded['noctalia'] = nil
-        require('noctalia').setup()
-      end)
-    )
-
-    return M
-  '';
 }
