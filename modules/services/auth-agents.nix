@@ -1,6 +1,14 @@
 { pkgs, ... }:
-
 {
+  services.gpg-agent = {
+    enable = true;
+    enableSshSupport = true;
+    pinentry = {
+      package = pkgs.pinentry-gnome3;
+      program = "pinentry-gnome3";
+    };
+  };
+
   programs.rbw = {
     enable = true;
     settings = {
@@ -10,4 +18,8 @@
       pinentry = pkgs.pinentry-gnome3;
     };
   };
+
+  home.packages = [
+    pkgs.gcr_3
+  ];
 }
