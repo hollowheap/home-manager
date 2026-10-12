@@ -469,25 +469,40 @@ in
                       function()
                         local colors = require("base16-colorscheme").colors
                         local ft = vim.bo.filetype
-                        local label = "AVANTE"
                         if ft == "AvanteInput" then
-                          label = "AVANTE INPUT"
+                          return _G.mk_pill("󰌌", "Input", colors.base0B, colors.base07, colors.base00, colors.base00, colors.base00)
                         elseif ft == "AvanteSelectedCode" then
-                          label = "AVANTE CODE"
+                          return _G.mk_pill("", "Code", colors.base0A, colors.base07, colors.base00, colors.base00, colors.base00)
+                        else
+                          return _G.mk_pill("󰭹", "Chat", colors.base0D, colors.base07, colors.base00, colors.base00, colors.base00)
                         end
-                        return _G.mk_pill("󱚣", label, colors.base0D, colors.base07, colors.base00, colors.base00, colors.base00)
                       end
                     },
-                    lualine_b = {
+                    lualine_b = {},
+                    lualine_c = {},
+                    lualine_x = {},
+                    lualine_y = {},
+                    lualine_z = {}
+                  },
+                  inactive_sections = {
+                    lualine_a = {
                       function()
                         local colors = require("base16-colorscheme").colors
                         local ft = vim.bo.filetype
-                        if ft == "Avante" then
-                          return _G.mk_pill("󰭹", "CHAT", colors.base0C, colors.base07, colors.base00, colors.base00, colors.base00)
+                        if ft == "AvanteInput" then
+                          return _G.mk_pill("󰌌", "Input", colors.base03, colors.base01, colors.base04, colors.base04, colors.base00)
+                        elseif ft == "AvanteSelectedCode" then
+                          return _G.mk_pill("", "Code", colors.base03, colors.base01, colors.base04, colors.base04, colors.base00)
+                        else
+                          return _G.mk_pill("󰭹", "Chat", colors.base03, colors.base01, colors.base04, colors.base04, colors.base00)
                         end
-                        return ""
                       end
-                    }
+                    },
+                    lualine_b = {},
+                    lualine_c = {},
+                    lualine_x = {},
+                    lualine_y = {},
+                    lualine_z = {}
                   },
                   filetypes = { "Avante", "AvanteInput", "AvanteSelectedCode", "AvanteSelectedFiles", "AvanteTodos" }
                 }
@@ -546,6 +561,29 @@ in
                 {
                   "@1" = mkLuaInline ''
                     function()
+                      local fname = vim.fn.expand("%:t")
+                      if fname == "" then fname = "[No Name]" end
+                      local colors = require("base16-colorscheme").colors
+                      local icon = "󰈚"
+                      local ok, mini_icons = pcall(require, "mini.icons")
+                      if ok then
+                        local i = mini_icons.get("file", fname)
+                        if i and i ~= "" then icon = i end
+                      end
+                      if vim.bo.modified then fname = fname .. " " end
+                      if vim.bo.readonly then fname = fname .. " " end
+                      return _G.mk_pill(icon, fname, colors.base0D, colors.base07, colors.base00, colors.base00, colors.base00)
+                    end
+                  '';
+                  on_click = mkLuaInline ''
+                    function()
+                      Snacks.picker.buffers()
+                    end
+                  '';
+                }
+                {
+                  "@1" = mkLuaInline ''
+                    function()
                       local colors = require("base16-colorscheme").colors
                       local branch = vim.b.gitsigns_head or vim.g.loaded_fugitive and vim.fn.FugitiveHead() or ""
                       if branch == "" then
@@ -586,7 +624,8 @@ in
                   end
                 '')
               ];
-              lualine_y = [
+              lualine_y = [ ];
+              lualine_z = [
                 (mkLuaInline ''
                   function()
                     local ft = vim.bo.filetype
@@ -602,7 +641,10 @@ in
                   end
                 '')
               ];
-              lualine_z = [
+            };
+            inactive_sections = {
+              lualine_a = [ ];
+              lualine_b = [
                 {
                   "@1" = mkLuaInline ''
                     function()
@@ -617,7 +659,7 @@ in
                       end
                       if vim.bo.modified then fname = fname .. " " end
                       if vim.bo.readonly then fname = fname .. " " end
-                      return _G.mk_pill(icon, fname, colors.base0D, colors.base07, colors.base00, colors.base00, colors.base00)
+                      return _G.mk_pill(icon, fname, colors.base03, colors.base01, colors.base04, colors.base04, colors.base00)
                     end
                   '';
                   on_click = mkLuaInline ''
@@ -627,29 +669,10 @@ in
                   '';
                 }
               ];
-            };
-            inactive_sections = {
-              lualine_a = [ ];
-              lualine_b = [ ];
               lualine_c = [ ];
               lualine_x = [ ];
               lualine_y = [ ];
-              lualine_z = [
-                (mkLuaInline ''
-                  function()
-                    local fname = vim.fn.expand("%:t")
-                    if fname == "" then fname = "[No Name]" end
-                    local colors = require("base16-colorscheme").colors
-                    local icon = "󰈚"
-                    local ok, mini_icons = pcall(require, "mini.icons")
-                    if ok then
-                      local i = mini_icons.get("file", fname)
-                      if i and i ~= "" then icon = i end
-                    end
-                    return _G.mk_pill(icon, fname, colors.base03, colors.base07, colors.base00, colors.base00, colors.base00)
-                  end
-                '')
-              ];
+              lualine_z = [ ];
             };
           };
         };
@@ -1100,7 +1123,7 @@ in
                           icon_fg = icon_fg or "#000000"
                           bar_bg = bar_bg or "#000000"
 
-                          local hl_id = "Pill_" .. (accent:gsub("#", "")) .. "_" .. (content_bg:gsub("#", ""))
+                          local hl_id = "Pill_" .. (accent:gsub("#", "")) .. "_" .. (content_bg:gsub("#", "")) .. "_" .. (content_fg:gsub("#", "")) .. "_" .. (icon_fg:gsub("#", ""))
                           vim.api.nvim_set_hl(0, hl_id .. "_Left",  { fg = accent, bg = bar_bg })
                           vim.api.nvim_set_hl(0, hl_id .. "_Icon",  { fg = icon_fg, bg = accent })
                           vim.api.nvim_set_hl(0, hl_id .. "_Body",  { fg = content_fg, bg = content_bg })

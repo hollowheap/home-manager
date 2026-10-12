@@ -7,11 +7,12 @@
   programs.wallust = {
     enable = true;
     settings = {
-      backend = "kmeans";
-      color_space = "lab";
-      palette = "ansidark16";
+      backend = "resized";
+      color_space = "salience";
+      palette = "saliencedarkbalanced16";
       check_contrast = true;
       fallback_generator = "interpolate";
+      saturation = 35;
 
       templates = {
         nvim = {
