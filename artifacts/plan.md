@@ -181,3 +181,29 @@ Resolve harness conflicts structurally (never command what built-ins forbid): ru
 - [x] Kiro `web` stripped for subagent-only agents.
 - [x] `modules/programs/codex.nix` + `modules/programs/hermes.nix` renderers.
 - [x] Verify: eval all surfaces, `nix flake check --no-build`.
+
+---
+
+# Implementation Plan: Discipline-Led Hygiene, Skills, Completeness, Memory
+
+## Objective
+New always-on disciplines (hygiene, skills, complete, memory) with renderer drops where native; rules-git trimmed to shaping-only; question gains ask-last + tries; per-agent skill coherence (no capability without its skills, no skills without its capability).
+
+## Tasks
+- [x] Add hygiene/skills/complete/memory disciplines + opencode/crush drops.
+- [x] Trim rules-git safety lines; question workflow ask-last + tries rule.
+- [x] Architect -= artifact-shell; reviewer -= rules-git.
+- [x] Verify: eval rendered contexts, `nix flake check --no-build`.
+
+---
+
+# Implementation Plan: Capability-Gated Rules Engine (ai.rules)
+
+## Objective
+New `modules/ai/rules.nix`: rules carry a required capability intersection and render into an agent's instructions only on match. Migrate capability-bound procedures out of skills (hunks/shell/commits/tests/logs) + hygiene/memory disciplines (clean-hands/no-destroy/no-secrets/record) + orchestrator fan-out. Skills keep discovery workflows (plan/question/nav-repomap); disciplines keep universal-only.
+
+## Tasks
+- [x] Schema `ai.rules` in options/ai.nix; `modules/ai/rules.nix` with 10 rules.
+- [x] Delete migrated skills + hygiene/memory disciplines; update agent skill lists and instruction refs.
+- [x] 6 renderers append matched rules per-agent; crush renders union.
+- [x] Verify: engineer/research/reviewer matrices, `nix flake check --no-build`.

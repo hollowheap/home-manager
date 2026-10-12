@@ -70,6 +70,23 @@ let
 
   tomlFormat = pkgs.formats.toml { };
 
+  rulesText =
+    agent:
+    let
+      matches =
+        rule:
+        lib.all (cap: !rule.requires.${cap} || agent.capabilities.${cap}) [
+          "read"
+          "write"
+          "execute"
+          "delegate"
+          "mcp"
+          "web"
+        ];
+      kept = lib.filter matches config.ai.rules;
+    in
+    lib.optionalString (kept != [ ]) ("\n\n" + concatStringsSep "\n\n" (map (rule: rule.text) kept));
+
   mkAgentFile =
     name: agent: {
       name = ".codex/agents/${name}.toml";
@@ -77,7 +94,7 @@ let
         {
           inherit name;
           inherit (agent) description;
-          developer_instructions = agent.instructions;
+          developer_instructions = agent.instructions + rulesText agent;
         }
         // lib.optionalAttrs (agent.effort != null) {
           model_reasoning_effort = codexEffortFor agent.effort;

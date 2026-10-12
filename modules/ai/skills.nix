@@ -1,126 +1,125 @@
-{ ... }:
+{ pkgs, ... }:
 {
   ai.skills = {
-    planning = {
-      description = "Project planning methodology for turning objectives into structured, atomic execution roadmaps.";
+    plan = {
+      description = "Structured implementation planning with atomic tasks and verification in artifacts/plan.md. Use when task needs 3+ steps, multi-file changes, or coordination. Do NOT use for single trivial edits.";
       content = ''
-        # Planning
+        Sequential atomic tasks with explicit verification. No state changes before plan exists.
 
-        Produce a plan using the structure below. Treat sections as adaptive:
-        include one only when it carries real content, but ALWAYS keep
-        "Open Questions & Notes" so anything that does not fit elsewhere is
-        never silently dropped. Prefer the smallest plan that fully meets the
-        objective.
+        ## Use / Do NOT use
 
-        ## Template
+        Use when: non-trivial feature, refactor across files, delegated or multi-phase work.
+        Do NOT use when: single-line fix, docs typo, or purely informational question.
 
-        # Project Plan
+        ## Workflow
 
+        1. Read relevant files/specs before drafting; never assume architecture.
+        2. Write artifacts/plan.md: Objective, numbered Tasks, Verification per task.
+        3. Keep exactly one task in_progress; mark completed only after verification passes.
+        4. Update roadmap as milestones are achieved; add follow-ups discovered mid-work.
+        5. See references/template.md for required headings.
+
+        ## Rules
+
+        1. Tasks are atomic: one action + one verifiable outcome each.
+        2. Every task names its check (test cmd, eval, build).
+        3. Never batch completions; update status in real time.
+
+        ## Bad / Good
+
+        Bad: start editing, plan "in head", lose track mid-refactor.
+        Good: plan.md with `- [ ] Add pill helper`, `- [ ] Wire lualine sections`, `- [ ] nix flake check`, then edit.
+
+        ## Verification
+
+        artifacts/plan.md exists with Objective/Tasks/Verification; all boxes checked on completion.
+      '';
+      references."template.md" = ''
+        # Plan
         ## Objective
-        Purpose, core focus, and target outcome. State measurable success
-        criteria; if success is not measurable, say so explicitly.
-
-        ## Master List of Goals
-        - [ ] [High-level goal]
-
+        What + why in 2 sentences.
         ## Tasks
-        Actionable, atomic items. Note ordering and dependencies where they
-        matter; do not list a dependent task before its prerequisite.
-        - [ ] [Task item]
-
-        ## Validation
-        How each goal/task is verified (build, tests, manual checks). A task
-        is not "done" until its acceptance criteria are defined and met.
-        - [ ] [Acceptance criterion]
-
-        ## Architecture
-        * [Component]: design pattern, data flow, module boundaries, or
-          interface contracts.
-
-        ## Scope
-        ### Included
-        * [Component or workflow within scope]
-        ### Excluded
-        * [Explicitly omitted component, platform, or workflow]
-
-        ## Tech Stack
-        * Languages: [...]
-        * Frameworks and Libraries: [...]
-        * Tools: [...]
-
-        ## Risks & Rollback
-        Forward-looking failure modes and how to reverse changes if they go
-        wrong. (Distinct from Known Issues, which are already-observed.)
-        - [ ] [Risk and mitigation]
-
-        ## Known Issues
-        - [ ] [Documented bug, upstream conflict, or runtime limitation]
-
-        ## Open Questions & Notes
-        Unresolved items, assumptions made, and anything that does not fit the
-        sections above. NEVER omit this section.
-
-        ## Discipline
-        - Never write implementation code while planning; produce the roadmap first.
-        - Structure work into prerequisites, atomic steps, and validation stages.
-        - Ensure minimal state leakage between systems; prefer clear boundaries.
+        - [ ] Action + file path + outcome
+        - [ ] Next action + verification cmd
+        ## Verification
+        Exact commands: tests, nix eval, nix build, nix flake check.
       '';
     };
 
-    code-review = {
-      description = "Code review standards for detecting race conditions, boundary failures, and anti-patterns.";
+    question = {
+      description = "Question-tool ambiguity clarification with recommended-first options. Use when architectural assumption is risky and the harness exposes a question tool. Do NOT use without one; flag the harness instead.";
       content = ''
-        # Code Review Standards
-        - Audit for memory leaks, unhandled errors, and unexpected type coercions.
-        - Enforce small, single-purpose functions.
+        Requires a built-in question tool (opencode: question, antigravity: ask_question). Never improvise CLI menus.
+
+        ## Use / Do NOT use
+
+        Use when: architectural assumption is risky, destructive scope, or 2+ valid designs with big tradeoffs.
+        Do NOT use when: the harness exposes no question tool (flag the harness for removal), convention exists, or change is reversible.
+
+        ## Workflow
+
+        1. Complete all non-blocked work before asking.
+        2. Identify the single blocking ambiguity; state assumption you would otherwise make.
+        3. Invoke the harness question tool with 2-4 options.
+        4. Put the recommended option first (opencode: append (Recommended)); never add catch-all options the tool already provides (opencode: custom answer).
+        5. Ask in full sentences even under unslop; precision beats brevity here.
+
+        ## Rules
+
+        1. Exhaust two or three distinct approaches before asking or declaring blocked; report what was tried.
+        2. Max 2-3 questions per turn; batch related options.
+        3. Each option names consequence (cost, scope, reversibility).
+        4. Never assume destructive, security, or persisted-output decisions.
+
+        ## Bad / Good
+
+        Bad: numbered CLI menu pasted as chat text.
+        Good: tool call with options and a recommended default, then proceed on answers.
+
+        ## Verification
+
+        Answers recorded verbatim; proceed only after answer or explicit default approval.
       '';
     };
 
-    testing-discipline = {
-      description = "Guidelines for running test harnesses, isolating regressions, and applying minimal test fixes.";
+    nav-repomap = {
+      description = "Repository symbol navigation via repomap artifact and slice reads. Use when locating definitions in unfamiliar code or finding exact line ranges. Do NOT use when file path is already known and small.";
       content = ''
-        # Testing Discipline
-        - Always run targeted tests before running full test suites.
-        - Verify fixes by observing the transition from failure to pass.
-        - Do not weaken assertions to force tests to pass.
+        Locate first, read slices second, search last.
+
+        ## Use / Do NOT use
+
+        Use when: unfamiliar repo, symbol hunt, exact file:line needed for edits.
+        Do NOT use when: you already know the small target file; just Read it.
+
+        ## Workflow
+
+        1. Run scripts/repomap.sh to generate/refresh artifacts/repomap.md when missing or outdated.
+        2. Consult artifacts/repomap.md to locate symbol definitions and exact line ranges.
+        3. Read targeted line ranges with Read offset/limit.
+        4. Fall back to Glob (fd semantics) and Grep (rg -n -C 2 semantics) when symbol absent from repomap.
+
+        ## Rules
+
+        1. Never guess line numbers; cite repomap or Grep result.
+        2. Slice reads over full-file dumps; 30-60 line windows.
+        3. Refresh repomap after renames/moves, not on every edit.
+
+        ## Bad / Good
+
+        Bad: Grep entire store for `mk_pill` unbounded.
+        Good: repomap -> `modules/programs/nvim.nix:42` -> Read offset 35 limit 30.
+
+        ## Verification
+
+        Answer cites exact file paths and line ranges; edits anchor on verified hunks.
+      '';
+      scripts."repomap.sh" = ''
+        #!/usr/bin/env bash
+        mkdir -p artifacts
+        exec ${pkgs.repomap}/bin/repomap "$@"
       '';
     };
 
-    documentation-standards = {
-      description = "Standards for writing clean Markdown documentation, inline docstrings, and changelogs.";
-      content = ''
-        # Documentation Standards
-        - Document why code exists, not merely what it does.
-        - Format Markdown cleanly with scannable lists and code blocks.
-      '';
-    };
-
-    security-policy = {
-      description = "Security audit procedures for scanning secrets, credentials, and obsolete dependencies.";
-      content = ''
-        # Security Policy
-        - Inspect for hardcoded keys, cleartext passwords, and insecure socket mappings.
-        - Restrict secret injection strictly to runtime decryption mechanisms.
-      '';
-    };
-
-    git-conventions = {
-      description = "Conventional commit message standards and Git branch maintenance rules.";
-      content = ''
-        # Git Conventions
-        - Enforce Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`).
-        - Keep subject lines under 72 characters, written in the imperative mood.
-
-        ## Committing at Milestones
-        - Commit whenever a coherent, self-contained milestone is reached
-          (a feature works, a refactor is complete, tests pass), not on a
-          fixed cadence.
-        - Each commit must be one logical change. Group related edits; never
-          mix unrelated concerns in a single commit.
-        - Stage files explicitly by name; never `git add -A` or `git add .`.
-        - A milestone is committable only when the tree evaluates/builds and
-          relevant checks pass. Do not commit known-broken states.
-      '';
-    };
   };
 }

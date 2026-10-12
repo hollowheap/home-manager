@@ -4,7 +4,7 @@
   ...
 }:
 let
-  inherit (lib) mkIf mapAttrs mapAttrsToList optionals concatStringsSep;
+  inherit (lib) mkIf filterAttrs mapAttrs mapAttrsToList optionals concatStringsSep;
 
   copilotToolsFor =
     agent:
@@ -16,10 +16,28 @@ let
     ++ (optionals caps.execute [ "execute" ])
     ++ (optionals caps.delegate [ "agent" ])
     ++ (optionals caps.web [ "web" ])
-    ++ (optionals (builtins.elem "planning" agent.skills) [ "todo" ]);
+    ++ (optionals (builtins.elem "plan" agent.skills) [ "todo" ]);
+
+  rulesText =
+    agent:
+    let
+      matches =
+        rule:
+        lib.all (cap: !rule.requires.${cap} || agent.capabilities.${cap}) [
+          "read"
+          "write"
+          "execute"
+          "delegate"
+          "mcp"
+          "web"
+        ];
+      kept = lib.filter matches config.ai.rules;
+    in
+    lib.optionalString (kept != [ ]) ("\n\n" + concatStringsSep "\n\n" (map (rule: rule.text) kept));
 
   mkAgent =
     _name: agent:
+    # TODO: Map agent.model and agent.effort to Copilot CLI configurations
     let
       frontmatter = lib.generators.toYAML { } (
         {
@@ -34,7 +52,7 @@ let
       ${lib.removeSuffix "\n" frontmatter}
       ---
 
-      ${agent.instructions}
+      ${agent.instructions}${rulesText agent}
     '';
 
   mkSkill =
@@ -48,12 +66,23 @@ let
       ${skill.content}
     '';
 
-  disciplineBlocks = mapAttrsToList (name: d: ''
-    # ${name}
-    ${d.description}
+  # Copilot CLI built-ins are closed: no drops. Add rule names here once verified.
+  droppedDisciplineRules = { };
 
-    ${d.content}
-  '') config.ai.disciplines;
+  renderDiscipline =
+    name: d:
+    let
+      dropped = droppedDisciplineRules.${name} or [ ];
+      kept = filterAttrs (rule: text: text != null && !(builtins.elem rule dropped)) d.rules;
+    in
+    ''
+      # ${name}
+      ${d.description}
+
+      ${concatStringsSep "\n" (mapAttrsToList (_: text: text) kept)}
+    '';
+
+  disciplineBlocks = mapAttrsToList renderDiscipline config.ai.disciplines;
 in
 {
   programs.github-copilot-cli = {

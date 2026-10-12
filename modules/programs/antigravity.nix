@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 let
-  inherit (lib) mkIf mapAttrs mapAttrsToList optionals;
+  inherit (lib) mkIf filterAttrs mapAttrs mapAttrsToList optionals;
 
   agToolsFor =
     agent:
@@ -30,9 +30,26 @@ let
     ++ (optionals (caps.execute || caps.delegate) [
       "manage_task"
     ])
-    ++ (optionals (builtins.elem "questioning" agent.skills) [
+    ++ (optionals (builtins.elem "question" agent.skills) [
       "ask_question"
     ]);
+
+  rulesText =
+    agent:
+    let
+      matches =
+        rule:
+        lib.all (cap: !rule.requires.${cap} || agent.capabilities.${cap}) [
+          "read"
+          "write"
+          "execute"
+          "delegate"
+          "mcp"
+          "web"
+        ];
+      kept = lib.filter matches config.ai.rules;
+    in
+    lib.optionalString (kept != [ ]) ("\n\n" + lib.concatStringsSep "\n\n" (map (rule: rule.text) kept));
 
   mkAgent =
     name: agent:
@@ -47,6 +64,7 @@ let
             subagent
             skills
             ;
+          model = "flash";
           tools = agToolsFor agent;
         }
         // lib.optionalAttrs caps.execute { commandExecutionPolicy = "auto"; }
@@ -63,7 +81,7 @@ let
         ---
 
         # Instructions
-        ${agent.instructions}
+        ${agent.instructions}${rulesText agent}
       '';
     };
 
@@ -100,15 +118,26 @@ let
       + lib.concatStringsSep "\n" (refCmds ++ scriptCmds)
     );
 
+  # Antigravity built-ins are closed: no drops. Add rule names here once verified.
+  droppedDisciplineRules = { };
+
+  renderDiscipline =
+    name: d:
+    let
+      dropped = droppedDisciplineRules.${name} or [ ];
+      kept = filterAttrs (rule: text: text != null && !(builtins.elem rule dropped)) d.rules;
+    in
+    ''
+      # ${name}
+      ${d.description}
+
+      ${lib.concatStringsSep "\n\n" (mapAttrsToList (_: text: text) kept)}
+    '';
+
   mkRule =
     name: d: {
       name = ".gemini/config/rules/${name}.md";
-      value.text = ''
-        # ${name}
-        ${d.description}
-
-        ${d.content}
-      '';
+      value.text = renderDiscipline name d;
     };
 in
 {

@@ -76,6 +76,23 @@ let
     else
       model;
 
+  rulesText =
+    agent:
+    let
+      matches =
+        rule:
+        lib.all (cap: !rule.requires.${cap} || agent.capabilities.${cap}) [
+          "read"
+          "write"
+          "execute"
+          "delegate"
+          "mcp"
+          "web"
+        ];
+      kept = lib.filter matches config.ai.rules;
+    in
+    lib.optionalString (kept != [ ]) ("\n\n" + concatStringsSep "\n\n" (map (rule: rule.text) kept));
+
   agentFiles = mapAttrsToList (name: agent: {
     name = "${configDir}/agents/${name}.md";
     value.text = ''
@@ -87,7 +104,7 @@ let
       mode: ${if agent.capabilities.write then "ask" else "plan"}
       ---
 
-      ${agent.instructions}
+      ${agent.instructions}${rulesText agent}
     '';
   }) config.ai.agents;
 

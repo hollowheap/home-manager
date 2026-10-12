@@ -48,35 +48,51 @@ let
       };
     }) skill.scripts);
 
-  mkDiscipline =
-    name: d: {
-      name = ".kiro/steering/${name}.md";
-      value.text = ''
-        # ${name}
-        ${d.description}
+  # Kiro built-ins are closed: no drops. Add rule names here once verified.
+  droppedDisciplineRules = { };
 
-        ${d.content}
-      '';
-    };
+  renderDiscipline =
+    name: d:
+    let
+      dropped = droppedDisciplineRules.${name} or [ ];
+      kept = filterAttrs (rule: text: text != null && !(builtins.elem rule dropped)) d.rules;
+    in
+    ''
+      # ${name}
+      ${d.description}
+
+      ${concatStringsSep "\n\n" (mapAttrsToList (_: text: text) kept)}
+    '';
+
+  mkDiscipline = name: d: {
+    name = ".kiro/steering/${name}.md";
+    value.text = renderDiscipline name d;
+  };
 
   kiroToolsFor =
-    caps:
+    agent:
+    let
+      caps = agent.capabilities;
+      # Kiro subagent runtime lacks web_search, web_fetch, grep, and glob (silently ignored):
+      # strip web for subagent-only agents instead of advertising tools that never fire.
+      subagentOnly = !agent.mainAgent;
+    in
     [ "read" ]
     ++ (optionals caps.write [ "write" ])
     ++ (optionals caps.execute [ "shell" ])
     ++ (optionals caps.delegate [ "subagent" ])
     ++ (optionals caps.mcp [ "@mcp" ])
-    ++ (optionals caps.web [ "web" ]);
+    ++ (optionals (caps.web && !subagentOnly) [ "web" ]);
 
   kiroRulesFor =
     name: agent:
     let
       caps = agent.capabilities;
       writeRules =
-        if name == "orchestrator" then
-          [ { capability = "fs_write"; match = [ "artifacts/plan.md" ]; effect = "allow"; } ]
+        if name == "orchestrator" || name == "engineer" || name == "architect" then
+          [ { capability = "fs_write"; match = [ "artifacts/plan.md" "artifacts/specs.md" ]; effect = "allow"; } ]
         else
-          [ { capability = "fs_write"; match = [ "artifacts/plan.md" ]; effect = "deny"; } ];
+          [ { capability = "fs_write"; match = [ "artifacts/plan.md" "artifacts/specs.md" ]; effect = "deny"; } ];
       noWriteRules = [ { capability = "fs_write"; match = [ "**" ]; effect = "deny"; } ];
       executeRules = [ { capability = "shell"; match = [ "**" ]; effect = "allow"; } ];
       delegateRules = optionals (agent.availableAgents != [ ]) [
@@ -98,14 +114,44 @@ let
     exit 0
   '';
 
+  kiroModelFor =
+    model:
+    if model == "low" || model == "flash" then
+      "minimax-m2.5"
+    else if model == "medium" then
+      "claude-haiku-5.5"
+    else if model == "high" || model == "pro" || model == "xhigh" || model == "max" then
+      "claude-sonnet-5.5"
+    else
+      model;
+
+  rulesText =
+    agent:
+    let
+      matches =
+        rule:
+        lib.all (cap: !rule.requires.${cap} || agent.capabilities.${cap}) [
+          "read"
+          "write"
+          "execute"
+          "delegate"
+          "mcp"
+          "web"
+        ];
+      kept = lib.filter matches config.ai.rules;
+    in
+    lib.optionalString (kept != [ ]) ("\n\n" + concatStringsSep "\n\n" (map (rule: rule.text) kept));
+
   mkKiroAgent =
     name: agent:
+    # TODO: Map agent.effort to Kiro CLI reasoning effort settings
     let
       caps = agent.capabilities;
       readOnly = !caps.write && !caps.execute;
       skillResources = map (s: "skill://.kiro/skills/${s}/SKILL.md") agent.skills;
       repomapResource = optionals readOnly [ "file://artifacts/repomap.md" ];
       rules = kiroRulesFor name agent;
+      kiroModel = if agent.model != null then kiroModelFor agent.model else null;
     in
     {
       name = ".kiro/agents/${name}.json";
@@ -113,12 +159,12 @@ let
         {
           name = slugToTitle name;
           inherit (agent) description;
-          prompt = agent.instructions;
-          tools = kiroToolsFor caps;
+          prompt = agent.instructions + rulesText agent;
+          tools = kiroToolsFor agent;
           resources = skillResources ++ repomapResource;
           includeMcpJson = caps.mcp;
         }
-        // (lib.optionalAttrs (agent.model != null) { inherit (agent) model; })
+        // (lib.optionalAttrs (kiroModel != null) { model = kiroModel; })
         // (lib.optionalAttrs (rules != [ ]) { permissions.rules = rules; })
       );
     };
