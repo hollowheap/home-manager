@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  config,
   ...
 }:
 let
@@ -59,11 +58,20 @@ in
       settings.vim = {
         extraPackages = [
         ];
-        lazy.plugins = with pkgs; {
+        lazy.plugins = with pkgs.vimPlugins; {
+          "tiny-cmdline.nvim" = {
+            keys = [
+              {
+                mode = modes.nvo;
+              }
+            ];
+            lazy = true;
+            package = tiny-cmdline-nvim;
+          };
           "helpview.nvim" = {
             ft = [ "help" ];
             lazy = true;
-            package = vimPlugins.helpview-nvim;
+            package = helpview-nvim;
           };
           "foldtext.nvim" = {
             keys = [
@@ -73,16 +81,7 @@ in
               }
             ];
             lazy = true;
-            package = vimUtils.buildVimPlugin {
-              pname = "foldtext.nvim";
-              version = "2.0.0";
-              src = fetchFromGitHub {
-                owner = "OXY2DEV";
-                repo = "foldtext.nvim";
-                rev = "v2.0.0";
-                hash = "sha256-jOcspms+hJEe9G+qSD/ytNo5uLgv29DAGdSGn0Az6Fg=";
-              };
-            };
+            package = foldtext-nvim;
           };
         };
 
@@ -147,36 +146,13 @@ in
         assistant = {
           avante-nvim.enable = true;
           avante-nvim.setupOpts = {
-            provider = "deepseek";
-            auto_suggestions_provider = "deepseek";
-            system_prompt = ''
-              You are an expert AI programming assistant integrated with Neovim.
-              Strictly adhere to the following rules:
-              - Diff Discipline: NEVER rewrite whole files. Always apply targeted, minimal hunk changes.
-              - Modularity: Keep code declarative, modular, and maintainable.
-            '';
-            providers = {
-              deepseek = {
-                __inherited_from = "openai";
-                api_key_name = "DEEPSEEK_API_KEY";
-                endpoint = "https://api.deepseek.com";
-                model = "deepseek-chat";
-                timeout = 30000;
-                extra_request_body = {
-                  max_tokens = 8192;
-                  temperature = 0;
-                };
-              };
-              "deepseek-r1" = {
-                __inherited_from = "openai";
-                api_key_name = "DEEPSEEK_API_KEY";
-                endpoint = "https://api.deepseek.com";
-                model = "deepseek-reasoner";
-                timeout = 30000;
-                extra_request_body = {
-                  max_tokens = 8192;
-                  temperature = 0;
-                };
+            provider = "kiro";
+            mode = "agentic";
+            acp_providers = {
+              kiro = {
+                command = "${pkgs.kiro-cli}/bin/kiro-cli";
+                args = [ "acp" ];
+                env = { };
               };
             };
           };
@@ -193,6 +169,29 @@ in
         autocomplete.blink-cmp = {
           enable = true;
           setupOpts = {
+            sources = {
+              default = [
+                "lsp"
+                "path"
+                "snippets"
+                "buffer"
+                "avante"
+                "supermaven"
+              ];
+              providers = {
+                avante = {
+                  module = "blink-cmp-avante";
+                  name = "Avante";
+                  opts = { };
+                };
+                supermaven = {
+                  module = "blink-cmp-supermaven";
+                  name = "supermaven";
+                  score_offset = 100;
+                  opts = { };
+                };
+              };
+            };
             completion = {
               ghost_text.enabled = true;
               documentation = {
@@ -222,19 +221,7 @@ in
             blink-cmp-supermaven = {
               enable = true;
               module = "blink-cmp-supermaven";
-              package = pkgs.vimUtils.buildVimPlugin {
-                name = "blink-cmp-supermaven";
-                src = pkgs.fetchFromGitHub {
-                  owner = "Huijiro";
-                  repo = "blink-cmp-supermaven";
-                  rev = "main";
-                  hash = "sha256-pVu58uzakRdAr89I7e4xotBTr9sd5QWkQQlCs2PeFjg=";
-                };
-                dependencies = with pkgs.vimPlugins; [
-                  supermaven-nvim
-                  blink-cmp
-                ];
-              };
+              package = pkgs.vimPlugins.blink-cmp-supermaven;
             };
           };
         };
@@ -245,6 +232,7 @@ in
 
         utility = {
           smart-splits.enable = true;
+          grug-far-nvim.enable = true;
           snacks-nvim.enable = true;
           snacks-nvim.setupOpts = {
             dashboard = {
@@ -327,7 +315,7 @@ in
               enabled = true;
             };
             picker = {
-              enable = true;
+              enabled = true;
               ui_select = true;
             };
             statuscolumn = {
@@ -445,71 +433,110 @@ in
 
         statusline.lualine = {
           enable = true;
-          # setupOpts.options.theme =
-          #   let
-          #     colors = "require('base16-colorscheme').colors";
-          #   in
-          #   mkLuaInline "";
-          setupOpts = {
-            icons.enable = true;
-            sectionSeparator = {
-              left = "";
-              right = "";
-            };
-            componentSeparator = {
-              left = "";
-              right = "";
-            };
-            section =
-              let
-                separator = ''separator = { left = "", right = "" }'';
-              in
-              {
-                a = [
-                  ''
-                    { "mode", ${separator} }
-                  ''
+          setupOpts =
+            let
+              separator = {
+                left = "";
+                right = "";
+              };
+            in
+            {
+              options = {
+                section_separators = {
+                  left = "";
+                  right = "";
+                };
+                component_separators = {
+                  left = "";
+                  right = "";
+                };
+              };
+              sections = {
+                lualine_a = [
+                  {
+                    "@1" = "mode";
+                    inherit separator;
+                  }
                 ];
-                b = [
-                  ''
-                    { "filename", ${separator}, symbols = { modified = " ", readonly = " " }, onclick = function() Snacks.picker.buffers() end }
-                  ''
-                  ''
-                    { "branch", ${separator}, icon = " •", right_padding = 1, onclick = function() Snacks.picker.git_branches() end }
-                  ''
+                lualine_b = [
+                  {
+                    "@1" = "filename";
+                    inherit separator;
+                    symbols = {
+                      modified = " ";
+                      readonly = " ";
+                    };
+                    onclick = mkLuaInline ''
+                      function()
+                        Snacks.picker.buffers()
+                      end
+                    '';
+                  }
+                  {
+                    "@1" = "branch";
+                    inherit separator;
+                    icon = " •";
+                    right_padding = 1;
+                    onclick = mkLuaInline ''
+                      function()
+                        Snacks.picker.git_branches()
+                      end
+                    '';
+                  }
                 ];
-                c = [
-                  ''
-                    { "diff", ${separator}, colored = false, symbols = { added = "+ ", modified = "~ ", removed = "- " } }
-                  ''
-                  "diagnostics"
+                lualine_c = [
+                  {
+                    "@1" = "diff";
+                    inherit separator;
+                    colored = false;
+                    symbols = {
+                      added = "+ ";
+                      modified = "~ ";
+                      removed = "- ";
+                    };
+                  }
+                  [ "diagnostics" ]
                 ];
-                x = [
-                  ''
-                    { "filetype", icon_only = true, icon = { align = "left" } }
-                  ''
+                lualine_x = [
+                  {
+                    "@1" = "filetype";
+                    icon_only = true;
+                    icon = {
+                      align = "left";
+                    };
+                  }
                 ];
-                y = [
-                  ''{ "searchcount" }''
-                ];
-                z = [
-                  ''
-                    { "progress", left_padding = 2 }
-                  ''
-                  ''
-                    { "location", separator = { right = "" } }
-                  ''
+                lualine_y = [ [ "searchcount" ] ];
+                lualine_z = [
+                  {
+                    "@1" = "progress";
+                    left_padding = 2;
+                    separator = {
+                      left = "";
+                    };
+                  }
+                  {
+                    "@1" = "location";
+                    separator = {
+                      right = "";
+                    };
+                  }
                 ];
               };
-            inactive_section = {
-              a = [ "filename" ];
-              b = [ ];
-              c = [ ];
-              x = [ ];
-              y = [ ];
-              z = [ ];
+              inactive_sections = {
+                lualine_a = [
+                  {
+                    "@1" = "filename";
+                    inherit separator;
+                  }
+                ];
+                lualine_b = [ ];
+                lualine_c = [ ];
+                lualine_x = [ ];
+                lualine_y = [ ];
+                lualine_z = [ ];
+              };
             };
-          };
         };
 
         visuals = {
@@ -732,30 +759,29 @@ in
               desc = "Quickfix List [snacks]";
             }
 
-            # Smart-Splits Alt-Key Navigation
             {
-              key = "<M-h>";
+              key = "<C-h>";
               lua = true;
               action = "function() require('smart-splits').move_cursor_left() end";
               mode = modes.nvo;
               desc = "Focus Left Window/Pane";
             }
             {
-              key = "<M-j>";
+              key = "<C-j>";
               lua = true;
               action = "function() require('smart-splits').move_cursor_down() end";
               mode = modes.nvo;
               desc = "Focus Below Window/Pane";
             }
             {
-              key = "<M-k>";
+              key = "<C-k>";
               lua = true;
               action = "function() require('smart-splits').move_cursor_up() end";
               mode = modes.nvo;
               desc = "Focus Above Window/Pane";
             }
             {
-              key = "<M-l>";
+              key = "<C-l>";
               lua = true;
               action = "function() require('smart-splits').move_cursor_right() end";
               mode = modes.nvo;
@@ -764,28 +790,28 @@ in
 
             # Smart-Splits Ctrl-Key Resizing
             {
-              key = "<C-h>";
+              key = "<M-h>";
               lua = true;
               action = "function() require('smart-splits').resize_left() end";
               mode = "n";
               desc = "Resize Window Left";
             }
             {
-              key = "<C-j>";
+              key = "<M-j>";
               lua = true;
               action = "function() require('smart-splits').resize_down() end";
               mode = "n";
               desc = "Resize Window Down";
             }
             {
-              key = "<C-k>";
+              key = "<M-k>";
               lua = true;
               action = "function() require('smart-splits').resize_up() end";
               mode = "n";
               desc = "Resize Window Up";
             }
             {
-              key = "<C-l>";
+              key = "<M-l>";
               lua = true;
               action = "function() require('smart-splits').resize_right() end";
               mode = "n";

@@ -161,7 +161,6 @@ in
     profiles."default" = {
       settings = {
         "browser.ctrlTab.sortByRecentlyUsed" = true;
-        "browser.ctrlTab.sortByRecentlyUser" = true;
         "browser.tabs.hoverPreview.enabled" = true;
         "theme.floating_history.position" = "right";
 
