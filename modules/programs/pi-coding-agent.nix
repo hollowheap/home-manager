@@ -30,7 +30,7 @@ let
     ''${g2}      █▀██  ██         ██ ██                  █▀██  ██                          ''${reset}
     ''${g3}        ██  ██         ██ ██                    ██  ██                          ''${reset}
     ''${g4}        ██████   ▄███▄ ██ ██ ▄███▄▀█▄ █▄ ██▀    ██████   ▄█▀█▄ ▄▀▀█▄ ████▄      ''${reset}
-    ''${g5}        ██  ██   ██ ██ ██ ██ ██ ██ ██ ██▄██▄██     ██  ██   ██▄█▀ ▄█▀██ ██ ██      ''${reset}
+    ''${g5}        ██  ██   ██ ██ ██ ██ ██ ██ ██ ██▄██▄██     ██  ██   ██▄█▀ ▄█▀██ ██ ██   ''${reset}
     ''${g6}      ▀██▀  ▀██▄▄▀███▀▄██▄██▄▀███▀  ▀██▀██▀   ▀██▀  ▀██▄▄▀█▄▄▄▄▀█▄██▄████▀      ''${reset}
     ''${g7}                                                                     ██         ''${reset}
     ''${g8}                                                                     ▀          ''${reset}
@@ -188,20 +188,20 @@ let
               bold = true;
             };
             lualine_b = {
-              fg = "brightwhite";
-              bg = "brightblack";
+              fg = "black";
+              bg = "brightcyan";
             };
             lualine_c = {
-              fg = "brightcyan";
-              bg = "brightblack";
+              fg = "brightwhite";
+              bg = "default";
             };
             lualine_x = {
-              fg = "brightmagenta";
-              bg = "brightblack";
+              fg = "brightwhite";
+              bg = "default";
             };
             lualine_y = {
-              fg = "brightblue";
-              bg = "brightblack";
+              fg = "brightwhite";
+              bg = "default";
             };
             lualine_z = {
               fg = "black";
@@ -223,6 +223,11 @@ let
             {
               provider = "plan";
               icon = "󰏫 ";
+              color = {
+                fg = "black";
+                bg = "brightmagenta";
+                bold = true;
+              };
             }
             {
               provider = "cwd";
