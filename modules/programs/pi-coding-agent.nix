@@ -6,6 +6,7 @@
 }:
 let
   inherit (lib) concatStringsSep mapAttrsToList;
+  pills = config.styles.pills;
 
   hollowHeapColorscript = pkgs.writeShellScriptBin "hollowheap-colorscript" ''
     initializeANSI()
@@ -151,7 +152,103 @@ let
       name = "${configDir}/statusline.json";
       value.text = builtins.toJSON {
         enabled = true;
-        separatorStyle = "pill";
+        style = "pill";
+        separators = {
+          section = {
+            left = pills.symbols.left;
+            right = pills.symbols.right;
+          };
+          component = {
+            left = " ";
+            right = " ";
+          };
+        };
+        theme = {
+          modes = {
+            ask = {
+              fg = "black";
+              bg = "brightblue";
+              bold = true;
+            };
+            auto = {
+              fg = "black";
+              bg = "brightgreen";
+              bold = true;
+            };
+            plan = {
+              fg = "black";
+              bg = "brightyellow";
+              bold = true;
+            };
+          };
+          sections = {
+            lualine_a = {
+              fg = "black";
+              bg = "brightblue";
+              bold = true;
+            };
+            lualine_b = {
+              fg = "brightwhite";
+              bg = "brightblack";
+            };
+            lualine_c = {
+              fg = "brightcyan";
+              bg = "brightblack";
+            };
+            lualine_x = {
+              fg = "brightmagenta";
+              bg = "brightblack";
+            };
+            lualine_y = {
+              fg = "brightblue";
+              bg = "brightblack";
+            };
+            lualine_z = {
+              fg = "black";
+              bg = "brightblue";
+            };
+          };
+        };
+        sections = {
+          lualine_a = [
+            { provider = "mode"; }
+          ];
+          lualine_b = [
+            {
+              provider = "branch";
+              icon = " ";
+            }
+          ];
+          lualine_c = [
+            {
+              provider = "plan";
+              icon = "󰏫 ";
+            }
+            {
+              provider = "cwd";
+              icon = " ";
+            }
+          ];
+          lualine_x = [
+            {
+              provider = "model";
+              icon = "󰚩 ";
+            }
+            {
+              provider = "effort";
+            }
+          ];
+          lualine_y = [
+            {
+              provider = "tokens";
+            }
+          ];
+          lualine_z = [
+            {
+              provider = "status";
+            }
+          ];
+        };
       };
     }
   ];
