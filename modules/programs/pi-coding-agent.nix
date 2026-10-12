@@ -6,7 +6,6 @@
 }:
 let
   inherit (lib) concatStringsSep mapAttrsToList;
-  pills = config.styles.pills;
 
   hollowHeapColorscript = pkgs.writeShellScriptBin "hollowheap-colorscript" ''
     initializeANSI()
@@ -114,8 +113,8 @@ let
         style = "pill";
         separators = {
           section = {
-            left = pills.symbols.left;
-            right = pills.symbols.right;
+            left = "";
+            right = "";
           };
           component = {
             left = " ";
