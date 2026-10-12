@@ -1,4 +1,11 @@
-{ lib, ... }:
+{
+  lib,
+  config,
+  ...
+}:
+let
+  pills = config.styles.pills;
+in
 {
   programs.starship = {
     enable = true;
@@ -7,12 +14,13 @@
       format = lib.concatStrings [
         "$username"
         "$directory"
+        "$character"
+      ];
+      right_format = lib.concatStrings [
+        "$cmd_duration"
         "$git_branch"
         "$git_status"
-        "$character"
-        # "$all"
       ];
-      right_format = "$cmd_duration$all";
       add_newline = false;
       fill.symbol = " ";
       line_break.disabled = true;
@@ -26,25 +34,42 @@
         format = "[➜](bold)[ $path ]($style)";
         truncation_length = 4;
       };
+      cmd_duration = {
+        min_time = 2000;
+        format = "(${pills.starship.mkSplitPill {
+          icon = "󱑂";
+          text = "$duration";
+          accent = "bright-blue";
+          textBg = "bright-white";
+        }} )";
+      };
       git_branch = {
-        symbol = " ";
-        style = "fg:black bg:cyan";
-        format = "on [](cyan)[$symbol$branch]($style)[](prev_bg) ";
+        symbol = "";
+        format = "(${pills.starship.mkSplitPill {
+          icon = "$symbol";
+          text = "$branch";
+          accent = "cyan";
+          textBg = "bright-white";
+        }} )";
       };
       git_status = {
-        format = "[$untracked$staged$modified$renamed$conflicted$ahead_behind ](style)";
-        # options available for format
-        staged     = "[+](green)";
-        modified   = "[!](yellow)";
-        renamed    = "[»](blue)";
-        deleted    = "[-](red)";
-        untracked  = "[?](red)";
-        stashed    = "[≡](purple)";
+        format = "(${pills.starship.mkSplitPill {
+          icon = "󱈸";
+          text = "$all_status$ahead_behind";
+          accent = "bright-yellow";
+          textBg = "bright-white";
+        }} )";
+        staged = "[+](green)";
+        modified = "[!](yellow)";
+        renamed = "[»](blue)";
+        deleted = "[-](red)";
+        untracked = "[?](red)";
+        stashed = "[≡](purple)";
         conflicted = "[✖](red bold)";
 
-        ahead      = "[⇡$count](cyan)";
-        behind     = "[⇣$count](bright-red)";
-        diverged   = "[⇕⇡$ahead_count⇣$behind_count](bright-purple)";
+        ahead = "[⇡$count](cyan)";
+        behind = "[⇣$count](bright-red)";
+        diverged = "[⇕⇡$ahead_count⇣$behind_count](bright-purple)";
       };
     };
   };

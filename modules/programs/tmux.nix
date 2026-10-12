@@ -1,6 +1,12 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 
 let
+  pills = config.styles.pills;
   black = "#000000";
 
   colors = [
@@ -27,6 +33,47 @@ let
 
   windowColor = mkColorCycle colors;
   sessionColor = "#{?client_prefix,white,brightblack}";
+
+  datePill = pills.tmux.mkSplitPill {
+    icon = "󰃭";
+    text = "%d %b";
+    accent = "brightblue";
+    iconFg = black;
+    textFg = black;
+  };
+
+  timePill = pills.tmux.mkSplitPill {
+    icon = "󱑂";
+    text = "%H:%M";
+    accent = "brightmagenta";
+    iconFg = black;
+    textFg = black;
+  };
+
+  sessionPill = pills.tmux.mkPill {
+    content = " #S";
+    bg = sessionColor;
+    fg = black;
+    bold = true;
+  };
+
+  windowStatusPill = pills.tmux.mkSplitPill {
+    icon = "#I";
+    text = "#W#{?window_flags, #{window_flags},}";
+    accent = "white";
+    textBg = "white";
+    iconFg = black;
+    textFg = black;
+  };
+
+  windowStatusCurrentPill = pills.tmux.mkSplitPill {
+    icon = "#I";
+    text = "#W#{?window_flags, #{window_flags},}";
+    accent = windowColor;
+    textBg = "brightwhite";
+    iconFg = black;
+    textFg = black;
+  };
 
   batteryScript = pkgs.writeShellScript "tmux-battery" ''
     PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.gnugrep pkgs.gawk pkgs.upower ]}:$PATH"
@@ -89,7 +136,7 @@ let
         icon="󰂎"
         color="brightred"
       fi
-      printf "  #[fg=%s,bg=default]#[fg=${black},bg=%s]%s #[fg=${black},bg=brightwhite] %s%% #[fg=brightwhite,bg=default]" "$color" "$color" "$icon" "$pct"
+      printf "  #[fg=%s,bg=default]${pills.symbols.left}#[fg=${black},bg=%s]%s #[fg=${black},bg=brightwhite] %s%% #[fg=brightwhite,bg=default]${pills.symbols.right}" "$color" "$color" "$icon" "$pct"
     fi
   '';
 in
@@ -183,16 +230,16 @@ in
 
       set -g status-left-length 80
       set -g status-right-length 80
-      set -g status-right '#[fg=brightblue,bg=default]#[fg=${black},bg=brightblue]󰃭 #[fg=${black},bg=brightwhite] %d %b #[fg=brightwhite,bg=default]  #[fg=brightmagenta,bg=default]#[fg=${black},bg=brightmagenta]󱑂 #[fg=${black},bg=brightwhite] %H:%M #[fg=brightwhite,bg=default] '
+      set -g status-right '${datePill}  ${timePill} '
 
       # Left status: Session pill (gray by default, white when prefix is active)
-      set -g status-left '  #[fg=${sessionColor},bg=default]#[fg=${black},bold,bg=${sessionColor}] #S#[fg=${sessionColor},bg=default]#(${batteryScript})'
+      set -g status-left '  ${sessionPill}#(${batteryScript})'
 
       # Window status: Inactive subdued pills & Active rotating color pills (16 ANSI colors)
       set -g window-status-separator "  "
-      set -g window-status-format '#[fg=white,bg=default]#[fg=${black},bg=white]#I #[fg=white,bg=default]#[fg=${black},bg=white] #W#{?window_flags, #{window_flags},}#[fg=white,bg=default]'
+      set -g window-status-format '${windowStatusPill}'
 
-      set -g window-status-current-format '#[fg=${windowColor},bg=default]#[fg=${black},bg=${windowColor}]#I #[fg=${windowColor},bg=default]#[fg=${black},bg=brightwhite] #W#{?window_flags, #{window_flags},}#[fg=brightwhite,bg=default]'
+      set -g window-status-current-format '${windowStatusCurrentPill}'
 
       # Pane borders
       set -g pane-border-style "fg=brightblack,bg=default"

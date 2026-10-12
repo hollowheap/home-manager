@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  config,
   ...
 }:
 let
@@ -82,6 +83,14 @@ in
             ];
             lazy = true;
             package = foldtext-nvim;
+          };
+          "mega.cmdparse" = {
+            lazy = true;
+            package = mega-cmdparse;
+          };
+          "wallust.nvim" = {
+            lazy = false;
+            package = wallust;
           };
         };
 
@@ -435,10 +444,7 @@ in
           enable = true;
           setupOpts =
             let
-              separator = {
-                left = "";
-                right = "";
-              };
+              inherit (config.styles.pills.lualine) separator leftCap rightCap;
             in
             {
               options = {
@@ -511,15 +517,11 @@ in
                   {
                     "@1" = "progress";
                     left_padding = 2;
-                    separator = {
-                      left = "";
-                    };
+                    separator = leftCap;
                   }
                   {
                     "@1" = "location";
-                    separator = {
-                      right = "";
-                    };
+                    separator = rightCap;
                   }
                 ];
               };
@@ -971,6 +973,7 @@ in
                           }
                         end
 
+                        package.path = package.path .. ";" .. vim.fn.expand("~/.config/nvf/lua/?.lua")
                         local ok, wallust = pcall(require, "wallust")
                         if ok then
                           wallust.setup()
@@ -981,7 +984,7 @@ in
                           local lualine_theme = {
                             normal = {
                               a = { fg = colors.base00, bg = colors.base08 },
-                              b = { fg = colors.base05, bg = colors.base00 },
+                              b = { fg = colors.base05, bg = colors.base02 },
                               c = { fg = colors.base05, bg = colors.base00 },
 
                               x = { fg = colors.base05, bg = colors.base00 },
