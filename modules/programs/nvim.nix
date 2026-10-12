@@ -446,6 +446,8 @@ in
               disabled_filetypes = {
                 statusline = [
                   "snacks_dashboard"
+                  "snacks_picker_list"
+                  "snacks_picker_input"
                   "dashboard"
                   "alpha"
                 ];
@@ -460,19 +462,6 @@ in
               };
             };
             extensions = lib.mkForce [
-              "quickfix"
-              (mkLuaInline ''
-                {
-                  sections = {
-                    lualine_a = {
-                      function()
-                        return vim.fn.fnamemodify(vim.fn.getcwd(), ":~")
-                      end,
-                    },
-                  },
-                  filetypes = { "snacks_picker_list", "snacks_picker_input" },
-                }
-              '')
               (mkLuaInline ''
                 {
                   sections = {
