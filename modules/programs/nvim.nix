@@ -83,6 +83,14 @@ in
             lazy = true;
             package = foldtext-nvim;
           };
+          "mega.cmdparse" = {
+            lazy = true;
+            package = mega-cmdparse;
+          };
+          "wallust.nvim" = {
+            lazy = false;
+            package = wallust;
+          };
         };
 
         mini = {
@@ -971,6 +979,7 @@ in
                           }
                         end
 
+                        package.path = package.path .. ";" .. vim.fn.expand("~/.config/nvf/lua/?.lua")
                         local ok, wallust = pcall(require, "wallust")
                         if ok then
                           wallust.setup()
