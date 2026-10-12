@@ -78,21 +78,11 @@ let
     {
       name = "${configDir}/dashboard.json";
       value.text = builtins.toJSON {
-        enabled = true;
-        sections = [
-          {
-            type = "terminal";
-            cmd = "${pkgs.hollowpi-colorscript}/bin/hollowpi-colorscript";
-            align = "center";
-            height = 8;
-            padding = 1;
-          }
-          {
-            type = "startup";
-            align = "center";
-            padding = 1;
-          }
-        ];
+        width = 80;
+        source = {
+          command = "${pkgs.hollowpi-colorscript}/bin/hollowpi-colorscript";
+          args = [ ];
+        };
       };
     }
   ];

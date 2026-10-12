@@ -112,6 +112,33 @@ Extract inline colorscripts into dedicated Nix packages under `pkgs/` and add th
 
 ---
 
+# Implementation Plan: Align dashboard.json to pi-dashboard Schema
+
+## Objective
+Fix `dashboard.json` generation in `modules/programs/pi-coding-agent.nix` to match `pi-dashboard`'s schema instead of Snacks-nvim's schema:
+1. **Schema Correction**:
+   - `pi-dashboard` schema accepts `{ width: number, source: { command: string, args: string[] } }` or `{ source: { ascii: string[] } }`.
+   - Replace `{ enabled = true; sections = [ ... ]; }` with:
+     ```nix
+     {
+       width = 80;
+       source = {
+         command = "${pkgs.hollowpi-colorscript}/bin/hollowpi-colorscript";
+         args = [ ];
+       };
+     }
+     ```
+2. **Verification**:
+   - Verify `dashboard.json` matches `normalizeConfig` in `packages/pi-dashboard`.
+   - Run `nix flake check --no-build` and `activationPackage` evaluation.
+
+## Tasks
+- [x] Update `dashboardFile` in `modules/programs/pi-coding-agent.nix`.
+- [x] Verify `nix eval` on `dashboard.json` and run `nix flake check --no-build`.
+- [x] Commit changes cleanly.
+
+---
+
 
 
 
