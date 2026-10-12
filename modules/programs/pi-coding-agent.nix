@@ -5,7 +5,7 @@
   ...
 }:
 let
-  inherit (lib) concatStringsSep mapAttrsToList;
+  inherit (lib) concatStringsSep filterAttrs mapAttrsToList;
 
   hollowHeapColorscript = pkgs.writeShellScriptBin "hollowheap-colorscript" ''
     initializeANSI()
@@ -36,14 +36,23 @@ let
     EOF
   '';
 
-  disciplines = concatStringsSep "\n\n" (
-    mapAttrsToList (name: discipline: ''
+  # Pi built-in prompt is unverified for overlap: no drops. Add rule names here once verified.
+  droppedDisciplineRules = { };
+
+  renderDiscipline =
+    name: discipline:
+    let
+      dropped = droppedDisciplineRules.${name} or [ ];
+      kept = filterAttrs (rule: text: text != null && !(builtins.elem rule dropped)) discipline.rules;
+    in
+    ''
       # ${name}
       ${discipline.description}
 
-      ${discipline.content}
-    '') config.ai.disciplines
-  );
+      ${concatStringsSep "\n\n" (mapAttrsToList (_: text: text) kept)}
+    '';
+
+  disciplines = concatStringsSep "\n\n" (mapAttrsToList renderDiscipline config.ai.disciplines);
 
   agents = concatStringsSep "\n\n" (
     mapAttrsToList (name: agent: ''
@@ -105,114 +114,87 @@ let
     }
   ];
 
+  statuslineContent = builtins.toJSON {
+    options = {
+      componentSeparator = " ";
+      sectionSeparator = "  ";
+      gitIntervalMs = 5000;
+    };
+    sections = {
+      a = [
+        {
+          type = "mode";
+          idleText = "󰘧 IDLE";
+          workingText = "󰘧 WORKING";
+        }
+      ];
+      b = [
+        {
+          type = "git_branch";
+          icon = " ";
+        }
+      ];
+      c = [
+        {
+          type = "git_diff";
+          addedIcon = "+";
+          modifiedIcon = "~";
+          removedIcon = "-";
+          untrackedIcon = "?";
+        }
+      ];
+      d = [
+        {
+          type = "text";
+          text = "";
+        }
+        {
+          type = "cwd";
+          depth = 3;
+          homeAsTilde = true;
+        }
+      ];
+      x = [
+        {
+          type = "text";
+          text = "󰚩";
+        }
+        {
+          type = "model";
+          shorten = true;
+        }
+      ];
+      y = [
+        {
+          type = "tokens";
+          showInput = true;
+          showOutput = true;
+        }
+        {
+          type = "context";
+        }
+      ];
+      z = [
+        {
+          type = "text";
+          text = "󱑂";
+        }
+        {
+          type = "clock";
+          format = "HH:mm";
+        }
+      ];
+    };
+  };
+
   statuslineFile = [
     {
       name = "${configDir}/statusline.json";
-      value.text = builtins.toJSON {
-        enabled = true;
-        style = "pill";
-        separators = {
-          section = {
-            left = "";
-            right = "";
-          };
-          component = {
-            left = " ";
-            right = " ";
-          };
-        };
-        theme = {
-          modes = {
-            ask = {
-              fg = "black";
-              bg = "brightblue";
-              bold = true;
-            };
-            auto = {
-              fg = "black";
-              bg = "brightgreen";
-              bold = true;
-            };
-            plan = {
-              fg = "black";
-              bg = "brightyellow";
-              bold = true;
-            };
-          };
-          sections = {
-            lualine_a = {
-              fg = "black";
-              bg = "brightblue";
-              bold = true;
-            };
-            lualine_b = {
-              fg = "black";
-              bg = "brightcyan";
-            };
-            lualine_c = {
-              fg = "brightwhite";
-              bg = "default";
-            };
-            lualine_x = {
-              fg = "brightwhite";
-              bg = "default";
-            };
-            lualine_y = {
-              fg = "brightwhite";
-              bg = "default";
-            };
-            lualine_z = {
-              fg = "black";
-              bg = "brightblue";
-            };
-          };
-        };
-        sections = {
-          lualine_a = [
-            { provider = "mode"; }
-          ];
-          lualine_b = [
-            {
-              provider = "branch";
-              icon = " ";
-            }
-          ];
-          lualine_c = [
-            {
-              provider = "plan";
-              icon = "󰏫 ";
-              color = {
-                fg = "black";
-                bg = "brightmagenta";
-                bold = true;
-              };
-            }
-            {
-              provider = "cwd";
-              icon = " ";
-            }
-          ];
-          lualine_x = [
-            {
-              provider = "model";
-              icon = "󰚩 ";
-            }
-            {
-              provider = "effort";
-            }
-          ];
-          lualine_y = [
-            {
-              provider = "tokens";
-            }
-          ];
-          lualine_z = [
-            {
-              provider = "status";
-            }
-          ];
-        };
-      };
+      value.text = statuslineContent;
+    }
+    {
+      name = "${configDir}/pi-statusline.json";
+      value.text = statuslineContent;
     }
   ];
 
