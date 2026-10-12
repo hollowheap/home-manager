@@ -408,21 +408,21 @@ in
           enable = true;
           base16-colors = {
             base00 = "#000000";
-            base01 = "#1e1e1e";
+            base01 = "#1a1a1a";
             base02 = "#2e2e2e";
             base03 = "#555555";
-            base04 = "#6e6e6e";
-            base05 = "#ababab";
-            base06 = "#d9d9d9";
+            base04 = "#888888";
+            base05 = "#e0e0e0";
+            base06 = "#eeeeee";
             base07 = "#ffffff";
-            base08 = "#ff0000";
-            base09 = "#ff0000";
-            base0A = "#ff0000";
-            base0B = "#00ff00";
-            base0C = "#00ff00";
-            base0D = "#0000ff";
-            base0E = "#0000ff";
-            base0F = "#0000ff";
+            base08 = "#ff5555";
+            base09 = "#ffaa00";
+            base0A = "#ffff55";
+            base0B = "#55ff55";
+            base0C = "#55ffff";
+            base0D = "#5555ff";
+            base0E = "#ff55ff";
+            base0F = "#aa55ff";
           };
           name = "base16";
         };
@@ -1151,13 +1151,13 @@ in
                             command = { a = { fg = colors.base07, bg = colors.base00 } },
 
                             inactive = {
-                              a = { fg = colors.base04, bg = colors.base00 },
-                              b = { fg = colors.base04, bg = colors.base00 },
-                              c = { fg = colors.base04, bg = colors.base00 },
+                              a = { fg = colors.base07, bg = colors.base00 },
+                              b = { fg = colors.base07, bg = colors.base00 },
+                              c = { fg = colors.base07, bg = colors.base00 },
 
-                              x = { fg = colors.base04, bg = colors.base00 },
-                              y = { fg = colors.base04, bg = colors.base00 },
-                              z = { fg = colors.base04, bg = colors.base00 },
+                              x = { fg = colors.base07, bg = colors.base00 },
+                              y = { fg = colors.base07, bg = colors.base00 },
+                              z = { fg = colors.base07, bg = colors.base00 },
                             },
                           }
                           local ok_l, lualine = pcall(require, "lualine")

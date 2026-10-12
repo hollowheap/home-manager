@@ -8,32 +8,32 @@
 -- Noctalia M3 roles are mapped onto wallust ansi slots. base16-colorscheme
 -- expects '#RRGGBB' values, so the '#'-prefixed `{{colorN}}` form is used.
 --
--- PIN: base00 (#000000), base01 (#2e2e2e), base05 (#e0e0e0), and base07 (#ffffff)
--- are pinned via hardcoded literals instead of dynamic extraction, so neutrals hold
--- regardless of palette extraction.
+-- PIN: base00-base07 are pinned to a clean monochromatic neutral ramp (#000000 to #ffffff)
+-- so dark themes maintain readable neutrals regardless of dynamic palette extraction.
+-- base08-base0F use high-contrast bright ANSI variants for syntax highlighting.
 local M = {}
 
 function M.setup()
   require('base16-colorscheme').setup({
-    -- Background tones
-    base00 = '#000000',       -- Default Background (PINNED pure black)
-    base01 = '#2e2e2e',       -- Lighter Background (PINNED charcoal dark gray)
-    base02 = '{{color10}}',   -- Selection Background
-    base03 = '{{color11}}',   -- Comments, Invisibles
+    -- Background tones (monochromatic neutral ramp)
+    base00 = '#000000',       -- Default Background (pure black)
+    base01 = '#1a1a1a',       -- Lighter Background
+    base02 = '#2e2e2e',       -- Selection Background (dark charcoal)
+    base03 = '#555555',       -- Comments, Invisibles, Line numbers
     -- Foreground tones
-    base04 = '{{color12}}',   -- Dark Foreground (status bars)
-    base05 = '#e0e0e0',       -- Default Foreground (PINNED soft off-white)
-    base06 = '{{color13}}',   -- Light Foreground
-    base07 = '#ffffff',       -- Lightest Foreground (PINNED pure white)
-    -- Accent colors
-    base08 = '{{color1}}',    -- Variables, XML Tags, Errors
-    base09 = '{{color9}}',    -- Integers, Constants
-    base0A = '{{color3}}',    -- Classes, Search Background
-    base0B = '{{color2}}',    -- Strings, Diff Inserted
-    base0C = '{{color6}}',    -- Regex, Escape Chars
-    base0D = '{{color4}}',    -- Functions, Methods
-    base0E = '{{color5}}',    -- Keywords, Storage
-    base0F = '{{color14}}',   -- Deprecated, Embedded Tags
+    base04 = '#888888',       -- Dark Foreground (status bars, hints)
+    base05 = '#e0e0e0',       -- Default Foreground (soft off-white)
+    base06 = '#eeeeee',       -- Light Foreground
+    base07 = '#ffffff',       -- Lightest Foreground (pure white)
+    -- Accent colors (bright ANSI variants for dark theme contrast)
+    base08 = '{{color9}}',    -- Bright Red (Variables, XML Tags, Errors)
+    base09 = '{{color1}}',    -- Normal Red (Integers, Constants)
+    base0A = '{{color11}}',   -- Bright Yellow (Classes, Search Background)
+    base0B = '{{color10}}',   -- Bright Green (Strings, Diff Inserted)
+    base0C = '{{color14}}',   -- Bright Cyan (Regex, Escape Chars)
+    base0D = '{{color12}}',   -- Bright Blue (Functions, Methods)
+    base0E = '{{color13}}',   -- Bright Magenta (Keywords, Storage)
+    base0F = '{{color5}}',    -- Normal Magenta / Violet (Deprecated, Embedded Tags)
   })
 end
 

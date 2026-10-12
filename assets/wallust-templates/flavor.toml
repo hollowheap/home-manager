@@ -4,22 +4,22 @@
 cwd = { fg = "#ffffff" }
 
 # Find
-find_keyword  = { fg = "{{color3}}", bold = true, italic = true, underline = true }
-find_position = { fg = "{{color6}}", bold = true, italic = true }
+find_keyword  = { fg = "{{color11}}", bold = true, italic = true, underline = true }
+find_position = { fg = "{{color14}}", bold = true, italic = true }
 
 # Marker
-marker_copied   = { fg = "{{color2}}", bg = "{{color2}}" }
-marker_cut      = { fg = "{{color1}}", bg = "{{color1}}" }
-marker_marked   = { fg = "{{color3}}", bg = "{{color3}}" }
-marker_selected = { fg = "{{color4}}", bg = "{{color4}}" }
+marker_copied   = { fg = "{{color10}}", bg = "{{color10}}" }
+marker_cut      = { fg = "{{color9}}", bg = "{{color9}}" }
+marker_marked   = { fg = "{{color11}}", bg = "{{color11}}" }
+marker_selected = { fg = "{{color12}}", bg = "{{color12}}" }
 
 # Count
-count_copied   = { fg = "#000000", bg = "{{color2}}" }
-count_cut      = { fg = "#000000", bg = "{{color1}}" }
-count_selected = { fg = "#000000", bg = "{{color4}}" }
+count_copied   = { fg = "#000000", bg = "{{color10}}" }
+count_cut      = { fg = "#000000", bg = "{{color9}}" }
+count_selected = { fg = "#000000", bg = "{{color12}}" }
 
 # Border
-border_style = { fg = "{{color4}}" }
+border_style = { fg = "{{color12}}" }
 
 # : ]]]
 
@@ -33,14 +33,14 @@ sep_right = { open = "", close = "" }
 
 # Progress
 progress_label  = { bold = true }
-progress_normal = { fg = "{{color4}}", bg = "#000000" }
-progress_error  = { fg = "{{color1}}", bg = "#000000" }
+progress_normal = { fg = "{{color12}}", bg = "#000000" }
+progress_error  = { fg = "{{color9}}", bg = "#000000" }
 
 # Permissions
-perm_type  = { fg = "{{color4}}" }
-perm_write = { fg = "{{color1}}" }
-perm_exec  = { fg = "{{color2}}" }
-perm_read  = { fg = "{{color3}}" }
+perm_type  = { fg = "{{color12}}" }
+perm_write = { fg = "{{color9}}" }
+perm_exec  = { fg = "{{color10}}" }
+perm_read  = { fg = "{{color11}}" }
 perm_sep   = { fg = "#2e2e2e" }
 
 # : ]]]
@@ -50,13 +50,13 @@ perm_sep   = { fg = "#2e2e2e" }
 
 [mode]
 
-normal_main = { bg = "{{color4}}", fg = "#000000", bold = true }
+normal_main = { bg = "{{color12}}", fg = "#000000", bold = true }
 normal_alt  = { bg = "#2e2e2e", fg = "#ffffff" }
 
-select_main = { bg = "{{color2}}", fg = "#000000", bold = true }
+select_main = { bg = "{{color10}}", fg = "#000000", bold = true }
 select_alt  = { bg = "#2e2e2e", fg = "#ffffff" }
 
-unset_main = { bg = "{{color3}}", fg = "#000000", bold = true }
+unset_main = { bg = "{{color11}}", fg = "#000000", bold = true }
 unset_alt  = { bg = "#2e2e2e", fg = "#ffffff" }
 
 # : ]]]
@@ -65,7 +65,7 @@ unset_alt  = { bg = "#2e2e2e", fg = "#ffffff" }
 # : Input [[[
 
 [input]
-border   = { fg = "{{color4}}" }
+border   = { fg = "{{color12}}" }
 title    = {}
 value    = { fg = "#ffffff" }
 selected = { reversed = true }
@@ -76,7 +76,7 @@ selected = { reversed = true }
 # : Tabs [[[
 
 [tabs]
-active    = { fg = "#000000", bold = true, bg = "{{color4}}" }
+active    = { fg = "#000000", bold = true, bg = "{{color12}}" }
 inactive  = { fg = "#e0e0e0", bg = "#000000" }
 sep_inner = { open = "", close = "" }
 
@@ -86,7 +86,7 @@ sep_inner = { open = "", close = "" }
 # : Completion [[[
 
 [cmp]
-border = { fg = "{{color4}}", bg = "#000000" }
+border = { fg = "{{color12}}", bg = "#000000" }
 
 # : ]]]
 
@@ -94,9 +94,9 @@ border = { fg = "{{color4}}", bg = "#000000" }
 # : Tasks [[[
 
 [tasks]
-border  = { fg = "{{color4}}" }
+border  = { fg = "{{color12}}" }
 title   = {}
-hovered = { fg = "{{color6}}", underline = true }
+hovered = { fg = "{{color14}}", underline = true }
 
 # : ]]]
 
@@ -106,8 +106,8 @@ hovered = { fg = "{{color6}}", underline = true }
 [which]
 cols            = 3
 mask            = { bg = "#000000" }
-cand            = { fg = "{{color4}}" }
-rest            = { fg = "{{color5}}" }
+cand            = { fg = "{{color12}}" }
+rest            = { fg = "{{color13}}" }
 desc            = { fg = "#ffffff" }
 separator       = " ▶ "
 separator_style = { fg = "#2e2e2e" }
@@ -118,8 +118,8 @@ separator_style = { fg = "#2e2e2e" }
 # : Spotter [[[
 
 [spot]
-border   = { fg = "{{color4}}" }
-title    = { fg = "{{color4}}" }
+border   = { fg = "{{color12}}" }
+title    = { fg = "{{color12}}" }
 tbl_col  = { fg = "#ffffff" }
 tbl_cell = { fg = "#ffffff", bg = "#000000" }
 
@@ -132,7 +132,7 @@ tbl_cell = { fg = "#ffffff", bg = "#000000" }
 on      = { fg = "#ffffff" }
 run     = { fg = "#ffffff" }
 hovered = { reversed = true, bold = true }
-footer  = { fg = "#000000", bg = "{{color4}}" }
+footer  = { fg = "#000000", bg = "{{color12}}" }
 
 # : ]]]
 
@@ -140,9 +140,9 @@ footer  = { fg = "#000000", bg = "{{color4}}" }
 # : Notify [[[
 
 [notify]
-title_info  = { fg = "{{color4}}" }
-title_warn  = { fg = "{{color3}}" }
-title_error = { fg = "{{color1}}" }
+title_info  = { fg = "{{color12}}" }
+title_warn  = { fg = "{{color11}}" }
+title_error = { fg = "{{color9}}" }
 
 # : ]]]
 
@@ -153,24 +153,24 @@ title_error = { fg = "{{color1}}" }
 
 rules = [
     # Images
-    { mime = "image/*", fg = "{{color5}}" },
+    { mime = "image/*", fg = "{{color13}}" },
 
     # Media
-    { mime = "{audio,video}/*", fg = "{{color3}}" },
+    { mime = "{audio,video}/*", fg = "{{color11}}" },
 
     # Archives
-    { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", fg = "{{color1}}" },
+    { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", fg = "{{color9}}" },
 
     # Documents
-    { mime = "application/{pdf,doc,rtf}", fg = "{{color6}}" },
+    { mime = "application/{pdf,doc,rtf}", fg = "{{color14}}" },
 
     # Special files
-    { mime = "*", is = "orphan", fg = "{{color1}}", bg = "#000000" },
-    { mime = "application/*exec*", fg = "{{color2}}" },
+    { mime = "*", is = "orphan", fg = "{{color9}}", bg = "#000000" },
+    { mime = "application/*exec*", fg = "{{color10}}" },
 
     # Fallback
     { url = "*", fg = "#ffffff" },
-    { url = "*/", fg = "{{color4}}" },
+    { url = "*/", fg = "{{color12}}" },
 ]
 
 # : ]]]

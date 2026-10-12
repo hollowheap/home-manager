@@ -1,4 +1,42 @@
-# Implementation Plan: Statusline Section Alignment, Avante Single Bubble & Wallust Saturation
+# Implementation Plan: Consistent Base16 Neutrals & Bright ANSI Variants Everywhere
+
+## Objective
+Enforce the consistent color architecture across all Wallust templates and Neovim:
+1. **Base16 Neutrals (`base00`–`base07`)**:
+   - Pinned monochrome ramp from `#000000` to `#ffffff` without dynamic/ANSI color leakage into selection, comments, or dark foregrounds.
+2. **Bright ANSI Accents (`base08`–`base0F`)**:
+   - Map syntax/accent slots to high-contrast bright ANSI variants:
+     - `base08`: `{{color9}}` (Bright Red: Variables, XML Tags, Errors)
+     - `base09`: `{{color1}}` (Normal Red / Warm tone: Constants, Numbers)
+     - `base0A`: `{{color11}}` (Bright Yellow: Classes, Types, Search)
+     - `base0B`: `{{color10}}` (Bright Green: Strings, Diff Inserted)
+     - `base0C`: `{{color14}}` (Bright Cyan: Regex, Escape Characters)
+     - `base0D`: `{{color12}}` (Bright Blue: Functions, Methods)
+     - `base0E`: `{{color13}}` (Bright Magenta: Keywords, Storage)
+     - `base0F`: `{{color5}}` (Normal Magenta / Violet: Embedded Tags)
+3. **Propagate Bright Variants Across Templates**:
+   - `assets/wallust-templates/bat.tmTheme`: Upgrade remaining normal ANSI accents to bright variants (Keywords `color13`, Operators `color14`, Strings `color10`, Functions `color12`, Types `color11`, Tags `color9`).
+   - `assets/wallust-templates/lazygit.yml`: Use bright variants (`color12`, `color11`, `color14`, `color13`, `color9`).
+   - `assets/wallust-templates/btop.theme`: Use bright variants for title (`color12`), hi_fg (`color14`), proc_misc (`color13`), and gradient endpoints (`color9`, `color10`, `color11`, `color12`, `color13`, `color14`).
+   - `assets/wallust-templates/flavor.toml`: Use bright variants (`color12`, `color11`, `color10`, `color9`, `color13`, `color14`).
+   - `modules/programs/nvim.nix`: Align fallback base16 palette with identical monochromatic ramp and bright accents.
+
+## Tasks
+- [x] Update `assets/wallust-templates/nvim-colors.lua`.
+- [x] Update `assets/wallust-templates/bat.tmTheme`.
+- [x] Update `assets/wallust-templates/lazygit.yml`.
+- [x] Update `assets/wallust-templates/btop.theme`.
+- [x] Update `assets/wallust-templates/flavor.toml`.
+- [x] Update fallback palette in `modules/programs/nvim.nix`.
+- [x] Build & Verify:
+  - [x] Nix build nvf package.
+  - [x] Run headless Neovim test script with updated `nvim-colors.lua`.
+  - [x] Nix eval activationPackage and nix flake check --no-build.
+- [x] Commit changes.
+
+---
+
+
 
 ## Objective
 Refine Neovim statusline and Wallust configuration according to user requirements:
@@ -98,3 +136,18 @@ Restructure `ai.disciplines` from monolithic `content` strings to named `rules` 
 - [x] Base: `modules/ai/disciplines.nix` rewritten as named rules, all lines kept.
 - [x] Overrides: 6 renderers filter nulls + per-harness drop lists (opencode/crush drop `unslop.{concise,no-restate,dense}`).
 - [x] Verify: eval opencode context (trimmed) vs pi context (full), `nix flake check --no-build`.
+
+---
+
+# Implementation Plan: Commit Restructure, Tool-Only Questions, Report Formula, Kiro Strip, Codex + Hermes
+
+## Objective
+Resolve harness conflicts structurally (never command what built-ins forbid): rules-git shapes but never orders commits, milestones move to artifacts discipline. Question skill goes tool-only (drop CLI fallback + script); wire opencode `question` tool. New `report` output formula with unslop carve-out. Kiro strips `web` for subagents. New codex + hermes renderers (schemas verified against docs/nixpkgs).
+
+## Tasks
+- [x] rules-git de-commanded; artifacts += milestones; architect/engineer/tdd lines aligned.
+- [x] Question skill tool-only, script removed; opencode `question` tool mapped from skills.
+- [x] `report` discipline added; unslop no-restate carved out.
+- [x] Kiro `web` stripped for subagent-only agents.
+- [x] `modules/programs/codex.nix` + `modules/programs/hermes.nix` renderers.
+- [x] Verify: eval all surfaces, `nix flake check --no-build`.
