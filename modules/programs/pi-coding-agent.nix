@@ -97,14 +97,6 @@ let
             padding = 1;
           }
           {
-            type = "terminal";
-            cmd = "git --no-pager diff --stat -B -M -C";
-            title = "Git Status";
-            align = "left";
-            height = 10;
-            padding = 1;
-          }
-          {
             type = "startup";
             align = "center";
             padding = 1;
