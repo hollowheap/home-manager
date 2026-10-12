@@ -105,39 +105,6 @@ let
             padding = 1;
           }
           {
-            type = "keys";
-            title = "Quick Commands";
-            align = "center";
-            items = [
-              {
-                key = "p";
-                action = "/plan";
-                desc = "Toggle plan write-scope mode";
-              }
-              {
-                key = "a";
-                action = "/approval";
-                desc = "Toggle ask / auto approval";
-              }
-              {
-                key = "r";
-                action = "/plan-review";
-                desc = "Review and approve plan";
-              }
-              {
-                key = "c";
-                action = "/cd";
-                desc = "Change working directory";
-              }
-              {
-                key = "s";
-                action = "/statusline";
-                desc = "Configure statusline style";
-              }
-            ];
-            padding = 1;
-          }
-          {
             type = "startup";
             align = "center";
             padding = 1;
