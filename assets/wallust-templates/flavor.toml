@@ -41,7 +41,7 @@ perm_type  = { fg = "{{color4}}" }
 perm_write = { fg = "{{color1}}" }
 perm_exec  = { fg = "{{color2}}" }
 perm_read  = { fg = "{{color3}}" }
-perm_sep   = { fg = "{{color8}}" }
+perm_sep   = { fg = "#2e2e2e" }
 
 # : ]]]
 
@@ -51,13 +51,13 @@ perm_sep   = { fg = "{{color8}}" }
 [mode]
 
 normal_main = { bg = "{{color4}}", fg = "#000000", bold = true }
-normal_alt  = { bg = "{{color8}}", fg = "#ffffff" }
+normal_alt  = { bg = "#2e2e2e", fg = "#ffffff" }
 
 select_main = { bg = "{{color2}}", fg = "#000000", bold = true }
-select_alt  = { bg = "{{color8}}", fg = "#ffffff" }
+select_alt  = { bg = "#2e2e2e", fg = "#ffffff" }
 
 unset_main = { bg = "{{color3}}", fg = "#000000", bold = true }
-unset_alt  = { bg = "{{color8}}", fg = "#ffffff" }
+unset_alt  = { bg = "#2e2e2e", fg = "#ffffff" }
 
 # : ]]]
 
@@ -77,7 +77,7 @@ selected = { reversed = true }
 
 [tabs]
 active    = { fg = "#000000", bold = true, bg = "{{color4}}" }
-inactive  = { fg = "{{color7}}", bg = "#000000" }
+inactive  = { fg = "#e0e0e0", bg = "#000000" }
 sep_inner = { open = "", close = "" }
 
 # : ]]]
@@ -110,7 +110,7 @@ cand            = { fg = "{{color4}}" }
 rest            = { fg = "{{color5}}" }
 desc            = { fg = "#ffffff" }
 separator       = " ▶ "
-separator_style = { fg = "{{color8}}" }
+separator_style = { fg = "#2e2e2e" }
 
 # : ]]]
 

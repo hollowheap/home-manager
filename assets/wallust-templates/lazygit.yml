@@ -4,16 +4,16 @@ gui:
       - '{{color4}}'
       - bold
     inactiveBorderColor:
-      - '{{color8}}'
+      - '#2e2e2e'
     searchingActiveBorderColor:
       - '{{color3}}'
       - bold
     optionsTextColor:
       - '{{color4}}'
     selectedLineBgColor:
-      - '{{color8}}'
+      - '#2e2e2e'
     inactiveViewSelectedLineBgColor:
-      - '{{color0}}'
+      - '#000000'
     cherryPickedCommitFgColor:
       - '{{color6}}'
     cherryPickedCommitBgColor:

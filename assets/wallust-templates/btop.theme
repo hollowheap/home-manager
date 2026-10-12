@@ -11,28 +11,28 @@ theme[title]="{{color4}}"
 theme[hi_fg]="{{color6}}"
 
 # Background color of selected item in processes box
-theme[selected_bg]="{{color8}}"
+theme[selected_bg]="#2e2e2e"
 
 # Foreground color of selected item in processes box
 theme[selected_fg]="#ffffff"
 
 # Color of inactive/disabled text
-theme[inactive_fg]="{{color7}}"
+theme[inactive_fg]="#e0e0e0"
 
 # Color of text appearing on top of graphs, i.e uptime and current network
-theme[graph_text]="{{color7}}"
+theme[graph_text]="#e0e0e0"
 
 # Misc process colors
 theme[proc_misc]="{{color5}}"
 
 # Box outline color
-theme[cpu_box]="{{color8}}"
-theme[mem_box]="{{color8}}"
-theme[net_box]="{{color8}}"
-theme[proc_box]="{{color8}}"
+theme[cpu_box]="#2e2e2e"
+theme[mem_box]="#2e2e2e"
+theme[net_box]="#2e2e2e"
+theme[proc_box]="#2e2e2e"
 
 # Box divider line and small boxes line color
-theme[div_line]="{{color8}}"
+theme[div_line]="#2e2e2e"
 
 # Temperature graph colors
 theme[temp_start]="{{color2}}"

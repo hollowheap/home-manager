@@ -8,21 +8,21 @@
 -- Noctalia M3 roles are mapped onto wallust ansi slots. base16-colorscheme
 -- expects '#RRGGBB' values, so the '#'-prefixed `{{colorN}}` form is used.
 --
--- PIN: base00 (background) is pinned to #000000 and base07 (lightest fg) to
--- #ffffff via hardcoded literals instead of {{color0}}/{{color15}}, so the pin
--- holds regardless of palette extraction.
+-- PIN: base00 (#000000), base01 (#2e2e2e), base05 (#e0e0e0), and base07 (#ffffff)
+-- are pinned via hardcoded literals instead of dynamic extraction, so neutrals hold
+-- regardless of palette extraction.
 local M = {}
 
 function M.setup()
   require('base16-colorscheme').setup({
     -- Background tones
     base00 = '#000000',       -- Default Background (PINNED pure black)
-    base01 = '{{color8}}',    -- Lighter Background (status bars)
+    base01 = '#2e2e2e',       -- Lighter Background (PINNED charcoal dark gray)
     base02 = '{{color10}}',   -- Selection Background
     base03 = '{{color11}}',   -- Comments, Invisibles
     -- Foreground tones
     base04 = '{{color12}}',   -- Dark Foreground (status bars)
-    base05 = '{{color7}}',    -- Default Foreground
+    base05 = '#e0e0e0',       -- Default Foreground (PINNED soft off-white)
     base06 = '{{color13}}',   -- Light Foreground
     base07 = '#ffffff',       -- Lightest Foreground (PINNED pure white)
     -- Accent colors

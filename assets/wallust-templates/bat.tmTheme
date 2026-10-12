@@ -16,11 +16,11 @@
 				<key>caret</key>
 				<string>#ffffff</string>
 				<key>selection</key>
-				<string>{{color8}}</string>
+				<string>#2e2e2e</string>
 				<key>lineHighlight</key>
-				<string>{{color8}}</string>
+				<string>#2e2e2e</string>
 				<key>invisibles</key>
-				<string>{{color8}}</string>
+				<string>#2e2e2e</string>
 			</dict>
 		</dict>
 		<dict>
@@ -31,7 +31,7 @@
 			<key>settings</key>
 			<dict>
 				<key>foreground</key>
-				<string>{{color8}}</string>
+				<string>#2e2e2e</string>
 				<key>fontStyle</key>
 				<string>italic</string>
 			</dict>
