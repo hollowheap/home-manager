@@ -87,6 +87,31 @@ Enable full two-tone powerline pill rendering for `mode-guard` strictly via JSON
 
 ---
 
+# Implementation Plan: Separate Colorscripts into Packages (hollowheap & hollowpi)
+
+## Objective
+Extract inline colorscripts into dedicated Nix packages under `pkgs/` and add the new `hollowpi-colorscript`:
+1. **Package Creation**:
+   - `pkgs/hollowheap-colorscript.nix`: Package for `hollowheap-colorscript` displaying the 8-line hollowheap ASCII art with blue-to-purple gradient.
+   - `pkgs/hollowpi-colorscript.nix`: Package for `hollowpi-colorscript` displaying the 6-line hollow-pi ASCII art with smooth 6-step gradient.
+2. **Package Registration & Discovery**:
+   - Both packages are auto-discovered by `pkgs/default.nix` into `pkgs.hollowheap-colorscript` and `pkgs.hollowpi-colorscript`.
+   - Add both packages to `modules/core/packages.nix` for global availability.
+3. **Module Integration**:
+   - `modules/programs/nvim.nix`: Remove inline `hollowHeapColorscript` script derivation; reference `pkgs.hollowheap-colorscript`.
+   - `modules/programs/pi-coding-agent.nix`: Remove inline `hollowHeapColorscript` script derivation; reference `pkgs.hollowpi-colorscript` in dashboard.json.
+
+## Tasks
+- [x] Create `pkgs/hollowheap-colorscript.nix`.
+- [x] Create `pkgs/hollowpi-colorscript.nix`.
+- [x] Add packages to `modules/core/packages.nix`.
+- [x] Update `modules/programs/nvim.nix` to use `pkgs.hollowheap-colorscript`.
+- [x] Update `modules/programs/pi-coding-agent.nix` to use `pkgs.hollowpi-colorscript`.
+- [x] Stage new files by name (`skills/nix-flake-eval`), evaluate, build both derivations, and verify `nix flake check --no-build`.
+- [x] Commit changes cleanly following git conventions.
+
+---
+
 
 
 

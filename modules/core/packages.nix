@@ -10,6 +10,8 @@
     universal-ctags
     tree-sitter
     repomap
+    hollowheap-colorscript
+    hollowpi-colorscript
 
     # Desktop Applications
     nautilus
