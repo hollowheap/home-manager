@@ -54,13 +54,8 @@ let
 
   disciplines = concatStringsSep "\n\n" (mapAttrsToList renderDiscipline config.ai.disciplines);
 
-  agents = concatStringsSep "\n\n" (
-    mapAttrsToList (name: agent: ''
-      ## Agent: ${name}
-      ${agent.description}
-
-      ${agent.instructions}
-    '') config.ai.agents
+  roster = concatStringsSep "\n" (
+    mapAttrsToList (name: agent: "- ${name}: ${agent.description}") config.ai.agents
   );
 
   configDir = config.programs.pi-coding-agent.configDir;
@@ -132,6 +127,10 @@ let
   ];
 
   statuslineContent = builtins.toJSON {
+    extensions = [
+      "mode-guard"
+      "budgets"
+    ];
     options = {
       componentSeparator = " ";
       sectionSeparator = "  ";
@@ -140,11 +139,10 @@ let
     sections = {
       a = [
         {
-          type = "mode";
+          type = "mode-guard";
           accent = "bright-yellow";
+          fg = "bright-yellow";
           icon = "󰘧";
-          idleText = "IDLE";
-          workingText = "WORKING";
           bold = true;
         }
       ];
@@ -173,6 +171,14 @@ let
           icon = "";
           depth = 3;
           homeAsTilde = true;
+        }
+      ];
+      v = [
+        {
+          type = "budgets";
+          accent = "bright-yellow";
+          fg = "bright-yellow";
+          icon = "󰄩";
         }
       ];
       w = [
@@ -283,9 +289,9 @@ in
       defaultModel = "muse-spark-1.3-contributor-free";
     };
     context = ''
-      # Shared agents
+      # Available agents (full briefs in agents/*.md)
 
-      ${agents}
+      ${roster}
 
       # Shared disciplines
 

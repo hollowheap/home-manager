@@ -1,3 +1,24 @@
+# AI Config Program Plan
+
+## Objectives
+High-level and stable; distilled from PLAN.md for the ai.* system.
+- [x] Capability-based multi-harness schema rendering agents, skills, and rules from one source.
+- [x] Conflict-free layering: shared base plus per-harness overrides, no built-in duplication.
+- [x] Capability-gated rules: procedures render only where the tools exist.
+- [ ] Question tooling on every kept harness; drop harnesses without one.
+
+## Tasks
+Per-initiative execution checklists below. Append new work; closed initiatives move to artifacts/tasks/.
+
+## Open Follow-ups
+- [ ] Decide harness cull: question skill flags kiro/pi/crush/copilot/codex/hermes as tool-less.
+- [ ] Hermes config.yaml merge strategy: managed file clobbers outside user keys.
+- [ ] Confirm codex skills discovery (`~/.codex/skills` vs `$HOME/.agents/skills`) on a live run.
+- [ ] Scope crush union delegate rule if crush gains per-agent surfaces.
+- [ ] Revisit codex/hermes discipline drops once base prompts are observed.
+
+---
+
 # Implementation Plan: Powerline Pill Colors & Icons for Pi Statusline
 
 ## Objective
@@ -23,6 +44,24 @@ Apply colors and two-tone powerline pill formatting to `modules/programs/pi-codi
 
 ---
 
+# Implementation Plan: Mode & Budget Extension Components for Pi Statusline
+
+## Objective
+Update the Pi statusline configuration in `modules/programs/pi-coding-agent.nix` to integrate the `mode-guard` and `budgets` extensions exposed by `pi-mode-guard` without altering `my-pi-agent`:
+1. **Extension Declaration**:
+   - Add `extensions = [ "mode-guard" "budgets" ];` to the root of `statuslineContent`.
+2. **Component Configuration**:
+   - `a` (Mode): Replace built-in `"mode"` with `"mode-guard"`, setting `accent = "bright-yellow"`, `fg = "bright-yellow"`, `icon = "󰘧"`, and `bold = true`.
+   - `v` (Budgets): Add a new section `v` preceding model/tokens with `type = "budgets"`, `accent = "bright-yellow"`, `fg = "bright-yellow"`, and `icon = "󰄩"`.
+3. **Pill & Palette Consistency**:
+   - Preserve existing two-tone pill formatting and color harmony.
+
+## Tasks
+- [x] Update `statuslineContent` in `modules/programs/pi-coding-agent.nix`.
+- [x] Evaluate `statusline.json` generation and run `nix flake check --no-build`.
+- [x] Commit changes cleanly following git conventions.
+
+---
 
 
 
