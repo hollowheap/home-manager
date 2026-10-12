@@ -1,4 +1,32 @@
-# Implementation Plan: Consistent Base16 Neutrals & Bright ANSI Variants Everywhere
+# Implementation Plan: Starship No-Runtimes Preset & Bubble-Pill Styling
+
+## Objective
+Customize Starship prompt in `modules/shell/starship.nix`:
+1. **Character Module**:
+   - `format = "$symbol "`
+   - `success_symbol = "[◎](bold italic bright-yellow)"`
+   - `error_symbol = "[○](italic purple)"`
+   - `vimcmd_symbol = "[■](italic dimmed green)"`
+2. **Inspiration from `https://starship.rs/presets/no-runtimes`**:
+   - Strip runtime version numbers across all language/runtime modules (54 modules: bun, c, cpp, rust, python, nodejs, golang, etc.).
+3. **Unified Bubble-Pill Format**:
+   - Apply the rounded split-pill / bubble format used by `git_branch`:
+     - `directory`: `[]($style)[󰉋 ](bg:prev_fg fg:black)[ $path](bg:bright-white fg:black)[$read_only](bg:bright-white fg:bright-red)[](prev_bg) `
+     - `git_branch`: `on [](cyan)[$symbol](bg:prev_fg fg:black)[ $branch](bg:bright-white fg:black)[](prev_bg) `
+     - `git_status`: `([](bright-yellow)[󱈸 ](bg:prev_fg fg:black)[ $all_status$ahead_behind](bg:bright-white fg:black)[](prev_bg) )`
+     - `cmd_duration`: `took [](bright-blue)[󱑂 ](bg:prev_fg fg:black)[ $duration](bg:bright-white fg:black)[](prev_bg) `
+     - `nix_shell`: `via [](blue)[$symbol](bg:prev_fg fg:black)[ $state](bg:bright-white fg:black)[](prev_bg) `
+     - Language runtimes: `via []($style)[$symbol](bg:prev_fg fg:black)[](prev_bg) `
+
+## Tasks
+- [x] Edit `modules/shell/starship.nix`.
+- [x] Test with `starship prompt` and `starship prompt --right`.
+- [x] Nix build and evaluate activation package.
+- [x] Commit changes.
+
+---
+
+
 
 ## Objective
 Enforce the consistent color architecture across all Wallust templates and Neovim:

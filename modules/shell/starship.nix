@@ -1,50 +1,128 @@
 { lib, ... }:
+let
+  noRuntimeModules = [
+    "buf"
+    "bun"
+    "c"
+    "cmake"
+    "cobol"
+    "cpp"
+    "crystal"
+    "daml"
+    "dart"
+    "deno"
+    "dotnet"
+    "elixir"
+    "elm"
+    "erlang"
+    "fennel"
+    "fortran"
+    "gleam"
+    "golang"
+    "gradle"
+    "haskell"
+    "haxe"
+    "helm"
+    "java"
+    "julia"
+    "kotlin"
+    "lua"
+    "maven"
+    "meson"
+    "mojo"
+    "nim"
+    "nodejs"
+    "ocaml"
+    "odin"
+    "opa"
+    "perl"
+    "php"
+    "pixi"
+    "pulumi"
+    "purescript"
+    "python"
+    "quarto"
+    "raku"
+    "red"
+    "rlang"
+    "ruby"
+    "rust"
+    "scala"
+    "solidity"
+    "swift"
+    "typst"
+    "vagrant"
+    "vlang"
+    "xmake"
+    "zig"
+  ];
+
+  runtimePillSettings = lib.genAttrs noRuntimeModules (_: {
+    format = "via []($style)[$symbol](bg:prev_fg fg:black)[](prev_bg) ";
+  });
+in
 {
   programs.starship = {
     enable = true;
     enableZshIntegration = true;
-    settings = {
+    settings = runtimePillSettings // {
       format = lib.concatStrings [
         "$username"
         "$directory"
-        "$git_branch"
-        "$git_status"
         "$character"
-        # "$all"
       ];
-      right_format = "$cmd_duration$all";
+      right_format = "$git_branch$git_status$nix_shell$cmd_duration$all";
       add_newline = false;
       fill.symbol = " ";
       line_break.disabled = true;
+
       character = {
-        success_symbol = "[λ ::](bold green)";
-        error_symbol = "[✘ ::](bold red)";
-        vimcmd_symbol = "[ ::](bold green)";
+        format = "$symbol ";
+        success_symbol = "[◎](bold italic bright-yellow)";
+        error_symbol = "[○](italic purple)";
+        vimcmd_symbol = "[■](italic dimmed green)";
       };
+
       directory = {
-        style = "cyan";
-        format = "[➜](bold)[ $path ]($style)";
+        style = "bright-blue";
+        format = "[]($style)[󰉋 ](bg:prev_fg fg:black)[ $path](bg:bright-white fg:black)[$read_only](bg:bright-white fg:bright-red)[](prev_bg) ";
         truncation_length = 4;
+        read_only = " 󰌾";
       };
+
       git_branch = {
         symbol = " ";
-        style = "fg:black bg:cyan";
-        format = "on [](cyan)[$symbol$branch]($style)[](prev_bg) ";
+        format = "on [](cyan)[$symbol](bg:prev_fg fg:black)[ $branch](bg:bright-white fg:black)[](prev_bg) ";
       };
+
       git_status = {
-        format = "[$untracked$staged$modified$renamed$conflicted$ahead_behind ](style)";
-        # options available for format
-        staged     = "[+](green)";
-        modified   = "[!](yellow)";
-        renamed    = "[»](blue)";
-        deleted    = "[-](red)";
-        untracked  = "[?](red)";
-        stashed    = "[≡](purple)";
+        format = "([](bright-yellow)[󱈸 ](bg:prev_fg fg:black)[ $all_status$ahead_behind](bg:bright-white fg:black)[](prev_bg) )";
+        staged = "[+](green)";
+        modified = "[!](yellow)";
+        renamed = "[»](blue)";
+        deleted = "[-](red)";
+        untracked = "[?](red)";
+        stashed = "[≡](purple)";
         conflicted = "[✖](red bold)";
 
-        ahead      = "[⇡$count](cyan)";
-        behind     = "[⇣$count](bright-red)";
-        diverged   = "[⇕⇡$ahead_count⇣$behind_count](bright-purple)";
+        ahead = "[⇡$count](cyan)";
+        behind = "[⇣$count](bright-red)";
+        diverged = "[⇕⇡$ahead_count⇣$behind_count](bright-purple)";
+      };
+
+      cmd_duration = {
+        min_time = 2000;
+        format = "took [](bright-blue)[󱑂 ](bg:prev_fg fg:black)[ $duration](bg:bright-white fg:black)[](prev_bg) ";
+      };
+
+      nix_shell = {
+        symbol = " ";
+        format = "via [](blue)[$symbol](bg:prev_fg fg:black)[ $state](bg:bright-white fg:black)[](prev_bg) ";
+      };
+
+      package = {
+        symbol = "󰏗 ";
+        format = "is [](purple)[$symbol](bg:prev_fg fg:black)[](prev_bg) ";
       };
     };
   };
