@@ -141,19 +141,25 @@ let
       a = [
         {
           type = "mode";
-          idleText = "󰘧 IDLE";
-          workingText = "󰘧 WORKING";
+          accent = "bright-yellow";
+          icon = "󰘧";
+          idleText = "IDLE";
+          workingText = "WORKING";
+          bold = true;
         }
       ];
       b = [
         {
           type = "git_branch";
-          icon = " ";
+          accent = "bright-cyan";
+          icon = "";
         }
       ];
       c = [
         {
           type = "git_diff";
+          accent = "bright-yellow";
+          icon = "󱈸";
           addedIcon = "+";
           modifiedIcon = "~";
           removedIcon = "-";
@@ -162,42 +168,42 @@ let
       ];
       d = [
         {
-          type = "text";
-          text = "";
-        }
-        {
           type = "cwd";
+          accent = "bright-blue";
+          icon = "";
           depth = 3;
           homeAsTilde = true;
         }
       ];
-      x = [
-        {
-          type = "text";
-          text = "󰚩";
-        }
+      w = [
         {
           type = "model";
+          accent = "bright-purple";
+          icon = "󰚩";
           shorten = true;
+        }
+      ];
+      x = [
+        {
+          type = "tokens";
+          accent = "bright-blue";
+          icon = "󰕲";
+          showInput = true;
+          showOutput = true;
         }
       ];
       y = [
         {
-          type = "tokens";
-          showInput = true;
-          showOutput = true;
-        }
-        {
           type = "context";
+          accent = "bright-green";
+          icon = "󰍛";
         }
       ];
       z = [
         {
-          type = "text";
-          text = "󱑂";
-        }
-        {
           type = "clock";
+          accent = "bright-magenta";
+          icon = "󱑂";
           format = "HH:mm";
         }
       ];

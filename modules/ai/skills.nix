@@ -121,5 +121,106 @@
       '';
     };
 
+    shared-tree = {
+      description = "Parallel-session protocol for shared repos. Use when git log or status shows foreign activity, or before staging and committing. Do NOT use for solo workspaces.";
+      content = ''
+        Other sessions work this tree. Coordinate, don't fight.
+
+        ## Use / Do NOT use
+
+        Use when: foreign commits or file activity appear, staging, committing.
+        Do NOT use when: sole owner of the tree.
+
+        ## Workflow
+
+        1. Inspect git status, git diff, and git log --oneline before staging.
+        2. Stage files explicitly by name; never touch others' paths.
+        3. Never amend, rebase, or rewrite shared history.
+        4. Plan files are append-only per initiative; expect interleaving.
+
+        ## Rules
+
+        1. Your files swept into others' commits: verify state, keep working.
+        2. Commit message notes foreign content included, if any.
+        3. Uncommitted work stays uncommitted unless asked.
+
+        ## Bad / Good
+
+        Bad: `git add -A` swallowing a parallel session's half-done theme work.
+        Good: status review, explicit paths, conventional commit, their tree intact.
+
+        ## Verification
+
+        Commit contains only intended paths; foreign files untouched.
+      '';
+    };
+
+    upstream-recon = {
+      description = "Upstream module archaeology via store source and option eval. Use before writing a renderer against a home-manager or nixpkgs module. Do NOT guess option shapes.";
+      content = ''
+        Read the upstream source first; option shapes rot in memory, not in store.
+
+        ## Use / Do NOT use
+
+        Use when: new renderer, unknown option surface, package attr in doubt.
+        Do NOT use when: the surface is already verified this session.
+
+        ## Workflow
+
+        1. Read option descriptions via eval (`.description` on the option path).
+        2. Follow `.declarations` into /nix/store source; read the module file.
+        3. Confirm package attrs (`meta.description`, `meta.mainProgram`) by eval.
+        4. Write the renderer against verified shapes only.
+
+        ## Rules
+
+        1. Near-miss names burn: verify exact attr (`codex`, not `codex-cli`).
+        2. Declarations path first; web search only when store lookup fails.
+        3. Record verified shapes in the plan for the next reader.
+
+        ## Bad / Good
+
+        Bad: assume `programs.codex.agents` exists; fail at eval time.
+        Good: attrNames shows context/skills/rules only; agents go via home.file TOML.
+
+        ## Verification
+
+        Every referenced option and package evals; renderer writes no guesswork.
+      '';
+    };
+
+    overlap-check = {
+      description = "Built-in prompt overlap audit for shared text. Use before adding always-on disciplines or rules. Do NOT drop lines without verified overlap.";
+      content = ''
+        Every always-on line costs every turn on every harness. Prove duplication before cutting.
+
+        ## Use / Do NOT use
+
+        Use when: adding disciplines, rules, or global context lines.
+        Do NOT use when: editing per-agent or on-demand skill text.
+
+        ## Workflow
+
+        1. Fetch the harness base prompt (store source, docs, or repo file).
+        2. Matrix each candidate line against built-in coverage.
+        3. Drop only verified overlap; empty map plus comment otherwise.
+        4. Re-verify rendered output per harness after wiring drops.
+
+        ## Rules
+
+        1. Closed prompts are unverifiable: no drops, ever.
+        2. Partial coverage keeps the line; drops need full coverage.
+        3. One harness's proof never transfers to another.
+
+        ## Bad / Good
+
+        Bad: drop conciseness everywhere because crush is terse; pi goes chatty.
+        Good: opencode and crush drop three lines each with source links; rest render full.
+
+        ## Verification
+
+        Rendered contexts show drops exactly where proven, full text elsewhere.
+      '';
+    };
   };
 }

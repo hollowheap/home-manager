@@ -1,27 +1,24 @@
-# Implementation Plan: Pi Coding Agent Statusline Alignment with pi-statusline
+# Implementation Plan: Powerline Pill Colors & Icons for Pi Statusline
 
 ## Objective
-Update `modules/programs/pi-coding-agent.nix` in `home-manager` so its statusline configuration strictly matches the existing `pi-statusline` schema and component specifications from `@my-pi-agent`:
-1. **Config File Compatibility**:
-   - Provide both `${configDir}/statusline.json` and `${configDir}/pi-statusline.json` with identical contents to ensure seamless loading regardless of filename resolution in `pi-statusline`.
-2. **Schema & Component Alignment**:
-   - Replace obsolete `lualine_a`..`lualine_z` and `provider` keys with `pi-statusline`'s alphabetical section dictionary (`a`..`z`) and `type` specifications.
-   - Configure cohesive iconography aligned with tmux, nvim, and starship:
-     - Section `a` (Mode): `type: "mode"`, `idleText: "󰘧 IDLE"`, `workingText: "󰘧 WORKING"`.
-     - Section `b` (Branch): `type: "git_branch"`, `icon: " "`.
-     - Section `c` (Diff): `type: "git_diff"`.
-     - Section `d` (CWD): `type: "text"` (`text: ""`), `type: "cwd"` (`depth: 3`, `homeAsTilde: true`).
-     - Section `x` (Model): `type: "text"` (`text: "󰚩"`), `type: "model"` (`shorten: true`).
-     - Section `y` (Stats): `type: "tokens"` (`showInput: true`, `showOutput: true`), `type: "context"`.
-     - Section `z` (Clock): `type: "text"` (`text: "󱑂"`), `type: "clock"` (`format: "HH:mm"`).
-   - Configure separators:
-     - `componentSeparator: " "`
-     - `sectionSeparator: "  "`
-     - `gitIntervalMs: 5000`
+Apply colors and two-tone powerline pill formatting to `modules/programs/pi-coding-agent.nix` in `home-manager`:
+1. **Pill Formatting & Accent Palette**:
+   - `a` (Mode): `accent: "bright-yellow"`, `icon: "󰘧"`, `idleText: "IDLE"`, `workingText: "WORKING"`, `bold: true`
+   - `b` (Branch): `accent: "bright-cyan"`, `icon: ""`
+   - `c` (Diff): `accent: "bright-yellow"`, `icon: "󱈸"`, `addedIcon: "+"`, `modifiedIcon: "~"`, `removedIcon: "-"`, `untrackedIcon: "?"`
+   - `d` (CWD): `accent: "bright-blue"`, `icon: ""`, `depth: 3`, `homeAsTilde: true`
+   - `w` (Model): `accent: "bright-purple"`, `icon: "󰚩"`, `shorten: true`
+   - `x` (Tokens): `accent: "bright-blue"`, `icon: "󰕲"`, `showInput: true`, `showOutput: true`
+   - `y` (Context): `accent: "bright-green"`, `icon: "󰍛"`
+   - `z` (Clock): `accent: "bright-magenta"`, `icon: "󱑂"`, `format: "HH:mm"`
+2. **Separators**:
+   - `componentSeparator: " "`
+   - `sectionSeparator: "  "`
+   - `gitIntervalMs: 5000`
 
 ## Tasks
-- [x] Update `statuslineFile` in `modules/programs/pi-coding-agent.nix`.
-- [x] Evaluate `home-manager` activation package and flake check.
+- [x] Update `statuslineContent` in `modules/programs/pi-coding-agent.nix`.
+- [x] Verify `nix eval` and `nix flake check --no-build`.
 - [x] Commit changes cleanly.
 
 ---
@@ -207,3 +204,16 @@ New `modules/ai/rules.nix`: rules carry a required capability intersection and r
 - [x] Delete migrated skills + hygiene/memory disciplines; update agent skill lists and instruction refs.
 - [x] 6 renderers append matched rules per-agent; crush renders union.
 - [x] Verify: engineer/research/reviewer matrices, `nix flake check --no-build`.
+
+---
+
+# Implementation Plan: Session-Learned Skills (Workspace + Global)
+
+## Objective
+Distill this session into skills: workspace-local SKILL.md files (nix-flake-eval, renderer-author) + AGENTS.md pointer; global ai.skills additions (shared-tree, upstream-recon, overlap-check). Terse format throughout.
+
+## Tasks
+- [x] Write skills/nix-flake-eval/SKILL.md + skills/renderer-author/SKILL.md.
+- [x] Reformat AGENTS.md with workspace skills index.
+- [x] Append 3 skills to modules/ai/skills.nix.
+- [x] Stage new files; `nix flake check --no-build`.
