@@ -1,27 +1,42 @@
-# Implementation Plan: Align Neovim Statusline with tmux status-right
+# Implementation Plan: Refine Statusline Layout, Icons, Extensions & Inactive Buffer Styling
 
 ## Objective
-Update `modules/programs/nvim.nix` so that its statusline components (`lualine`) mirror the exact two-tone split-pill visual structure of tmux's `status-right` (`#[fg=accent]#[fg=black,bg=accent]icon #[fg=black,bg=white] text #[fg=white]`).
+Refine Neovim's statusline (`modules/programs/nvim.nix`) based on user feedback:
+1. Replace first pill (`lualine_a`) icon with lambda (`󰘧`).
+2. Fix filetype icon using `mini.icons` dynamic resolution instead of a hardcoded icon.
+3. Reposition filename to section `z` (with Snacks buffer picker click handler, dynamic file icon, modified/readonly flags).
+4. Dedicate section `y` to filetype pill (dynamic icon via `mini.icons`) and section `x` to search count (when active) / LSP status.
+5. Disable statusline on dashboard buffers (`snacks_dashboard`, `dashboard`, `alpha`).
+6. Fix inactive buffer statusline: move to `z` and use cohesive, high-contrast colors (`base03` muted accent with `base07` body and `base00` text).
+7. Create dedicated Avante statusline extension (`Avante`, `AvanteInput`, etc.) styled as split-pills.
+8. Update `_G.update_lualine_theme` to preserve `options.disabled_filetypes` and custom extensions on palette reload.
+
+## Proposed Layout
+- **Left Side**:
+  - `lualine_a`: Mode pill with lambda icon (`󰘧 NORMAL / INSERT / VISUAL / ...`).
+  - `lualine_b`: Git branch pill (` branch`).
+  - `lualine_c`: Git diff (`+`, `~`, `-`) & diagnostics.
+- **Right Side**:
+  - `lualine_x`: Search count pill (` current/total`) when active.
+  - `lualine_y`: Filetype pill (`[mini.icons] filetype`).
+  - `lualine_z`: Filename pill (`[mini.icons] filename [/]`).
+- **Inactive Buffers**:
+  - `inactive_sections.lualine_z`: Muted filename pill (`[mini.icons] filename`) in `base03`/`base07`.
+- **Avante Buffers**:
+  - Dedicated extension with split-pill `󱚣 AVANTE` / `AVANTE INPUT` / `CHAT` pills.
 
 ## Master List of Goals
-- [x] Define `_G.mk_pill` in `modules/programs/nvim.nix` (`luaConfigRC.startupTime`):
-  - Left rounded cap `` in `accent` color on bar background (`base00`).
-  - Icon segment with black foreground on `accent` background (`icon .. " "`).
-  - Content segment with black foreground on bright white (`base07`) background (`" " .. content .. " "`).
-  - Right rounded cap `` in bright white (`base07`) on bar background (`base00`).
-- [x] Configure `statusline.lualine.setupOpts.sections` in `modules/programs/nvim.nix`:
-  - `lualine_a`: Mode pill using mode-driven Wallust/base16 accent colors (`base0D` Normal, `base0B` Insert, `base0E` Visual, `base08` Replace, `base0A` Command).
-  - `lualine_b`: Filename pill in `base0C` (Cyan) and Git branch pill in `base0E` (Magenta), keeping Snacks buffer & branch picker click actions.
-  - `lualine_c`: Diff & diagnostics.
-  - `lualine_x`: Filetype pill in `base0C` (Cyan).
-  - `lualine_y`: Search count pill in `base0A` (Yellow).
-  - `lualine_z`: Position & progress pill in `base0D` (Blue).
-  - `inactive_sections.lualine_a`: Subdued inactive filename pill in `base03`/`base01`.
-- [x] Configure `_G.update_lualine_theme`:
-  - Pure black bar background (`base00`) across all modes and sections.
-  - Empty `section_separators` and `component_separators`.
-- [x] Verify:
-  - Run headless Neovim to print `lualine.statusline(1)` and check rendered highlights.
-  - Test `nix eval .#homeConfigurations.hollowheap.activationPackage.drvPath`.
-  - Test `nix build .#homeConfigurations.hollowheap.config.programs.nvf.finalPackage --no-link`.
-  - Run `nix flake check --no-build`.
+- [x] Update `modules/programs/nvim.nix`:
+  - [x] Change mode icon in `lualine_a` to lambda `󰘧`.
+  - [x] Clean up `lualine_b` to host git branch pill.
+  - [x] Configure `lualine_x` for search count pill.
+  - [x] Configure `lualine_y` for filetype pill with `mini.icons.get("filetype", ft)`.
+  - [x] Configure `lualine_z` for filename pill with `mini.icons.get("file", fname)`, modified/readonly flags, and click handler.
+  - [x] Configure `inactive_sections.lualine_z` for inactive filename pill and clear other inactive sections.
+  - [x] Add `disabled_filetypes.statusline = [ "snacks_dashboard" "dashboard" "alpha" ]`.
+  - [x] Add dedicated Avante extension for `Avante*` filetypes.
+  - [x] Update `_G.update_lualine_theme` to merge options safely with `require("lualine").get_config()`.
+- [x] Build & Verify:
+  - [x] Test headless Neovim on normal file, active search, dashboard, inactive buffer, and Avante buffer.
+  - [x] Run `nix eval .#homeConfigurations.hollowheap.activationPackage.drvPath`.
+  - [x] Run `nix flake check --no-build`.
