@@ -132,18 +132,48 @@ let
       "budgets"
     ];
     options = {
-      componentSeparator = " ";
+      componentSeparator = "";
       sectionSeparator = "  ";
       gitIntervalMs = 5000;
     };
     sections = {
       a = [
         {
-          type = "mode-guard";
-          accent = "bright-yellow";
+          type = "text";
+          text = "";
           fg = "bright-yellow";
-          icon = "󰘧";
+        }
+        {
+          type = "text";
+          text = "󰘧 ";
+          fg = "black";
+          bg = "bright-yellow";
           bold = true;
+        }
+        {
+          type = "text";
+          text = " ";
+          fg = "black";
+          bg = "bright-white";
+          bold = true;
+        }
+        {
+          type = "mode-guard";
+          fg = "black";
+          bg = "bright-white";
+          bold = true;
+        }
+        {
+          type = "text";
+          text = " ";
+          fg = "black";
+          bg = "bright-white";
+          bold = true;
+        }
+        {
+          type = "text";
+          text = "";
+          fg = "bright-white";
         }
       ];
       b = [
@@ -176,9 +206,8 @@ let
       v = [
         {
           type = "budgets";
-          accent = "bright-yellow";
           fg = "bright-yellow";
-          icon = "󰄩";
+          bold = true;
         }
       ];
       w = [

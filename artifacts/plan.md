@@ -63,6 +63,30 @@ Update the Pi statusline configuration in `modules/programs/pi-coding-agent.nix`
 
 ---
 
+# Implementation Plan: Synthesize Two-Tone Pill for Mode Extension in Pi Statusline
+
+## Objective
+Enable full two-tone powerline pill rendering for `mode-guard` strictly via JSON configuration in `modules/programs/pi-coding-agent.nix` without modifying `my-pi-agent`:
+1. **Pill Synthesis in Section `a`**:
+   - Set `componentSeparator = ""` in `options` so multi-part components within a section join seamlessly without gaps.
+   - Compose section `a` using:
+     - Left cap `` (`fg: "bright-yellow"`)
+     - Icon block `󰘧 ` (`fg: "black"`, `bg: "bright-yellow"`, `bold: true`)
+     - Leading space ` ` (`fg: "black"`, `bg: "bright-white"`, `bold: true`)
+     - Extension component `mode-guard` (`fg: "black"`, `bg: "bright-white"`, `bold: true`)
+     - Trailing space ` ` (`fg: "black"`, `bg: "bright-white"`, `bold: true`)
+     - Right cap `` (`fg: "bright-white"`)
+2. **Preserve Isolation for Other Sections**:
+   - Other sections remain single-component, separated by `sectionSeparator = "  "`.
+   - `budgets` in section `v` retains `fg = "bright-yellow"` and `bold = true` so it collapses cleanly when empty.
+
+## Tasks
+- [x] Update `statuslineContent` in `modules/programs/pi-coding-agent.nix`.
+- [x] Evaluate `statusline.json` and run `nix flake check --no-build`.
+- [x] Commit changes cleanly.
+
+---
+
 
 
 
