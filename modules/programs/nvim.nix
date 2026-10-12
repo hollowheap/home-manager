@@ -442,103 +442,158 @@ in
 
         statusline.lualine = {
           enable = true;
-          setupOpts =
-            let
-              inherit (config.styles.pills.lualine) separator leftCap rightCap;
-            in
-            {
-              options = {
-                section_separators = {
-                  left = "";
-                  right = "";
-                };
-                component_separators = {
-                  left = "";
-                  right = "";
-                };
+          setupOpts = {
+            options = {
+              section_separators = {
+                left = "";
+                right = "";
               };
-              sections = {
-                lualine_a = [
-                  {
-                    "@1" = "mode";
-                    inherit separator;
-                  }
-                ];
-                lualine_b = [
-                  {
-                    "@1" = "filename";
-                    inherit separator;
-                    symbols = {
-                      modified = " ";
-                      readonly = " ";
-                    };
-                    onclick = mkLuaInline ''
-                      function()
-                        Snacks.picker.buffers()
-                      end
-                    '';
-                  }
-                  {
-                    "@1" = "branch";
-                    inherit separator;
-                    icon = " •";
-                    right_padding = 1;
-                    onclick = mkLuaInline ''
-                      function()
-                        Snacks.picker.git_branches()
-                      end
-                    '';
-                  }
-                ];
-                lualine_c = [
-                  {
-                    "@1" = "diff";
-                    inherit separator;
-                    colored = false;
-                    symbols = {
-                      added = "+ ";
-                      modified = "~ ";
-                      removed = "- ";
-                    };
-                  }
-                  [ "diagnostics" ]
-                ];
-                lualine_x = [
-                  {
-                    "@1" = "filetype";
-                    icon_only = true;
-                    icon = {
-                      align = "left";
-                    };
-                  }
-                ];
-                lualine_y = [ [ "searchcount" ] ];
-                lualine_z = [
-                  {
-                    "@1" = "progress";
-                    left_padding = 2;
-                    separator = leftCap;
-                  }
-                  {
-                    "@1" = "location";
-                    separator = rightCap;
-                  }
-                ];
-              };
-              inactive_sections = {
-                lualine_a = [
-                  {
-                    "@1" = "filename";
-                    inherit separator;
-                  }
-                ];
-                lualine_b = [ ];
-                lualine_c = [ ];
-                lualine_x = [ ];
-                lualine_y = [ ];
-                lualine_z = [ ];
+              component_separators = {
+                left = "";
+                right = "";
               };
             };
+            sections = {
+              lualine_a = [
+                (mkLuaInline ''
+                  function()
+                    local colors = require("base16-colorscheme").colors
+                    local mode_map = {
+                      ['n'] = { name = 'NORMAL', color = colors.base0D },
+                      ['no'] = { name = 'O-PENDING', color = colors.base0D },
+                      ['nov'] = { name = 'O-PENDING', color = colors.base0D },
+                      ['noV'] = { name = 'O-PENDING', color = colors.base0D },
+                      ['no\22'] = { name = 'O-PENDING', color = colors.base0D },
+                      ['niI'] = { name = 'NORMAL', color = colors.base0D },
+                      ['niR'] = { name = 'NORMAL', color = colors.base0D },
+                      ['niV'] = { name = 'NORMAL', color = colors.base0D },
+                      ['nt'] = { name = 'NORMAL', color = colors.base0D },
+                      ['ntT'] = { name = 'NORMAL', color = colors.base0D },
+                      ['v'] = { name = 'VISUAL', color = colors.base0E },
+                      ['vs'] = { name = 'VISUAL', color = colors.base0E },
+                      ['V'] = { name = 'V-LINE', color = colors.base0E },
+                      ['Vs'] = { name = 'V-LINE', color = colors.base0E },
+                      ['\22'] = { name = 'V-BLOCK', color = colors.base0E },
+                      ['\22s'] = { name = 'V-BLOCK', color = colors.base0E },
+                      ['s'] = { name = 'SELECT', color = colors.base0E },
+                      ['S'] = { name = 'S-LINE', color = colors.base0E },
+                      ['\19'] = { name = 'S-BLOCK', color = colors.base0E },
+                      ['i'] = { name = 'INSERT', color = colors.base0B },
+                      ['ic'] = { name = 'INSERT', color = colors.base0B },
+                      ['ix'] = { name = 'INSERT', color = colors.base0B },
+                      ['R'] = { name = 'REPLACE', color = colors.base08 },
+                      ['Rc'] = { name = 'REPLACE', color = colors.base08 },
+                      ['Rx'] = { name = 'REPLACE', color = colors.base08 },
+                      ['Rv'] = { name = 'V-REPLACE', color = colors.base08 },
+                      ['Rvc'] = { name = 'V-REPLACE', color = colors.base08 },
+                      ['Rvx'] = { name = 'V-REPLACE', color = colors.base08 },
+                      ['c'] = { name = 'COMMAND', color = colors.base0A },
+                      ['cv'] = { name = 'EX', color = colors.base0A },
+                      ['ce'] = { name = 'EX', color = colors.base0A },
+                      ['r'] = { name = 'PROMPT', color = colors.base0C },
+                      ['rm'] = { name = 'MORE', color = colors.base0C },
+                      ['r?'] = { name = 'CONFIRM', color = colors.base0C },
+                      ['!'] = { name = 'SHELL', color = colors.base08 },
+                      ['t'] = { name = 'TERMINAL', color = colors.base0D },
+                    }
+                    local mode = vim.api.nvim_get_mode().mode
+                    local info = mode_map[mode] or { name = mode, color = colors.base0D }
+                    return _G.mk_pill("", info.name, info.color, colors.base07, colors.base00, colors.base00, colors.base00)
+                  end
+                '')
+              ];
+              lualine_b = [
+                {
+                  "@1" = mkLuaInline ''
+                    function()
+                      local colors = require("base16-colorscheme").colors
+                      local fname = vim.fn.expand("%:t")
+                      if fname == "" then fname = "[No Name]" end
+                      if vim.bo.modified then fname = fname .. " " end
+                      if vim.bo.readonly then fname = fname .. " " end
+                      return _G.mk_pill("󰈚", fname, colors.base0C, colors.base07, colors.base00, colors.base00, colors.base00)
+                    end
+                  '';
+                  on_click = mkLuaInline ''
+                    function()
+                      Snacks.picker.buffers()
+                    end
+                  '';
+                }
+                {
+                  "@1" = mkLuaInline ''
+                    function()
+                      local colors = require("base16-colorscheme").colors
+                      local branch = vim.b.gitsigns_head or vim.g.loaded_fugitive and vim.fn.FugitiveHead() or ""
+                      if branch == "" then
+                        local ok, head = pcall(function() return vim.fn.system("git rev-parse --abbrev-ref HEAD 2>/dev/null"):gsub("\n", "") end)
+                        if ok and head ~= "" and not head:find("fatal") then branch = head end
+                      end
+                      if branch == "" then return "" end
+                      return _G.mk_pill("", branch, colors.base0E, colors.base07, colors.base00, colors.base00, colors.base00)
+                    end
+                  '';
+                  on_click = mkLuaInline ''
+                    function()
+                      Snacks.picker.git_branches()
+                    end
+                  '';
+                }
+              ];
+              lualine_c = [
+                {
+                  "@1" = "diff";
+                  colored = false;
+                  symbols = {
+                    added = "+ ";
+                    modified = "~ ";
+                    removed = "- ";
+                  };
+                }
+                [ "diagnostics" ]
+              ];
+              lualine_x = [
+                (mkLuaInline ''
+                  function()
+                    local colors = require("base16-colorscheme").colors
+                    local ft = vim.bo.filetype
+                    if ft == "" then return "" end
+                    return _G.mk_pill("", ft, colors.base0C, colors.base07, colors.base00, colors.base00, colors.base00, true)
+                  end
+                '')
+              ];
+              lualine_y = [ [ "searchcount" ] ];
+              lualine_z = [
+                (mkLuaInline ''
+                  function()
+                    local colors = require("base16-colorscheme").colors
+                    local line = vim.fn.line(".")
+                    local col = vim.fn.col(".")
+                    local total = vim.fn.line("$")
+                    local pct = total > 0 and math.floor((line / total) * 100) or 0
+                    return _G.mk_pill("󰉉", string.format("%d:%d %d%%%%", line, col, pct), colors.base0D, colors.base07, colors.base00, colors.base00, colors.base00, true)
+                  end
+                '')
+              ];
+            };
+            inactive_sections = {
+              lualine_a = [
+                (mkLuaInline ''
+                  function()
+                    local colors = require("base16-colorscheme").colors
+                    local fname = vim.fn.expand("%:t")
+                    if fname == "" then fname = "[No Name]" end
+                    return _G.mk_pill("󰈚", fname, colors.base03, colors.base01, colors.base04, colors.base04, colors.base00)
+                  end
+                '')
+              ];
+              lualine_b = [ ];
+              lualine_c = [ ];
+              lualine_x = [ ];
+              lualine_y = [ ];
+              lualine_z = [ ];
+            };
+          };
         };
 
         visuals = {
@@ -979,36 +1034,40 @@ in
                           wallust.setup()
                         end
 
+                        ${config.styles.pills.lualine.mkPillFn}
+
                         _G.update_lualine_theme = function()
                           local colors = require("base16-colorscheme").colors
                           local lualine_theme = {
                             normal = {
-                              a = { fg = colors.base00, bg = colors.base08 },
-                              b = { fg = colors.base05, bg = colors.base02 },
+                              a = { fg = colors.base07, bg = colors.base00 },
+                              b = { fg = colors.base07, bg = colors.base00 },
                               c = { fg = colors.base05, bg = colors.base00 },
 
-                              x = { fg = colors.base05, bg = colors.base00 },
-                              y = { fg = colors.base05, bg = colors.base00 },
-                              z = { fg = colors.base00, bg = colors.base05 },
+                              x = { fg = colors.base07, bg = colors.base00 },
+                              y = { fg = colors.base07, bg = colors.base00 },
+                              z = { fg = colors.base07, bg = colors.base00 },
                             },
-                            insert = { a = { fg = colors.base00, bg = colors.base09 } },
-                            visual = { a = { fg = colors.base00, bg = colors.base0A } },
-                            replace = { a = { fg = colors.base00, bg = colors.base0B } },
-                            command = { a = { fg = colors.base00, bg = colors.base0C } },
+                            insert = { a = { fg = colors.base07, bg = colors.base00 } },
+                            visual = { a = { fg = colors.base07, bg = colors.base00 } },
+                            replace = { a = { fg = colors.base07, bg = colors.base00 } },
+                            command = { a = { fg = colors.base07, bg = colors.base00 } },
 
                             inactive = {
-                              a = { fg = colors.base00, bg = colors.base05 },
-                              b = { fg = colors.base05, bg = colors.base00 },
-                              c = { fg = colors.base05, bg = colors.base00 },
+                              a = { fg = colors.base04, bg = colors.base00 },
+                              b = { fg = colors.base04, bg = colors.base00 },
+                              c = { fg = colors.base04, bg = colors.base00 },
 
-                              x = { fg = colors.base05, bg = colors.base00 },
-                              y = { fg = colors.base05, bg = colors.base00 },
-                              z = { fg = colors.base00, bg = colors.base05 },
+                              x = { fg = colors.base04, bg = colors.base00 },
+                              y = { fg = colors.base04, bg = colors.base00 },
+                              z = { fg = colors.base04, bg = colors.base00 },
                             },
                           }
                           require("lualine").setup({
                             options = {
                               theme = lualine_theme,
+                              section_separators = "",
+                              component_separators = "",
                             },
                           })
                         end

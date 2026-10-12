@@ -41,6 +41,7 @@ in
           text = "$duration";
           accent = "bright-blue";
           textBg = "bright-white";
+          invert = true;
         }} )";
       };
       git_branch = {
@@ -50,6 +51,7 @@ in
           text = "$branch";
           accent = "cyan";
           textBg = "bright-white";
+          invert = true;
         }} )";
       };
       git_status = {
@@ -57,19 +59,20 @@ in
           icon = "󱈸";
           text = "$all_status$ahead_behind";
           accent = "bright-yellow";
-          textBg = "bright-white";
+          textBg = "black";
+          textFg = "white";
+          invert = true;
         }} )";
-        staged = "[+](green)";
-        modified = "[!](yellow)";
-        renamed = "[»](blue)";
-        deleted = "[-](red)";
-        untracked = "[?](red)";
-        stashed = "[≡](purple)";
-        conflicted = "[✖](red bold)";
-
-        ahead = "[⇡$count](cyan)";
-        behind = "[⇣$count](bright-red)";
-        diverged = "[⇕⇡$ahead_count⇣$behind_count](bright-purple)";
+        staged = "[+ ](fg:green bg:black)";
+        modified = "[! ](fg:yellow bg:black)";
+        renamed = "[» ](fg:blue bg:black)";
+        deleted = "[- ](fg:red bg:black)";
+        untracked = "[? ](fg:red bg:black)";
+        stashed = "[≡ ](fg:purple bg:black)";
+        conflicted = "[✖ ](fg:red bg:black bold)";
+        ahead = "[⇡$count ](fg:cyan bg:black)";
+        behind = "[⇣$count ](fg:bright-red bg:black)";
+        diverged = "[⇕⇡$ahead_count⇣$behind_count ](fg:bright-purple bg:black)";
       };
     };
   };
