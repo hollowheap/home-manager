@@ -34,6 +34,7 @@
         rl = "reflog";
       };
       core = {
+        sshCommand = "ssh -o IdentityAgent=\"\${XDG_RUNTIME_DIR:-/run/user/1000}/rbw/ssh-agent-socket\"";
         preloadIndex = true;
         whitespace = "error";
       };
