@@ -94,44 +94,43 @@ in
           };
 
       Preferences = mkLockedAttrs {
+        # --- UI & Startup ---
         "browser.aboutConfig.showWarning" = false;
         "browser.tabs.warnOnClose" = false;
-
-        # New tab page
         "browser.newtabpage.activity-stream.default.sites" = "";
-
-        # Block auto-updates
         "app.update.background.scheduling.enabled" = false;
+        "browser.fixup.alternate.enabled" = false;
 
-        # Safe Browsing
+        # --- Hardware & Web APIs ---
+        "dom.webhid.enabled" = true;
+        "dom.battery.enabled" = false;
+
+        # --- Network Shunts & Speculative Connections ---
+        "browser.places.speculativeConnect.enabled" = false;
+        "browser.urlbar.speculativeConnect.enabled" = false;
+        "network.http.speculative-parallel-limit" = 0;
+        "network.gio.supported-protocols" = "";
+        "network.file.disable_unc_paths" = true;
+        "network.prefetch-next" = false;
+        "network.dns.disablePrefetch" = true;
+        "permissions.manager.defaultsUrl" = "";
+        "network.IDN_show_punycode" = true;
+
+        # --- WebRTC IP Leak Mitigation ---
+        "media.peerconnection.ice.default_address_only" = true;
+        "media.peerconnection.ice.no_host" = true;
+
+        # --- Telemetry, Diagnostics & Safe Browsing ---
+        "beacon.enabled" = false;
+        "breakpad.reportURL" = false;
         "browser.safebrowsing.provider.google4.gethashURL" = "";
         "browser.safebrowsing.provider.google4.updateURL" = "";
         "browser.safebrowsing.provider.google4.dataSharingURL" = "";
         "browser.safebrowsing.provider.google.gethashURL" = "";
         "browser.safebrowsing.provider.google.updateURL" = "";
-
         "browser.safebrowsing.downloads.remote.url" = "";
 
-        "browser.fixup.alternate.enabled" = false;
-
-        # Network Link Prefetch Shunts (Stops speculative background connections)
-        "browser.places.speculativeConnect.enabled" = false;
-        "network.http.speculative-parallel-limit" = 0;
-        "network.gio.supported-protocols" = "";
-        "network.file.disable_unc_paths" = true;
-        "permissions.manager.defaultsUrl" = "";
-        "network.IDN_show_punycode" = true;
-
-        # Search Bar Information Leak Mitigation
-        "browser.urlbar.speculativeConnect.enabled" = false;
-
-        # Block Telemetry
-        "beacon.enabled" = false;
-
-        # Crash Reports
-        "breakpad.reportURL" = false;
-
-        # Custom Geolocation override
+        # --- Geolocation Shunts ---
         "geo.provider.network.url" =
           "https://location.services.mozilla.com/v1/geolocate?key=%MOZILLA_API_KEY%";
         "geo.provider.use_gpsd" = false;
@@ -139,23 +138,21 @@ in
         "browser.region.network.url" = "";
         "browser.region.update.enabled" = false;
 
-        # Advanced Content Blocking Definitions (Forces URL parameter stripping)
+        # --- Content Blocking & Query Stripping ---
         "privacy.query_stripping.enabled" = true;
         "privacy.query_stripping.enabled.pbmode" = true;
         "browser.contentblocking.features.strict" =
           "tp,tpPrivate,cookieBehavior5,cookieBehaviorPBM5,cm,fp,stp,emailTP,emailTPPrivate,-lvl2,rp,rpTop,ocsp,qps,qpsPBM,fpp,fppPrivate,3pcd,btp";
+        "privacy.firstparty.isolate" = true;
+        "network.cookie.cookieBehavior" = 5;
 
-        # Anti fingerprinting
-        "dom.battery.enabled" = false;
+        # --- Anti-Fingerprinting ---
         "privacy.resistFingerprinting" = true;
         "privacy.resistFingerprinting.randomization.canvas.use_siphash" = true;
         "privacy.resistFingerprinting.randomization.daily_reset.enabled" = true;
         "privacy.resistFingerprinting.randomization.daily_reset.private.enabled" = true;
         "privacy.resistFingerprinting.block_mozAddonManager" = true;
         "privacy.spoof_english" = 1;
-        "privacy.firstparty.isolate" = true;
-        "network.cookie.cookieBehavior" = 5;
-
       };
     };
     profiles."default" = {
@@ -188,7 +185,11 @@ in
         "zen.welcome-screen.seen" = true;
         "zen.workspaces.continue-where-left-off" = true;
         "zen.workspaces.force-container-workspace" = true;
-        "zen.workspaces.separate-essentials" = false;
+        "zen.workspaces.separate-essentials" = true;
+      };
+
+      spaceRouting = {
+        force = true;
       };
 
       keyboardShortcuts = [
@@ -259,13 +260,13 @@ in
               "MyNixOS" = {
                 url = "https://mynixos.com";
                 id = "e86cf37-a127-4f24-b919-d265b5ce29a5";
-                position = 100;
+                position = 200;
                 container = containers.Personal.id;
               };
               "Key BR" = {
                 url = "https://keybr.com";
                 id = "e86cf37-a127-4f24-b919-d265b5ce29a6";
-                position = 200;
+                position = 300;
                 container = containers.Personal.id;
               };
             };

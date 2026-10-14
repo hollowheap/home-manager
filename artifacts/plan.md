@@ -421,5 +421,43 @@ Configure declarative Qt theming to use the native GTK3 platform theme bridge, m
 - [x] Update `artifacts/tasks/gui-apps.md`.
 - [x] Commit cleanly with conventional commit message.
 
+---
 
+# Implementation Plan: Harness Path Alignments (Antigravity to ~/.gemini/antigravity-cli, Pi to APPEND_SYSTEM.md)
 
+## Objective
+1. Consolidate all Antigravity CLI files under `~/.gemini/antigravity-cli/` instead of `~/.gemini/config/`:
+   - Agents in `~/.gemini/antigravity-cli/agents/${name}/agent.md`.
+   - Rules in `~/.gemini/antigravity-cli/rules/${name}.md`.
+   - Skills remain under `~/.gemini/antigravity-cli/skills/${name}` managed by `programs.antigravity-cli.skills`.
+2. Move Pi coding agent shared disciplines from `context` (`AGENTS.md`) into `appendSystem` (`APPEND_SYSTEM.md`):
+   - Preserves Pi's default system prompt while cleanly adding disciplines to `<addendum>`.
+   - Leaves agent roster in `context` (`AGENTS.md`).
+3. Keep Codex (`~/.codex/AGENTS.md`), Copilot (`copilot-instructions.md`), and Hermes (TODO) as requested.
+4. Update `artifacts/matrix.md` to reflect the updated harness surfaces.
+5. Verify evaluation with `nix eval` and `nix flake check --no-build`.
+
+## Tasks
+- [x] Migrate Antigravity agent and rule file targets to `.gemini/antigravity-cli/` in `modules/programs/antigravity.nix`.
+- [x] Move disciplines to `appendSystem` in `modules/programs/pi-coding-agent.nix`.
+- [x] Verify `homeConfigurations.hollowheap.config` evaluation.
+
+---
+
+# Implementation Plan: Desktop Apps, Zen Hardening & WebHID, Qt Dark Theme & Dconf Reconciliation
+
+## Objective
+Address desktop integration, Zen browser fixes, hardening categorization, Qt dark theme, and dconf state:
+1. **Default Desktop Apps**: Declaratively wire `xdg.mimeApps` default applications for web (`zen-twilight.desktop`) and mail/calendar (`thunderbird.desktop`). Update `defaultApps.mail` in `modules/options/apps.nix`.
+2. **Zen Browser WebHID & Space Routing**: Enable `dom.webhid.enabled = true;`, resolve pin position collisions, set `spaceRouting.force = true;`, and explain the `.parentlock` active session behavior.
+3. **Browser Hardening**: Categorize existing preferences into organized blocks (Network Shunts, Telemetry & Tracking, Fingerprinting, Media/WebRTC) and add WebRTC IP leak protection (`media.peerconnection.ice.default_address_only = true;`).
+4. **Qt Dark Theme Analysis**: Diagnose the live session `QT_QPA_PLATFORMTHEME=qt6ct` vs built `gtk3` state, and configure declarative fallbacks.
+5. **Dconf Review**: Present comparison between live `dconf dump /` and `modules/core/dconf.nix`.
+6. **Accounts.* & MacTahoe Color Architecture Research**: Document `accounts.email` Thunderbird integration and dynamic Noctalia CSS color injection in `artifacts/`.
+
+## Tasks
+- [ ] Enable WebHID and fix space routing / pin positions in `modules/programs/zen-browser.nix`.
+- [ ] Configure `xdg.mimeApps` in `modules/programs/zen-browser.nix` (or `modules/programs/default-apps.nix`) and update `modules/options/apps.nix`.
+- [ ] Organize and expand browser hardening in `modules/programs/zen-browser.nix`.
+- [ ] Document live dconf diff, `accounts.*` research, and MacTahoe Noctalia theme pipeline.
+- [ ] Verify `nix eval` and `nix flake check --no-build`.
