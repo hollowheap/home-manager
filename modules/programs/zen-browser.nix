@@ -305,14 +305,14 @@ in
               "xSITe" = {
                 url = "https://xsite.singaporetech.edu.sg";
                 id = pinUuid 5;
-                position = 100;
+                position = 500;
                 isEssential = true;
                 container = containers.School.id;
               };
               "In4SIT" = {
                 url = "https://in4sit.singaporetech.edu.sg";
                 id = pinUuid 6;
-                position = 200;
+                position = 600;
                 container = containers.School.id;
               };
             };
@@ -335,7 +335,7 @@ in
               "Youtube" = {
                 url = "https://www.youtube.com";
                 id = pinUuid 7;
-                position = 100;
+                position = 700;
                 isEssential = true;
                 container = containers.Entertainment.id;
               };
@@ -356,12 +356,15 @@ in
               "WhatsApp" = {
                 url = "https://web.whatsapp.com";
                 id = pinUuid 8;
-                position = 100;
+                position = 800;
                 isEssential = true;
                 container = containers.Social.id;
               };
             };
             routes = {
+              "whatsapp" = {
+                reference = "web.whatsapp.com";
+              };
               "telegram" = {
                 reference = "web.telegram.org";
               };
@@ -370,6 +373,7 @@ in
         };
 
       pinsForce = true;
+      pinsForceAction = "remove";
 
       mods = [
         "72f8f48d-86b9-4487-acea-eb4977b18f21" # Better Ctrl Tab Panel
