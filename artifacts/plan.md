@@ -11,9 +11,9 @@ High-level and stable; distilled from PLAN.md for the ai.* system.
 Per-initiative execution checklists below. Append new work; closed initiatives move to artifacts/tasks/.
 
 ## Open Follow-ups
-- [ ] Decide harness cull: question skill flags kiro/pi/crush/copilot/codex/hermes as tool-less.
+- [x] Decide harness cull: Dropped per user preference; keeping all harnesses as-is.
 - [ ] Hermes config.yaml merge strategy: managed file clobbers outside user keys.
-- [ ] Confirm codex skills discovery (`~/.codex/skills` vs `$HOME/.agents/skills`) on a live run.
+- [x] Confirm codex skills discovery: Verified on live run (`codex debug prompt-input` proves `r0 = ~/.codex/skills`).
 - [ ] Scope crush union delegate rule if crush gains per-agent surfaces.
 - [ ] Revisit codex/hermes discipline drops once base prompts are observed.
 
@@ -368,5 +368,35 @@ Implement automated user store hygiene and generation expiration in Home Manager
 - [x] Update `PLAN.md` status.
 - [x] Commit cleanly with conventional commit message.
 
+---
+
+# Implementation Plan: TypeScript / Web Development Shell
+
+## Objective
+Finalize the declarative `devShells.ts` in `flake.nix` providing Node.js, TypeScript language server, `pnpm`, `bun`, `deno`, `typescript`, and `biome`, with aliases `typescript` and `js`:
+1. Verify `devShells.ts` builds and tools execute cleanly.
+2. Verify `nix flake check --no-build` and `activationPackage` evaluation.
+3. Commit cleanly following conventional commits.
+
+## Tasks
+- [x] Test `ts-dev` shell commands (`node`, `tsc`, `bun`, `pnpm`).
+- [x] Stage `flake.nix` and `flake.lock`.
+- [x] Commit cleanly with conventional commit message.
 
 
+---
+
+# Implementation Plan: GTK Theme Deduplication Activation Hook
+
+## Objective
+Implement `home.activation.deduplicateGtk` in `modules/theme/stylix.nix` (or dedicated module) using `jdupes --quiet --link-hard --recurse` across `~/.config/gtk-3.0` and `~/.config/gtk-4.0` via `lib.hm.dag.entryAfter [ "writeBoundary" ]`:
+1. Add `home.activation.deduplicateGtk` DAG hook.
+2. Verify evaluation of `activationPackage` and `nix flake check --no-build`.
+3. Check off task in `artifacts/tasks/env-theming.md`.
+4. Commit cleanly following conventional commits.
+
+## Tasks
+- [ ] Implement `deduplicateGtk` activation DAG entry in `modules/theme/stylix.nix`.
+- [ ] Verify `activationPackage` evaluation and `nix flake check --no-build`.
+- [ ] Update `artifacts/tasks/env-theming.md`.
+- [ ] Commit cleanly with conventional commit message.

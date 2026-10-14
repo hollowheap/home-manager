@@ -15,9 +15,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    noctalia-shell = {
-      url = "github:noctalia-dev/noctalia-shell/cachix";
-    };
+    # noctalia-shell = {
+    #   url = "github:noctalia-dev/noctalia-shell/cachix";
+    # };
 
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake/beta";
@@ -32,10 +32,10 @@
   };
 
   nixConfig = {
-    extra-substituters = [ "https://noctalia.cachix.org" ];
-    extra-trusted-public-keys = [
-      "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
-    ];
+    # extra-substituters = [ "https://noctalia.cachix.org" ];
+    # extra-trusted-public-keys = [
+    #   "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+    # ];
   };
 
   outputs =
@@ -45,8 +45,10 @@
         "modrinth-app"
         "modrinth-app-unwrapped"
         "antigravity-cli"
+        "github-copilot-cli"
         "kiro-cli"
         "kiro-cli-unwrapped"
+        "crush"
         "steam"
         "steam-unwrapped"
         "zoom"
@@ -84,12 +86,12 @@
 
             extraSpecialArgs = {
               inherit inputs;
-              stable = pkgs.stable;
+              stable = import inputs.nixpkgs-stable packageConfig;
             };
 
             modules = [
               stylix.homeModules.stylix
-              noctalia-shell.homeModules.default
+              # noctalia-shell.homeModules.default
               zen-browser.homeModules.twilight
               nvf.homeManagerModules.default
               stateVersionConfig
@@ -105,6 +107,18 @@
       devShells.x86_64-linux =
         let
           pico-sdk = pkgs.pico-sdk.override { withSubmodules = true; };
+          ts = pkgs.mkShell {
+            name = "ts-dev";
+            packages = with pkgs; [
+              nodejs
+              pnpm
+              bun
+              deno
+              typescript
+              typescript-language-server
+              biome
+            ];
+          };
         in
         {
           pico = pkgs.mkShell {
@@ -157,6 +171,10 @@ EOF
               nixfmt
             ];
           };
+
+          inherit ts;
+          typescript = ts;
+          js = ts;
         };
     };
 }
