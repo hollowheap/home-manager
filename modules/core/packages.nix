@@ -19,5 +19,6 @@
     pear-desktop
     zoom-us
     libreoffice
+    prismlauncher
   ];
 }

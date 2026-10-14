@@ -13,7 +13,6 @@
       SDL_BACKEND = "wayland";
       CLUTTER_BACKEND = "wayland";
 
-      QT_QPA_PLATFORMTHEME = "qt6ct";
       QT_AUTO_SCREEN_SCALE_FACTOR = "1";
       QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
 

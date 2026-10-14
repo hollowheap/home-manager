@@ -401,3 +401,25 @@ Implement `home.activation.deduplicateGtk` in `modules/theme/stylix.nix` (or ded
 - [x] Update `artifacts/tasks/env-theming.md`.
 - [x] Commit cleanly with conventional commit message.
 
+---
+
+# Implementation Plan: Declarative GTK3 Theme Bridge on Qt & Prism Launcher
+
+## Objective
+Configure declarative Qt theming to use the native GTK3 platform theme bridge, matching the active MacTahoe GTK theme across Qt applications (including Prism Launcher):
+1. Configure `qt.platformTheme.name = "gtk3"` in `modules/theme/stylix.nix`.
+2. Remove hardcoded imperative `QT_QPA_PLATFORMTHEME = "qt6ct"` from `modules/core/env.nix` in favor of declarative module options.
+3. Add `prismlauncher` to `home.packages` in `modules/core/packages.nix`.
+4. Update `artifacts/tasks/gui-apps.md`.
+5. Verify `nix eval` on `config.qt.platformTheme` and run `nix flake check --no-build`.
+
+## Tasks
+- [x] Update `modules/theme/stylix.nix` with `qt.platformTheme.name = "gtk3"`.
+- [x] Remove `QT_QPA_PLATFORMTHEME` from `modules/core/env.nix`.
+- [x] Add `prismlauncher` to `modules/core/packages.nix`.
+- [x] Verify `nix eval` and `nix flake check --no-build`.
+- [x] Update `artifacts/tasks/gui-apps.md`.
+- [x] Commit cleanly with conventional commit message.
+
+
+

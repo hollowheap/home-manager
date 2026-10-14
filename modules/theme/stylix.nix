@@ -18,7 +18,10 @@
     fi
   '';
 
-  qt.enable = true;
+  qt = {
+    enable = true;
+    platformTheme.name = "gtk3";
+  };
 
   stylix = {
     enable = true;
