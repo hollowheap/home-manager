@@ -20,5 +20,6 @@
     zoom-us
     libreoffice
     prismlauncher
+    telegram-desktop
   ];
 }

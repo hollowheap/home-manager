@@ -260,16 +260,23 @@ in
                 isEssential = true;
                 container = containers.Personal.id;
               };
-              "MyNixOS" = {
-                url = "https://mynixos.com";
+              "Claude" = {
+                url = "https://claude.ai";
                 id = pinUuid 2;
                 position = 200;
+                isEssential = true;
+                container = containers.Personal.id;
+              };
+              "MyNixOS" = {
+                url = "https://mynixos.com";
+                id = pinUuid 3;
+                position = 300;
                 container = containers.Personal.id;
               };
               "Key BR" = {
                 url = "https://keybr.com";
-                id = pinUuid 3;
-                position = 300;
+                id = pinUuid 4;
+                position = 400;
                 container = containers.Personal.id;
               };
             };
@@ -279,6 +286,9 @@ in
               };
               "gemini" = {
                 reference = "gemini.google.com";
+              };
+              "claude" = {
+                reference = "claude.ai";
               };
               "mynixos" = {
                 reference = "mynixos.com";
@@ -294,14 +304,14 @@ in
             pins = {
               "xSITe" = {
                 url = "https://xsite.singaporetech.edu.sg";
-                id = pinUuid 4;
+                id = pinUuid 5;
                 position = 100;
                 isEssential = true;
                 container = containers.School.id;
               };
               "In4SIT" = {
                 url = "https://in4sit.singaporetech.edu.sg";
-                id = pinUuid 5;
+                id = pinUuid 6;
                 position = 200;
                 container = containers.School.id;
               };
@@ -324,7 +334,7 @@ in
             pins = {
               "Youtube" = {
                 url = "https://www.youtube.com";
-                id = pinUuid 6;
+                id = pinUuid 7;
                 position = 100;
                 isEssential = true;
                 container = containers.Entertainment.id;
@@ -343,17 +353,10 @@ in
             container = containers.Social.id;
             icon = "chrome://browser/skin/zen-icons/selectable/chat.svg";
             pins = {
-              "Telegram" = {
-                url = "https://web.telegram.org";
-                id = pinUuid 7;
-                position = 100;
-                isEssential = true;
-                container = containers.Social.id;
-              };
               "WhatsApp" = {
                 url = "https://web.whatsapp.com";
                 id = pinUuid 8;
-                position = 200;
+                position = 100;
                 isEssential = true;
                 container = containers.Social.id;
               };
