@@ -185,7 +185,7 @@ in
         "zen.welcome-screen.seen" = true;
         "zen.workspaces.continue-where-left-off" = true;
         "zen.workspaces.force-container-workspace" = true;
-        "zen.workspaces.separate-essentials" = true;
+        "zen.workspaces.separate-essentials" = false;
       };
 
       spaceRouting = {
@@ -212,7 +212,7 @@ in
           };
         }
       ) 8);
-      keyboardShortcutsVersion = 20;
+      keyboardShortcutsVersion = 21;
 
       containersForce = true;
       containers = {
@@ -242,127 +242,149 @@ in
       spaces =
         let
           containers = config.programs.zen-browser.profiles."default".containers;
+
+          # Deterministic incremental UUID helper: RFC4122 v4-formatted string
+          mkUuid =
+            prefix: idx:
+            let
+              hex = lib.toLower (lib.toHexString idx);
+              suffix = lib.fixedWidthString 12 "0" hex;
+            in
+            "${prefix}-${suffix}";
+
+          # Spaces ordered list: declaration order dictates position and UUID increments
+          orderedSpaces = [
+            {
+              name = "Personal";
+              container = containers.Personal.id;
+              icon = "chrome://browser/skin/zen-icons/selectable/lightning.svg";
+              pins = [
+                {
+                  name = "Gemini";
+                  url = "https://gemini.google.com";
+                  isEssential = true;
+                }
+                {
+                  name = "MyNixOS";
+                  url = "https://mynixos.com";
+                }
+                {
+                  name = "Key BR";
+                  url = "https://keybr.com";
+                }
+              ];
+              routes = {
+                "github" = {
+                  reference = "github.com";
+                };
+                "gemini" = {
+                  reference = "gemini.google.com";
+                };
+                "mynixos" = {
+                  reference = "mynixos.com";
+                };
+              };
+            }
+            {
+              name = "School";
+              container = containers.School.id;
+              icon = "chrome://browser/skin/zen-icons/selectable/school.svg";
+              pins = [
+                {
+                  name = "xSITe";
+                  url = "https://xsite.singaporetech.edu.sg";
+                  isEssential = true;
+                }
+                {
+                  name = "In4SIT";
+                  url = "https://in4sit.singaporetech.edu.sg";
+                }
+              ];
+              routes = {
+                "lms" = {
+                  reference = "xsite.singaporetech.edu.sg";
+                };
+                "portal" = {
+                  reference = "in4sit.singaporetech.edu.sg";
+                };
+              };
+            }
+            {
+              name = "Entertainment";
+              container = containers.Entertainment.id;
+              icon = "chrome://browser/skin/zen-icons/selectable/game-controller.svg";
+              pins = [
+                {
+                  name = "Youtube";
+                  url = "https://www.youtube.com";
+                  isEssential = true;
+                }
+              ];
+              routes = {
+                "youtube" = {
+                  reference = "www.youtube.com";
+                };
+              };
+            }
+            {
+              name = "Social";
+              container = containers.Social.id;
+              icon = "chrome://browser/skin/zen-icons/selectable/chat.svg";
+              pins = [
+                {
+                  name = "Telegram";
+                  url = "https://web.telegram.org";
+                  isEssential = true;
+                }
+                {
+                  name = "WhatsApp";
+                  url = "https://web.whatsapp.com";
+                  isEssential = true;
+                }
+              ];
+              routes = {
+                "telegram" = {
+                  reference = "web.telegram.org";
+                };
+              };
+            }
+          ];
         in
-        {
-          Personal = {
-            position = 1000;
-            container = containers.Personal.id;
-            id = "4ee215ee-c47c-429a-9480-576f8b1a624e";
-            icon = "chrome://browser/skin/zen-icons/selectable/lightning.svg";
-            pins = {
-              "Gemini" = {
-                url = "https://gemini.google.com";
-                id = "e86cf37-a127-4f24-b919-d265b5ce29a2";
-                position = 100;
-                isEssential = true;
-                container = containers.Personal.id;
-              };
-              "MyNixOS" = {
-                url = "https://mynixos.com";
-                id = "e86cf37-a127-4f24-b919-d265b5ce29a5";
-                position = 200;
-                container = containers.Personal.id;
-              };
-              "Key BR" = {
-                url = "https://keybr.com";
-                id = "e86cf37-a127-4f24-b919-d265b5ce29a6";
-                position = 300;
-                container = containers.Personal.id;
-              };
-            };
-            routes = {
-              "github" = {
-                reference = "github.com";
-              };
-              "gemini" = {
-                reference = "gemini.google.com";
-              };
-              "mynixos" = {
-                reference = "mynixos.com";
-              };
-            };
-          };
-          School = {
-            position = 2000;
-            container = containers.School.id;
-            id = "6c9a5583-86cb-4578-876b-e7619e192bc6";
-            icon = "chrome://browser/skin/zen-icons/selectable/school.svg";
-            routes = {
-              "lms" = {
-                reference = "xsite.singaporetech.edu.sg";
-              };
-              "portal" = {
-                reference = "in4sit.singaporetech.edu.sg";
-              };
-            };
-            pins = {
-              "xSITe" = {
-                url = "https://xsite.singaporetech.edu.sg";
-                id = "e86cf37-a127-4f24-b919-d265b5ce29a3";
-                position = 500;
-                isEssential = true;
-                container = containers.School.id;
-              };
-              "In4SIT" = {
-                url = "https://in4sit.singaporetech.edu.sg";
-                id = "e86cf37-a127-4f24-b919-d265b5ce29a4";
-                position = 200;
-                container = containers.School.id;
-              };
-            };
-          };
-          Entertainment = {
-            position = 3000;
-            container = containers.Entertainment.id;
-            id = "7f6c77b3-6de3-4d36-9e7c-63960006197d";
-            icon = "chrome://browser/skin/zen-icons/selectable/game-controller.svg";
-
-            pins = {
-              "Youtube" = {
-                url = "https://www.youtube.com";
-                id = "6c9a5583-86cb-4578-876b-e7619e192bc5";
-                position = 200;
-                isEssential = true;
-                container = containers.Entertainment.id;
-              };
-            };
-
-            routes = {
-              "youtube" = {
-                reference = "www.youtube.com";
-              };
-            };
-          };
-          Social = {
-            position = 4000;
-            container = containers.Social.id;
-            icon = "chrome://browser/skin/zen-icons/selectable/chat.svg";
-            id = "50414e4d-873d-4940-8ed4-8145c4a95bc6";
-
-            pins = {
-              "Telegram" = {
-                url = "https://web.telegram.org";
-                id = "6c9a5583-86cb-4578-876b-e7619e192bc7";
-                position = 300;
-                isEssential = true;
-                container = containers.Social.id;
-              };
-              "WhatsApp" = {
-                url = "https://web.whatsapp.com";
-                id = "6c9a5583-86cb-4578-876b-e7619e192bc8";
-                position = 400;
-                isEssential = true;
-                container = containers.Social.id;
-              };
-            };
-
-            routes = {
-              "telegram" = {
-                reference = "web.telegram.org";
-              };
-            };
-          };
-        };
+        lib.listToAttrs (
+          lib.imap0 (
+            spaceIdx: s:
+            let
+              spacePos = (spaceIdx + 1) * 1000;
+              spaceId = mkUuid "a1000000-0000-4000-8000" (spaceIdx + 1);
+              pinsAttrs = lib.listToAttrs (
+                lib.imap0 (
+                  pinIdx: p:
+                  let
+                    pinPos = (pinIdx + 1) * 100;
+                    pinId = mkUuid "b1000000-0000-4000-8000" ((spaceIdx + 1) * 100 + (pinIdx + 1));
+                  in
+                  lib.nameValuePair p.name (
+                    {
+                      inherit (p) url;
+                      inherit (s) container;
+                      id = pinId;
+                      position = pinPos;
+                    }
+                    // lib.optionalAttrs (p ? isEssential) {
+                      inherit (p) isEssential;
+                    }
+                  )
+                ) s.pins
+              );
+            in
+            lib.nameValuePair s.name {
+              position = spacePos;
+              id = spaceId;
+              inherit (s) container icon routes;
+              pins = pinsAttrs;
+            }
+          ) orderedSpaces
+        );
 
       pinsForce = true;
 
