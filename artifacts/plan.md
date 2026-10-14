@@ -332,3 +332,41 @@ Distill this session into skills: workspace-local SKILL.md files (nix-flake-eval
 - [x] Reformat AGENTS.md with workspace skills index.
 - [x] Append 3 skills to modules/ai/skills.nix.
 - [x] Stage new files; `nix flake check --no-build`.
+
+---
+
+# Implementation Plan: Finalize AI Capability Matrix & Prompt Roster Refactor
+
+## Objective
+Finalize and land the staged and pending AI refactor:
+1. Document the capability matrix, rules, and surface mapping in `artifacts/matrix.md`.
+2. Extract per-area task checklists from `PLAN.md` into `artifacts/tasks/`.
+3. Clarify `plan.md` ownership (engineer maintains; architects/orchestrators contribute via plan skill) across `modules/ai/agents.nix`, `modules/ai/disciplines.nix`, and `modules/ai/skills.nix`.
+4. Eliminate agent prompt duplication in single-surface harnesses (`modules/programs/codex.nix`, `modules/programs/crush.nix`, `modules/programs/opencode.nix`).
+5. Reference `artifacts/matrix.md` in `skills/renderer-author/SKILL.md`.
+
+## Tasks
+- [x] Stage all AI matrix and roster refactor files by explicit path.
+- [x] Verify `nix flake check --no-build` and `activationPackage` evaluation.
+- [x] Commit cleanly as a milestone following conventional commits (`0cfb688`).
+
+---
+
+# Implementation Plan: User Store Hygiene Automation (nix.gc & generation pruner systemd timers)
+
+## Objective
+Implement automated user store hygiene and generation expiration in Home Manager to satisfy `PLAN.md` Objective 34:
+1. Declaratively configure `nix.gc` to run weekly with `--delete-older-than 7d`.
+2. Configure a weekly systemd user service and timer to expire Home Manager generations older than 7 days using `home-manager expire-generations "-7 days"`.
+3. Verify evaluation of systemd services/timers and ensure no unmanaged runtime store leakage.
+4. Update `PLAN.md` user store hygiene checkboxes.
+
+## Tasks
+- [x] Test failing condition / evaluate current absent state for store hygiene timers.
+- [x] Implement `modules/services/store-hygiene.nix` with `nix.gc` and `systemd.user.services.home-manager-expire-generations`.
+- [x] Verify `nix eval` on generated systemd units and `nix flake check --no-build`.
+- [x] Update `PLAN.md` status.
+- [x] Commit cleanly with conventional commit message.
+
+
+

@@ -31,7 +31,7 @@ Configure and maintain a modular, high-performance standalone Home Manager envir
 - [x] Establish a capability-based multi-harness AI config (`ai.*`) rendering enforced agents/skills/rules to all harnesses from one shared schema
 - [x] Optimize shell environment (Zsh, Starship, Fastfetch, Bat, Yazi, Delta, Zoxide)
 - [x] Establish declarative development shells (`devShells`) for Pico, Python, Rust, Nix, and TypeScript / JavaScript
-- [ ] Implement user store hygiene automation (`nix.gc` & generation pruner systemd timers)
+- [x] Implement user store hygiene automation (`nix.gc` & generation pruner systemd timers)
 - [x] Finalize OBS Studio hardware capture plugins (`obs-vaapi`, `obs-vkcapture`, `obs-pipewire-audio-capture`)
 
 ## Shared Overlaps (Nix & Secrets Management)
@@ -40,7 +40,7 @@ Configure and maintain a modular, high-performance standalone Home Manager envir
 - [x] **User Secrets & Agent Sockets:** Integration of `rbw` and `gpg-agent` with SSH agent socket routing (`IdentityAgent = "/run/user/%u/rbw/ssh-agent-socket"`).
 - [x] **Zero-Token Git Workflow:** User-level SSH and GPG agent socket routing with SSH URL auto-substitution (`insteadOf = "gh:"`, `insteadOf = "gh@"`) and HTTPS→SSH push rewriting (`pushInsteadOf`).
 - [x] **Capability-Based Agent Boundaries:** Single harness-neutral `ai.*` schema (`read`/`write`/`execute`/`delegate`/`mcp`) translated per-harness — Kiro enforces boundaries at both tool-visibility and permission-rule layers (deny-overrides), resisting prompt-injection in untrusted content.
-- [ ] **User Store Hygiene:** Automated user-profile garbage collection (`nix.gc.automatic = true`, `delete-older-than 7d`, weekly `hm expire-generations` timer).
+- [x] **User Store Hygiene:** Automated user-profile garbage collection (`nix.gc.automatic = true`, `delete-older-than 7d`, weekly `hm expire-generations` timer).
 
 ## Tasks
 Per-area execution checklists live in artifacts/tasks/ (one file per area, completed work included):
@@ -56,7 +56,7 @@ Per-area execution checklists live in artifacts/tasks/ (one file per area, compl
 - [x] **Plumbing Derivations (`useUWSM` & `launchApp`):** Dynamic resolution pattern balancing store binaries with UWSM systemd scope compliance via conditional evaluation helpers.
 - [x] **Declarative Channel Parity (Unstable):** Standardizing standalone Home Manager and package scopes strictly on `nixpkgs-unstable` to prevent shared C++/Rust ABI mismatches.
 - [x] **AI Authentication Boundaries (OAuth / RBW vs. Hardcoded Keys):** Decoupled IDE-level OAuth credential management from terminal multi-agent workflows without plain-text keys.
-- [ ] **User Store Hygiene (`nix.gc` & `auto-optimise-store`):** Pruning user profile generations and maintaining local Nix store health automatically.
+- [x] **User Store Hygiene (`nix.gc` & `auto-optimise-store`):** Pruning user profile generations and maintaining local Nix store health automatically.
 
 
 ## Validation & Acceptance
