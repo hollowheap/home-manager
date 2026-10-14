@@ -8,3 +8,4 @@
 - [x] `services.rcloneSync`: Parameterized `rclone` sync for `gdrive:` to `~/Drive/<remote>` on a 30-minute systemd user timer.
 - [x] `services.gpg-agent`: Configured with `pinentry-gnome3` and SSH support.
 - [x] `modules/services/store-hygiene.nix`: User store hygiene automation (`nix.gc.automatic = true`, `--delete-older-than 7d`, and weekly `hm expire-generations` timer).
+- [ ] `services.sops`: Setup `sops-nix` boilerplate with `.sops.yaml` (following `nixos-config`), `secrets.yaml`, and age key configuration for encrypted secret tracking in Git.

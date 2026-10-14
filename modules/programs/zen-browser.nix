@@ -242,149 +242,129 @@ in
       spaces =
         let
           containers = config.programs.zen-browser.profiles."default".containers;
-
-          # Deterministic incremental UUID helper: RFC4122 v4-formatted string
-          mkUuid =
-            prefix: idx:
-            let
-              hex = lib.toLower (lib.toHexString idx);
-              suffix = lib.fixedWidthString 12 "0" hex;
-            in
-            "${prefix}-${suffix}";
-
-          # Spaces ordered list: declaration order dictates position and UUID increments
-          orderedSpaces = [
-            {
-              name = "Personal";
-              container = containers.Personal.id;
-              icon = "chrome://browser/skin/zen-icons/selectable/lightning.svg";
-              pins = [
-                {
-                  name = "Gemini";
-                  url = "https://gemini.google.com";
-                  isEssential = true;
-                }
-                {
-                  name = "MyNixOS";
-                  url = "https://mynixos.com";
-                }
-                {
-                  name = "Key BR";
-                  url = "https://keybr.com";
-                }
-              ];
-              routes = {
-                "github" = {
-                  reference = "github.com";
-                };
-                "gemini" = {
-                  reference = "gemini.google.com";
-                };
-                "mynixos" = {
-                  reference = "mynixos.com";
-                };
-              };
-            }
-            {
-              name = "School";
-              container = containers.School.id;
-              icon = "chrome://browser/skin/zen-icons/selectable/school.svg";
-              pins = [
-                {
-                  name = "xSITe";
-                  url = "https://xsite.singaporetech.edu.sg";
-                  isEssential = true;
-                }
-                {
-                  name = "In4SIT";
-                  url = "https://in4sit.singaporetech.edu.sg";
-                }
-              ];
-              routes = {
-                "lms" = {
-                  reference = "xsite.singaporetech.edu.sg";
-                };
-                "portal" = {
-                  reference = "in4sit.singaporetech.edu.sg";
-                };
-              };
-            }
-            {
-              name = "Entertainment";
-              container = containers.Entertainment.id;
-              icon = "chrome://browser/skin/zen-icons/selectable/game-controller.svg";
-              pins = [
-                {
-                  name = "Youtube";
-                  url = "https://www.youtube.com";
-                  isEssential = true;
-                }
-              ];
-              routes = {
-                "youtube" = {
-                  reference = "www.youtube.com";
-                };
-              };
-            }
-            {
-              name = "Social";
-              container = containers.Social.id;
-              icon = "chrome://browser/skin/zen-icons/selectable/chat.svg";
-              pins = [
-                {
-                  name = "Telegram";
-                  url = "https://web.telegram.org";
-                  isEssential = true;
-                }
-                {
-                  name = "WhatsApp";
-                  url = "https://web.whatsapp.com";
-                  isEssential = true;
-                }
-              ];
-              routes = {
-                "telegram" = {
-                  reference = "web.telegram.org";
-                };
-              };
-            }
-          ];
+          mkUuid = prefix: idx: "${prefix}-${lib.fixedWidthString 12 "0" (toString idx)}";
+          spaceUuid = idx: mkUuid "a1000000-0000-4000-8000" idx;
+          pinUuid = idx: mkUuid "b1000000-0000-4000-8000" idx;
         in
-        lib.listToAttrs (
-          lib.imap0 (
-            spaceIdx: s:
-            let
-              spacePos = (spaceIdx + 1) * 1000;
-              spaceId = mkUuid "a1000000-0000-4000-8000" (spaceIdx + 1);
-              pinsAttrs = lib.listToAttrs (
-                lib.imap0 (
-                  pinIdx: p:
-                  let
-                    pinPos = (pinIdx + 1) * 100;
-                    pinId = mkUuid "b1000000-0000-4000-8000" ((spaceIdx + 1) * 100 + (pinIdx + 1));
-                  in
-                  lib.nameValuePair p.name (
-                    {
-                      inherit (p) url;
-                      inherit (s) container;
-                      id = pinId;
-                      position = pinPos;
-                    }
-                    // lib.optionalAttrs (p ? isEssential) {
-                      inherit (p) isEssential;
-                    }
-                  )
-                ) s.pins
-              );
-            in
-            lib.nameValuePair s.name {
-              position = spacePos;
-              id = spaceId;
-              inherit (s) container icon routes;
-              pins = pinsAttrs;
-            }
-          ) orderedSpaces
-        );
+        {
+          Personal = {
+            position = 1000;
+            id = spaceUuid 1;
+            container = containers.Personal.id;
+            icon = "chrome://browser/skin/zen-icons/selectable/lightning.svg";
+            pins = {
+              "Gemini" = {
+                url = "https://gemini.google.com";
+                id = pinUuid 1;
+                position = 100;
+                isEssential = true;
+                container = containers.Personal.id;
+              };
+              "MyNixOS" = {
+                url = "https://mynixos.com";
+                id = pinUuid 2;
+                position = 200;
+                container = containers.Personal.id;
+              };
+              "Key BR" = {
+                url = "https://keybr.com";
+                id = pinUuid 3;
+                position = 300;
+                container = containers.Personal.id;
+              };
+            };
+            routes = {
+              "github" = {
+                reference = "github.com";
+              };
+              "gemini" = {
+                reference = "gemini.google.com";
+              };
+              "mynixos" = {
+                reference = "mynixos.com";
+              };
+            };
+          };
+
+          School = {
+            position = 2000;
+            id = spaceUuid 2;
+            container = containers.School.id;
+            icon = "chrome://browser/skin/zen-icons/selectable/school.svg";
+            pins = {
+              "xSITe" = {
+                url = "https://xsite.singaporetech.edu.sg";
+                id = pinUuid 4;
+                position = 100;
+                isEssential = true;
+                container = containers.School.id;
+              };
+              "In4SIT" = {
+                url = "https://in4sit.singaporetech.edu.sg";
+                id = pinUuid 5;
+                position = 200;
+                container = containers.School.id;
+              };
+            };
+            routes = {
+              "lms" = {
+                reference = "xsite.singaporetech.edu.sg";
+              };
+              "portal" = {
+                reference = "in4sit.singaporetech.edu.sg";
+              };
+            };
+          };
+
+          Entertainment = {
+            position = 3000;
+            id = spaceUuid 3;
+            container = containers.Entertainment.id;
+            icon = "chrome://browser/skin/zen-icons/selectable/game-controller.svg";
+            pins = {
+              "Youtube" = {
+                url = "https://www.youtube.com";
+                id = pinUuid 6;
+                position = 100;
+                isEssential = true;
+                container = containers.Entertainment.id;
+              };
+            };
+            routes = {
+              "youtube" = {
+                reference = "www.youtube.com";
+              };
+            };
+          };
+
+          Social = {
+            position = 4000;
+            id = spaceUuid 4;
+            container = containers.Social.id;
+            icon = "chrome://browser/skin/zen-icons/selectable/chat.svg";
+            pins = {
+              "Telegram" = {
+                url = "https://web.telegram.org";
+                id = pinUuid 7;
+                position = 100;
+                isEssential = true;
+                container = containers.Social.id;
+              };
+              "WhatsApp" = {
+                url = "https://web.whatsapp.com";
+                id = pinUuid 8;
+                position = 200;
+                isEssential = true;
+                container = containers.Social.id;
+              };
+            };
+            routes = {
+              "telegram" = {
+                reference = "web.telegram.org";
+              };
+            };
+          };
+        };
 
       pinsForce = true;
 

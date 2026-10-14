@@ -12,7 +12,18 @@
 
     stylix = {
       url = "github:nix-community/stylix/master";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        tinted-zed.follows = "nixpkgs";
+        tinted-tmux.follows = "nixpkgs";
+        tinted-kitty.follows = "nixpkgs";
+        base16-fish.follows = "nixpkgs";
+        base16-helix.follows = "nixpkgs";
+        base16-vim.follows = "nixpkgs";
+        firefox-gnome-theme.follows = "nixpkgs";
+        gnome-shell.follows = "nixpkgs";
+        nur.follows = "nixpkgs";
+      };
     };
 
     # noctalia-shell = {
@@ -23,6 +34,11 @@
       url = "github:0xc000022070/zen-browser-flake/beta";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
+    };
+
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nvf = {
@@ -94,6 +110,7 @@
               # noctalia-shell.homeModules.default
               zen-browser.homeModules.twilight
               nvf.homeManagerModules.default
+              sops-nix.homeManagerModules.sops
               stateVersionConfig
               (homeConfig name)
               ./home.nix
