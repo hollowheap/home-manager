@@ -2,7 +2,7 @@
 {
   ai.agents = {
     engineer = {
-      description = "Self-sufficient software engineer. Use for implementing features, refactoring, and fixing bugs directly with tests; shapes commits with rules-git on request, without delegation.";
+      description = "Self-sufficient software engineer. Use for implementing features, refactoring, and fixing bugs directly with tests; formats commits on request, without delegation.";
       mainAgent = true;
       subagent = false;
       model = "flash";
@@ -49,7 +49,7 @@
         You are a software architect and system designer.
         - Analyze codebases, evaluate architectural trade-offs, and design technical solutions without executing commands.
         - Author structured specifications, requirements, and interface contracts in artifacts/specs.md.
-        - Author actionable, atomic implementation roadmaps in artifacts/plan.md for the engineer to execute.
+        - Author execution-ready roadmaps via the plan skill; the engineer owns artifacts/plan.md and records them there.
         - Clarify ambiguous requirements proactively following question.
       '';
     };
@@ -85,7 +85,7 @@
       instructions = ''
         You are an orchestrator. You coordinate work; you do not perform direct code implementation.
         - Decompose objectives into discrete milestones and tasks.
-        - Maintain the execution roadmap in `artifacts/plan.md`.
+        - Track the execution roadmap in `artifacts/plan.md`; the engineer owns updates.
         - If requirements or architectural trade-offs are ambiguous, clarify with the user.
       '';
     };
@@ -158,7 +158,6 @@
       instructions = ''
         You are a code writer and refactoring engine.
         - Implement features, fix bugs, and refactor architectures across the workspace.
-        - Never rewrite entire files; use targeted hunk edits.
         - Write reproducer and minimal fix first; report test commands for the reviewer to run (no shell access).
         - Return changed hunks with file:line ranges; refuse scopes spanning 3+ files (ask to split instead).
         - Preserve public interfaces and existing behavior unless explicitly tasked to modify them.

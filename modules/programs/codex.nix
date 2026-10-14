@@ -25,15 +25,6 @@ let
 
   disciplines = concatStringsSep "\n\n" (mapAttrsToList renderDiscipline config.ai.disciplines);
 
-  agents = concatStringsSep "\n\n" (
-    mapAttrsToList (name: agent: ''
-      ## Agent: ${name}
-      ${agent.description}
-
-      ${agent.instructions}
-    '') config.ai.agents
-  );
-
   mkSkillDir =
     name: skill:
     pkgs.runCommandLocal "codex-skill-${name}" { } ''
@@ -107,10 +98,6 @@ in
     enable = true;
     package = pkgs.codex;
     context = ''
-      # Shared agents
-
-      ${agents}
-
       # Shared disciplines
 
       ${disciplines}

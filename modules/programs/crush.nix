@@ -29,22 +29,10 @@ let
       '') skill.scripts)}
     '';
 
-  crushModelFor =
-    model:
-    if model == "low" then
-      "mimo-v2.6-flash-free"
-    else if model == "flash" || model == "medium" then
-      "muse-spark-1.3-contributor-free"
-    else if model == "high" || model == "pro" || model == "xhigh" || model == "max" then
-      "step-5-preview-free"
-    else
-      model;
-
   instructions = concatStringsSep "\n\n" (
     mapAttrsToList (name: agent: ''
       ## Agent: ${name}
       ${agent.description}
-      Model: ${if agent.model != null then crushModelFor agent.model else "muse-spark-1.3-contributor-free"}
 
       ${agent.instructions}
     '') config.ai.agents
@@ -55,9 +43,6 @@ let
   droppedDisciplineRules = {
     complete = [
       "whole"
-    ];
-    hygiene = [
-      "clean-hands"
     ];
     skills = [
       "load"
@@ -126,13 +111,13 @@ in
 
       ${instructions}
 
-      # Shared rules
-
-      ${allRules}
-
       # Shared disciplines
 
       ${disciplines}
+
+      # Shared rules
+
+      ${allRules}
     '';
   };
 }

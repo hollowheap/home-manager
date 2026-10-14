@@ -24,6 +24,8 @@
         1. Tasks are atomic: one action + one verifiable outcome each.
         2. Every task names its check (test cmd, eval, build).
         3. Never batch completions; update status in real time.
+        4. Objectives are stable and high-level; append new work as Tasks sections, move closed initiatives to artifacts/tasks/<slug>.md.
+        5. Ownership: the engineer maintains plan.md; architects and orchestrators contribute roadmaps through this skill.
 
         ## Bad / Good
 
@@ -36,8 +38,9 @@
       '';
       references."template.md" = ''
         # Plan
-        ## Objective
-        What + why in 2 sentences.
+        ## Objectives
+        Stable high-level goals (see PLAN.md); new initiatives append Tasks below.
+        Closed initiatives move to artifacts/tasks/; this file keeps objectives and active work.
         ## Tasks
         - [ ] Action + file path + outcome
         - [ ] Next action + verification cmd
@@ -211,6 +214,7 @@
         1. Closed prompts are unverifiable: no drops, ever.
         2. Partial coverage keeps the line; drops need full coverage.
         3. One harness's proof never transfers to another.
+        4. Measure the same prompt before and after; never trust vendor percentages. Audit rendered context size (chars÷4 ≈ tokens per harness) before claiming any win.
 
         ## Bad / Good
 

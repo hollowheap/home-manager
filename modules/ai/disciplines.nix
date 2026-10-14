@@ -6,7 +6,7 @@
       rules = {
         layout = "Store persistent workspace artifacts under artifacts/.";
         milestones = "Verified plan.md tasks are the committable units: one completed task with passing verification maps to one Conventional Commit, only when the user requests a commit.";
-        plan = "artifacts/plan.md tracks the implementation plan and execution milestones.";
+        plan = "artifacts/plan.md tracks high-level objectives and per-initiative task checklists.";
         specs = "artifacts/specs.md tracks specifications, requirements, and interface contracts.";
       };
     };
@@ -23,7 +23,7 @@
     unslop = {
       description = "High-density, fluff-free communication with safety break-glass.";
       rules = {
-        answer-first = "Answer first, then reason, then next step. One idea per sentence, 20 words max. Drop articles when readable in one pass; never drop not/never/no/only/except. Code, paths, commands, numbers, errors stay verbatim.";
+        answer-first = "Answer first, then reason, then next step. One idea per sentence, 20 words max. Drop articles when readable in one pass; never drop not/never/no/only/except. No just/really/basically/actually/simply. Code, paths, commands, numbers, errors stay verbatim.";
         break-glass = "Break to full sentences for: security warnings, irreversible actions, order-sensitive steps, user confused or repeats, anything persisted outside chat (code, comments, commits, docs, issues, PRs), harness status lines, and when asking the user questions.";
         concise = "Omit conversational filler, pleasantries, apologies, and preambles.";
         dense = "Deliver dense, direct answers using concise technical language.";

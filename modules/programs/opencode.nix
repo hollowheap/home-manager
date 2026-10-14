@@ -108,10 +108,6 @@ let
   # Discipline lines the opencode built-in prompt already covers (concise style guide,
   # no-dump file refs, single targeted questions): drop them here, keep the rest.
   droppedDisciplineRules = {
-    hygiene = [
-      "clean-hands"
-      "no-destroy"
-    ];
     unslop = [
       "concise"
       "no-restate"

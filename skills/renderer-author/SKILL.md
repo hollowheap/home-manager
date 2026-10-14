@@ -3,7 +3,7 @@ name: renderer-author
 description: New-harness renderer checklist for modules/programs/ in this workspace. Use when adding or changing a harness renderer. Do NOT use for edits inside existing renderers that change no surface.
 ---
 
-Mirror the closest existing renderer; wire package, skills, agents, disciplines, rules, and drops; prove each surface with eval.
+Mirror the closest existing renderer; wire package, skills, agents, disciplines, rules, and drops; prove each surface with eval. Read artifacts/matrix.md first for the current capability, rule, and surface mapping.
 
 ## Use / Do NOT use
 
