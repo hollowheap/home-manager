@@ -1,11 +1,5 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
-  home.packages = with pkgs; [
-    noto-fonts
-    noto-fonts-color-emoji
-    nerd-fonts.victor-mono
-  ];
-
   gtk = {
     enable = true;
     colorScheme = "dark";
@@ -14,6 +8,15 @@
       package = pkgs.mactahoe-gtk-theme;
     };
   };
+
+  home.activation.deduplicateGtk = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    dirs=()
+    [ -d "$HOME/.config/gtk-3.0" ] && dirs+=("$HOME/.config/gtk-3.0")
+    [ -d "$HOME/.config/gtk-4.0" ] && dirs+=("$HOME/.config/gtk-4.0")
+    if [ ''${#dirs[@]} -gt 0 ]; then
+      run ${pkgs.jdupes}/bin/jdupes --quiet --link-hard --recurse "''${dirs[@]}" || true
+    fi
+  '';
 
   qt.enable = true;
 

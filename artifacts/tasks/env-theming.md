@@ -6,4 +6,4 @@
 - [x] `xdg.enable` / `xdg.userDirs.enable`: Declarative standard directory routing (`Desktop`, `Documents`, `Downloads`, `Music`, `Pictures`, `Videos`) with `templates = null` and `publicShare = null`.
 - [x] `home.sessionVariables`: Explicit Wayland and Nvidia environment flags (`LIBVA_DRIVER_NAME`, `GBM_BACKEND`, `NIXOS_OZONE_WL`, `ELECTRON_OZONE_PLATFORM_HINT`).
 - [x] `pkgs.mactahoe-gtk-theme` / `mactahoe-icon-theme`: Custom package derivations with `jdupes` hardlinking during build.
-- [ ] `home.activation` (GTK Deduplication): Implement `jdupes --quiet --link-hard --recurse` post-build script for `~/.config/gtk-3.0` and `~/.config/gtk-4.0` via `lib.hm.dag.entryAfter [ "writeBoundary" ]`.
+- [x] `home.activation` (GTK Deduplication): Implement `jdupes --quiet --link-hard --recurse` post-build script for `~/.config/gtk-3.0` and `~/.config/gtk-4.0` via `lib.hm.dag.entryAfter [ "writeBoundary" ]`.

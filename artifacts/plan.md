@@ -396,7 +396,8 @@ Implement `home.activation.deduplicateGtk` in `modules/theme/stylix.nix` (or ded
 4. Commit cleanly following conventional commits.
 
 ## Tasks
-- [ ] Implement `deduplicateGtk` activation DAG entry in `modules/theme/stylix.nix`.
-- [ ] Verify `activationPackage` evaluation and `nix flake check --no-build`.
-- [ ] Update `artifacts/tasks/env-theming.md`.
-- [ ] Commit cleanly with conventional commit message.
+- [x] Implement `deduplicateGtk` activation DAG entry in `modules/theme/stylix.nix`.
+- [x] Verify `activationPackage` evaluation and `nix flake check --no-build`.
+- [x] Update `artifacts/tasks/env-theming.md`.
+- [x] Commit cleanly with conventional commit message.
+
