@@ -269,14 +269,14 @@ in
               };
               "MyNixOS" = {
                 url = "https://mynixos.com";
-                id = pinUuid 3;
-                position = 300;
+                id = pinUuid 6;
+                position = 600;
                 container = containers.Personal.id;
               };
               "Key BR" = {
                 url = "https://keybr.com";
-                id = pinUuid 4;
-                position = 400;
+                id = pinUuid 7;
+                position = 700;
                 container = containers.Personal.id;
               };
             };
@@ -304,15 +304,15 @@ in
             pins = {
               "xSITe" = {
                 url = "https://xsite.singaporetech.edu.sg";
-                id = pinUuid 5;
-                position = 500;
+                id = pinUuid 3;
+                position = 300;
                 isEssential = true;
                 container = containers.School.id;
               };
               "In4SIT" = {
                 url = "https://in4sit.singaporetech.edu.sg";
-                id = pinUuid 6;
-                position = 600;
+                id = pinUuid 8;
+                position = 800;
                 container = containers.School.id;
               };
             };
@@ -334,8 +334,8 @@ in
             pins = {
               "Youtube" = {
                 url = "https://www.youtube.com";
-                id = pinUuid 7;
-                position = 700;
+                id = pinUuid 4;
+                position = 400;
                 isEssential = true;
                 container = containers.Entertainment.id;
               };
@@ -355,8 +355,8 @@ in
             pins = {
               "WhatsApp" = {
                 url = "https://web.whatsapp.com";
-                id = pinUuid 8;
-                position = 800;
+                id = pinUuid 5;
+                position = 500;
                 isEssential = true;
                 container = containers.Social.id;
               };
