@@ -15,13 +15,15 @@ stdenvNoCC.mkDerivation (_: {
     jdupes
   ];
 
+  dontFixup = true;
+
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/share/icons
-    bash install.sh -d $out/share/icons
+    bash install.sh -t all -d $out/share/icons
 
-    find $out -type l ! -exec test -e {} \; -delete
+    find $out -xtype l -delete
 
     jdupes --quiet --link-hard --recurse $out/share
 

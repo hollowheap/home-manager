@@ -10,15 +10,13 @@
     theme = {
       mode = lib.mkForce "dark";
       source = lib.mkForce "wallpaper";
-      wallpaper_scheme = "m3-content";
+      wallpaper_scheme = "faithful";
       pure_black_dark = true;
       templates = {
         builtin_ids = [ ];
         community_ids = [
-          "pear-desktop"
           "discord"
           "steam"
-          "zen-browser"
         ];
 
         user = {
@@ -29,6 +27,8 @@
             post_hook = "hyprctl reload config-only";
           };
 
+          # Noctalia has no native wallpaper-change hook, so a dummy template
+          # carries the post_hook that regenerates the wallust CLI palette.
           wallust = {
             enabled = true;
             input_path = "$XDG_CONFIG_HOME/noctalia/templates/wallust.dummy";
@@ -36,9 +36,46 @@
             post_hook = ''
               st="${config.home.homeDirectory}/.local/state/noctalia/settings.toml"
               if [ -r "$st" ]; then
-                img="$(${pkgs.gnused}/bin/sed -n '/^\[wallpaper\.last\]/,/^\[/p' "$st" | ${pkgs.gnugrep}/bin/grep -m1 '^path *=' | ${pkgs.gnused}/bin/sed -E 's/^path *= *"(.*)"$/\1/' || true)"
-                if [ -n "$img" ] && [ -r "$img" ]; then
+                img="$(${pkgs.gawk}/bin/awk -F'=' '
+                  /^\[wallpaper(\.last)?\]/ { in_sec = 1; next }
+                  /^\[/ { in_sec = 0 }
+                  in_sec && /^[[:space:]]*path[[:space:]]*=/ {
+                    gsub(/^[[:space:]]*path[[:space:]]*=[[:space:]]*["\047]?|["\047]?[[:space:]]*$/, "")
+                    print
+                    exit
+                  }
+                ' "$st" 2>/dev/null || true)"
+                if [ -n "$img" ] && [ -f "$img" ] && [ -r "$img" ]; then
                   ${pkgs.wallust}/bin/wallust run "$img" -s
+                fi
+              fi
+            '';
+          };
+
+          gtk = {
+            enabled = true;
+            input_path = "$XDG_CONFIG_HOME/noctalia/templates/gtk-accent.css";
+            output_path = "$XDG_CACHE_HOME/noctalia/gtk-accent.css";
+            post_hook = "${pkgs.mactahoe-gtk-accent}/bin/mactahoe-gtk-accent";
+          };
+
+          dconf_theme = {
+            enabled = true;
+            input_path = "$XDG_CONFIG_HOME/noctalia/templates/dconf-theme.txt";
+            output_path = "$XDG_CACHE_HOME/noctalia/dconf-theme.txt";
+            post_hook = "${pkgs.mactahoe-icon-accent}/bin/mactahoe-icon-accent --apply";
+          };
+
+          openrgb = {
+            enabled = true;
+            input_path = "$XDG_CONFIG_HOME/noctalia/templates/openrgb.color";
+            output_path = "$XDG_CACHE_HOME/noctalia/openrgb.color";
+            post_hook = ''
+              if [ -f "$XDG_CACHE_HOME/noctalia/openrgb.color" ]; then
+                c="$(${pkgs.coreutils}/bin/cat "$XDG_CACHE_HOME/noctalia/openrgb.color" | ${pkgs.gnused}/bin/sed 's/#//' | ${pkgs.coreutils}/bin/tr -d ' \n')"
+                if [ -n "$c" ]; then
+                  ${pkgs.openrgb-with-all-plugins}/bin/openrgb --noautoconnect --client 127.0.0.1:6742 -m static -c "$c" || \
+                  ${pkgs.openrgb-with-all-plugins}/bin/openrgb --noautoconnect --client 127.0.0.1:6742 -c "$c" || true
                 fi
               fi
             '';
@@ -59,7 +96,7 @@
 
       screen_corners = {
         enabled = true;
-        size = config.theme.dims.border.radius * 2;
+        size = config.styles.dims.border.radius * 2;
       };
       panel = {
         transparency_mode = "glass";
@@ -99,7 +136,7 @@
       position = "top";
       padding = 24;
       margin_ends = 48;
-      margin_edge = config.theme.dims.margin.inner;
+      margin_edge = config.styles.dims.margin.inner;
       background_opacity = 0.9;
       start = [
         "launcher"
@@ -131,9 +168,26 @@
       ];
     };
 
+    battery.warning_threshold = 10;
+
     idle.behavior = {
-      lock.enabled = true;
-      suspend = true;
+      lock = {
+        enabled = true;
+        timeout = 600;
+        action = "lock";
+      };
+
+      screen-off = {
+        enabled = true;
+        timeout = 660;
+        action = "screen_off";
+      };
+
+      suspend = {
+        enabled = false;
+        timeout = 900;
+        action = "lock_and_suspend";
+      };
     };
 
     lockscreen_widgets = {
@@ -181,7 +235,16 @@
     ddcutil
     satty
     wl-clipboard
+    openrgb-with-all-plugins
+    mactahoe-icon-accent
+    mactahoe-gtk-accent
   ];
 
   xdg.configFile."noctalia/templates/wallust.dummy".text = "dummy";
+  xdg.configFile."noctalia/templates/openrgb.color".text =
+    "{{ colors.primary.default.hex_stripped }}";
+  xdg.configFile."noctalia/templates/gtk-accent.css".source =
+    ../../assets/noctalia-templates/gtk-accent.css;
+  xdg.configFile."noctalia/templates/dconf-theme.txt".text =
+    "{{ colors.primary.default.hex }} dark";
 }
