@@ -7,3 +7,10 @@ result-*
 
 # Ignore NixOS interactive test driver history
 **/.nixos-test-history
+
+# Ignore uncommitted local credentials
+*.local.nix
+
+# Ignore ephemeral workspace execution logs
+artifacts/logs/
+artifacts/errors/

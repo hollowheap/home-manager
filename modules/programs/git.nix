@@ -1,7 +1,10 @@
-{ ... }:
+{ config, pkgs, ... }:
 {
   programs.git = {
     enable = true;
+    includes = [
+      { path = config.sops.templates."gitconfig".path; }
+    ];
     signing = {
       key = null;
       signByDefault = true;
@@ -43,21 +46,6 @@
         interHunkContext = 10;
         renames = "copies";
       };
-      # pager = {
-      #   diff = "diff-so-fancy | $PAGER";
-      # };
-      # "diff-so-fancy" = {
-      #   markEmptyLines = false;
-      # };
-      # color = {
-      #   "diff" = {
-      #     meta = "black bold";
-      #     frag = "magenta";
-      #     context = "white";
-      #     whitespace = "yellow reverse";
-      #     old = "red";
-      #   };
-      # };
       status = {
         branch = true;
         short = true;
@@ -65,7 +53,6 @@
       };
       user = {
         name = "Yucky Hito";
-        email = "yuckychong@gmail.com";
       };
       url = {
         "https://github.com/" = {
@@ -77,12 +64,14 @@
           insteadOf = [
             "gh@:"
           ];
-          pushInsteadOf = "https://github.com/";
         };
       };
-      credential.helper = [
-        "cache"
-      ];
+      credential = {
+        helper = [
+          "cache"
+          "${pkgs.rbw}/bin/git-credential-rbw"
+        ];
+      };
     };
   };
 }
