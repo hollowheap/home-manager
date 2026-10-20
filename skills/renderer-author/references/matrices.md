@@ -37,3 +37,27 @@
 | `style` | `write` | `architect`, `engineer` |
 | `verify` | `write`, `execute` | `engineer` |
 | `delegate` | `delegate` | `ask`, `architect`, `engineer` |
+
+## Skills Surface Mapping
+
+| Harness | Discovery Target / Configuration | Rendering Helper |
+|---|---|---|
+| `opencode` | `programs.opencode.settings.skills` (`~/.config/opencode/skills/<name>/`) | `aiRender.mkSkillDir { prefix = "opencode"; }` |
+| `antigravity` | `programs.antigravity.settings.skills` (`~/.gemini/antigravity-cli/skills/<name>/`) | `aiRender.mkSkillDir { prefix = "antigravity"; }` |
+| `crush` | `programs.crush.settings.skills` (`~/.config/crush/skills/<name>/`) | `aiRender.mkSkillDir { prefix = "crush"; }` |
+| `codex` | `programs.codex.settings.skills` (`~/.codex/skills/<name>/`) | `aiRender.mkSkillDir { prefix = "codex"; }` |
+| `hermes` | `skills.external_dirs` in `~/.hermes/config.yaml` | `aiRender.mkSkillDir { prefix = "hermes"; }` |
+| `pi` | `~/.pi/agent/skills/<name>/` | `aiRender.mkSkillDir { prefix = "pi"; }` |
+| `kiro` | `~/.kiro/skills/<name>/` | `aiRender.mkSkillDir { prefix = "kiro"; }` |
+| `copilot` | `~/.config/github-copilot/skills/<name>/` | `aiRender.mkSkillDir { prefix = "copilot"; }` |
+
+## Skill Authoring Standard & Anatomy
+
+1. **Trigger Gating**: `description` must define explicit positive and negative activation bounds (*"Load ONLY when... Do NOT load for..."*).
+2. **Standard Section Headers**:
+   - `## Workflow`: Numbered sequential actions (`1., 2., 3.`) starting with active imperative verbs (`Confirm`, `Inspect`, `Write`, `Implement`, `Stage`). No `X: Y.` category labels.
+   - `## Rules`: Bulleted invariant constraints (`- ...`) starting with direct active imperatives (`Never`, `Keep`, `Test`). No buzzword labels (`Iron Law`, `Rule of...`). Final rule is always `- Verify: <exit condition>`.
+3. **Artifact Isolation**:
+   - `references."<file>.md"`: Static tables, schemas, or templates.
+   - `references."examples.md"`: `## Bad` and `## Good` contrast pairs.
+   - `scripts."<name>.sh"`: Executable shell tools wrapped by `mkSkillDir`.

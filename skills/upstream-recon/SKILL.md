@@ -12,7 +12,7 @@ description: Upstream module archaeology via store source and option eval. Load 
 
 ## Rules
 
-- Near-miss names burn: verify exact attr (`codex`, not `codex-cli`).
-- Declarations path first; web search only when store lookup fails.
+- Verify exact package attr (`codex`, not `codex-cli`); beware near-miss names.
+- Inspect declarations in store source before searching the web.
 - Record verified shapes in artifacts/ for the next reader.
 - Verify: Every referenced option and package evals; renderer writes no guesswork.

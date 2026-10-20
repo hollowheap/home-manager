@@ -12,8 +12,8 @@ description: Built-in prompt overlap audit for shared text. Load ONLY when addin
 
 ## Rules
 
-- Closed prompts are unverifiable: no drops, ever.
-- Partial coverage keeps the line; drops need full coverage.
-- One harness's proof never transfers to another.
+- Never drop closed prompts; closed prompts are unverifiable.
+- Keep lines with partial coverage; drops require full coverage.
+- Never transfer proof from one harness to another.
 - Measure the same prompt before and after; never trust vendor percentages. Audit rendered context size (chars/4 ≈ tokens per harness) before claiming any win.
 - Verify: Rendered contexts show drops exactly where proven, full text elsewhere.
