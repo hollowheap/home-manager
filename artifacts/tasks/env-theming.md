@@ -1,4 +1,4 @@
-# Task: Environment, Plumbing & Dynamic Theming (from PLAN.md)
+# Task: Environment, Plumbing & Dynamic Theming (from overview.md)
 
 - [x] `options` (Core-Apps Refactor): Binary variable definitions migrated from packages to string commands for accurate `uwsm app --` scope routing.
 - [x] `fonts.packages`: Standardized VictorMono Nerd Font and Noto Sans CJK with fontconfig fallback rendering.
@@ -9,4 +9,4 @@
 - [x] `home.sessionVariables`: Explicit Wayland and Nvidia environment flags (`LIBVA_DRIVER_NAME`, `GBM_BACKEND`, `NIXOS_OZONE_WL`, `ELECTRON_OZONE_PLATFORM_HINT`).
 - [x] `pkgs.mactahoe-gtk-theme` / `mactahoe-icon-theme`: Custom package derivations with `jdupes` hardlinking during build.
 - [x] `home.activation` (GTK Deduplication): Implement `jdupes --quiet --link-hard --recurse` post-build script for `~/.config/gtk-3.0` and `~/.config/gtk-4.0` via `lib.hm.dag.entryAfter [ "writeBoundary" ]`.
-- [ ] `pkgs.mactahoe-gtk-theme` / Noctalia Dynamic Theme Sync: Inject `@define-color accent_color {{ colors.primary.default.hex }};` into `~/.config/gtk-3.0/gtk.css` and `~/.config/gtk-4.0/gtk.css` via Noctalia template to dynamically adapt MacTahoe (default `#0088FF`) to active wallpaper scheme (`#c58462` copper / `#808aeb` lavender).
+- [x] `pkgs.mactahoe-gtk-theme` / Noctalia Dynamic Theme Sync: Inject `@define-color accent_color {{ colors.primary.default.hex }};` into `~/.config/gtk-3.0/gtk.css` and `~/.config/gtk-4.0/gtk.css` via Noctalia template to dynamically adapt MacTahoe (default `#0088FF`) to active wallpaper scheme (`#c58462` copper / `#808aeb` lavender).

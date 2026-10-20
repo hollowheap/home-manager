@@ -1,4 +1,4 @@
-# Task: CLI & Shell Optimization (from PLAN.md)
+# Task: CLI & Shell Optimization (from overview.md)
 
 - [x] `programs.git`: Signed commits, comprehensive alias suite, SSH URL substitutions (`gh:`, `gh@`), and HTTPS→SSH push rewriting (`pushInsteadOf = "https://github.com/"`).
 - [x] `programs.lazygit`: Delta diff renderer integration.

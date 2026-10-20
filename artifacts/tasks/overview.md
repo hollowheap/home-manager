@@ -1,4 +1,7 @@
-# Home Manager Plan
+# Project Overview: Goals, Scope & Acceptance
+
+Migrated from the former root `PLAN.md` (retired). Per-area execution checklists live beside this
+file in `artifacts/tasks/`.
 
 ## Objective
 Configure and maintain a modular, high-performance standalone Home Manager environment. Focus on user-space applications, Wayland desktop compositor (Hyprland), Neovim (nvf) with AI toolchains, dynamic theme synchronization (Stylix, Noctalia, Matugen), shell optimizations, and user-level secrets management.
@@ -43,7 +46,7 @@ Configure and maintain a modular, high-performance standalone Home Manager envir
 - [x] **User Store Hygiene:** Automated user-profile garbage collection (`nix.gc.automatic = true`, `delete-older-than 7d`, weekly `hm expire-generations` timer).
 
 ## Tasks
-Per-area execution checklists live in artifacts/tasks/ (one file per area, completed work included):
+Per-area execution checklists live in `artifacts/tasks/` (one file per area, completed work included):
 - Environment, Plumbing & Dynamic Theming → artifacts/tasks/env-theming.md
 - Desktop Shell & Window Managers → artifacts/tasks/desktop-wms.md
 - Neovim & AI Toolchain → artifacts/tasks/nvim-ai.md
@@ -57,7 +60,6 @@ Per-area execution checklists live in artifacts/tasks/ (one file per area, compl
 - [x] **Declarative Channel Parity (Unstable):** Standardizing standalone Home Manager and package scopes strictly on `nixpkgs-unstable` to prevent shared C++/Rust ABI mismatches.
 - [x] **AI Authentication Boundaries (OAuth / RBW vs. Hardcoded Keys):** Decoupled IDE-level OAuth credential management from terminal multi-agent workflows without plain-text keys.
 - [x] **User Store Hygiene (`nix.gc` & `auto-optimise-store`):** Pruning user profile generations and maintaining local Nix store health automatically.
-
 
 ## Validation & Acceptance
 How each area is verified. A goal is not "done" until its acceptance evidence holds.
@@ -80,7 +82,7 @@ Forward-looking failure modes and how to reverse them (distinct from Known Issue
 
 ## Open Questions & Notes
 Unresolved items and assumptions. Never omit.
-- [ ] Should `.kiro/repomap.md` be git-ignored (generated artifact) or committed as a seed for first-session availability?
-- [ ] Should the flake.nix heredoc reindent be reverted or fixed with `lib.stripTabs`?
+- [x] Standardized repomap artifact path to `artifacts/repomap.md` (read-only agents consume `file://artifacts/repomap.md`).
+- [x] Flake `pico` devShell generates `.clangd` via `shellHook`; `.clangd` can be committed if present.
 - [ ] Do any stored SSH keys span multiple GitHub accounts (would require host-alias pinning), or is it a single account?
 - Note: several pre-existing WIP edits (`nvim.nix`, `tmux.nix`, `hyprland.nix`, `zen-browser.nix`, `mactahoe-*`) remain uncommitted and are tracked separately from this session's AI-config work.

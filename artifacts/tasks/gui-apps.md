@@ -1,4 +1,4 @@
-# Task: GUI Applications & Browsers (from PLAN.md)
+# Task: GUI Applications & Browsers (from overview.md)
 
 - [x] `programs.vesktop.settings`: Discord / Vesktop client customization with Vencord and Noctalia theme styling.
 - [x] `programs.zen-browser`: Hardened privacy policies, DNS-over-HTTPS, Startpage search routing, and multi-space container routing (`Personal`, `School`, `Entertainment`, `Social`).
