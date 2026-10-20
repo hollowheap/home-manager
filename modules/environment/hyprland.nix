@@ -23,7 +23,7 @@ let
       function()
         ${str}
       end'';
-  launchApp = cmd: if config.useUWSM then "uwsm app -- ${cmd}" else cmd;
+  inherit (config) launchApp;
 in
 {
   wayland.windowManager.hyprland = {
@@ -33,8 +33,8 @@ in
     systemd.enable = false;
 
     plugins = with pkgs.hyprlandPlugins; [
-      # hypr-dynamic-cursors
-      # hyprglass
+      hypr-dynamic-cursors
+      hyprglass
     ];
 
     settings = {
@@ -81,9 +81,9 @@ in
 
           resize_on_border = true;
 
-          border_size = config.theme.dims.borderSmall.size;
-          gaps_in = config.theme.dims.margin.inner;
-          gaps_out = config.theme.dims.margin.outer;
+          border_size = config.styles.dims.borderSmall.size;
+          gaps_in = config.styles.dims.margin.inner;
+          gaps_out = config.styles.dims.margin.outer;
 
           col = {
             active_border = mkLuaInline "colors.active_border";
@@ -97,8 +97,8 @@ in
         };
 
         decoration = {
-          rounding = config.theme.dims.border.radius;
-          rounding_power = config.theme.dims.border.rounding_power;
+          rounding = config.styles.dims.border.radius;
+          rounding_power = config.styles.dims.border.rounding_power;
 
           inactive_opacity = 0.7;
           active_opacity = 0.9;
@@ -111,10 +111,9 @@ in
 
           blur = {
             enabled = true;
-            size = 2;
-            passes = 3;
+            size = 3;
+            passes = 2;
             noise = 0.001;
-            xray = false;
             ignore_opacity = true;
             vibrancy_darkness = 0.4;
             contrast = 0.9;
@@ -153,34 +152,41 @@ in
           prefer_hdr = 1;
         };
 
-        # plugin.dynamic_cursors = {
-        #   enabled = true;
-        #   mode = "stretch";
-        #
-        #   shake.enabled = true;
-        #
-        #   hyprcursor.enabled = true;
-        # };
+        plugin.dynamic_cursors = {
+          enabled = true;
+          mode = "tilt";
+
+          shake = {
+            enabled = true;
+          };
+
+          hyprcursor = {
+            enabled = true;
+            # 0 = never nearest-neighbour: smooth instead of blocky when magnified
+            nearest = 0;
+            # -1 = auto-calculate target resolution based on size * shake base factor
+            resolution = -1;
+          };
+        };
       };
 
-      # "plugin\.hyprglass\.config" = {
-      #   blur_strength = 0.5;
-      #   blur_iterations = 3;
-      #   lens_distortion = 1;
-      #   refraction_strength = 2;
-      #   chromatic_aberration = 0.1;
-      #   tint_color = 4294967040;
-      #   fresnel_strength = 1;
-      #   specular_strength = 1;
-      #   dark = {
-      #     brightness = 1;
-      #     adaptive_dim = 0;
-      #   };
-      #   light = {
-      #     brightness = 1;
-      #     adaptive_boost = 0;
-      #   };
-      # };
+      "plugin\.hyprglass\.config" = {
+        blur_strength = .5;
+        blur_iterations = 3;
+        lens_distortion = 1;
+        refraction_strength = 2;
+        chromatic_aberration = 0.9;
+        fresnel_strength = 1;
+        specular_strength = 1;
+        dark = {
+          brightness = 1;
+          adaptive_dim = .05;
+        };
+        light = {
+          brightness = 1;
+          adaptive_boost = .05;
+        };
+      };
 
       animation = mkArgs [
         {
@@ -201,8 +207,9 @@ in
         {
           name = "noctalia";
           match = {
-            namespace = "^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd)$";
+            namespace = "^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd|window-switcher)$";
           };
+          no_anim = true;
           blur = true;
           blur_popups = true;
           ignore_alpha = 0.5;
@@ -212,12 +219,12 @@ in
       workspace_rule = [
         {
           workspace = "w[tv1]s[false]";
-          gaps_out = config.theme.dims.margin.inner;
+          gaps_out = config.styles.dims.margin.inner;
           gaps_in = 0;
         }
         {
           workspace = "f[1]s[false]";
-          gaps_out = config.theme.dims.margin.inner;
+          gaps_out = config.styles.dims.margin.inner;
           gaps_in = 0;
         }
       ]
@@ -229,6 +236,7 @@ in
         {
           workspace = "${toString key}";
           monitor = if (mod key 2) == 0 then "DP-1" else "HDMI-A-1";
+          default = key == 1 || key == 2;
         }
       ) 10);
 
@@ -273,10 +281,19 @@ in
             class = "discord";
             initial_title = "Discord Updater";
           })
-          (mkFloatRule "noctalia-settings" {
-            class = "dev.noctalia.Noctalia";
-            initial_title = "Noctalia Settings";
-          })
+          {
+            name = "noctalia-settings";
+            match = {
+              class = "dev.noctalia.Noctalia";
+              initial_title = "Noctalia Settings";
+            };
+            float = true;
+            center = true;
+            size = [
+              "monitor_w*0.7"
+              "monitor_h*0.8"
+            ];
+          }
           (mkFloatRule "satty" {
             class = "com.gabm.satty";
           })
@@ -300,11 +317,35 @@ in
           # Active window controls
           [
             "SUPER + M"
-            (mkDsp "window.fullscreen({ internal = 1, client = 1 })")
+            (mkDsp "submap(\"media\")")
+          ]
+          [
+            "SUPER + R"
+            (mkDsp "submap(\"resize\")")
+          ]
+          [
+            "SUPER + Z"
+            (mkDsp "submap(\"passthrough\")")
+          ]
+          [
+            "SUPER + SHIFT + P"
+            (mkDsp "window.pin()")
+          ]
+          [
+            "SUPER + ALT + L"
+            (mkDspExec "notify-send -t 1500 'Laptop Mode' 'Enabled (t -> `, y -> NumLock)'; hyprctl dispatch submap laptop")
           ]
           [
             "SUPER + F"
             (mkDsp "window.fullscreen({ internal = 2, client = 2 })")
+          ]
+          [
+            "SUPER + I"
+            (mkDspExec "hyprctl dispatch movetoworkspacesilent special:minimized")
+          ]
+          [
+            "SUPER + SHIFT + I"
+            (mkDspExec "hyprctl dispatch togglespecialworkspace minimized")
           ]
           [
             "SUPER + T"
@@ -361,7 +402,7 @@ in
             (mkDspExec "noctalia msg window-switcher")
           ]
           [
-            "SUPER + SHIFT + ESCAPE"
+            "SUPER + ESCAPE"
             (mkDspExec "noctalia msg panel-toggle session")
           ]
 
@@ -517,6 +558,75 @@ in
           ) 10
         ))
       );
+    };
+
+    submaps = {
+      media = {
+        settings = {
+          bind = map mkArgs [
+            [ "space" (mkDspExec "noctalia msg media toggle") ]
+            [ "p" (mkDspExec "noctalia msg media toggle") ]
+            [ "l" (mkDspExec "noctalia msg media next") ]
+            [ "right" (mkDspExec "noctalia msg media next") ]
+            [ "h" (mkDspExec "noctalia msg media previous") ]
+            [ "left" (mkDspExec "noctalia msg media previous") ]
+            [ "k" (mkDspExec "noctalia msg volume-up") { repeating = true; } ]
+            [ "up" (mkDspExec "noctalia msg volume-up") { repeating = true; } ]
+            [ "j" (mkDspExec "noctalia msg volume-down") { repeating = true; } ]
+            [ "down" (mkDspExec "noctalia msg volume-down") { repeating = true; } ]
+            [ "m" (mkDspExec "noctalia msg volume-mute") ]
+            [ "slash" (mkDspExec "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle") ]
+            [ "c" (mkDspExec "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle") ]
+            [ "escape" (mkDsp "submap(\"reset\")") ]
+            [ "return" (mkDsp "submap(\"reset\")") ]
+            [ "SUPER + M" (mkDsp "submap(\"reset\")") ]
+          ];
+        };
+      };
+
+      resize = {
+        settings = {
+          bind = map mkArgs [
+            [ "l" (mkDsp "layout(\"colwidth +0.05\")") { repeating = true; } ]
+            [ "right" (mkDsp "layout(\"colwidth +0.05\")") { repeating = true; } ]
+            [ "h" (mkDsp "layout(\"colwidth -0.05\")") { repeating = true; } ]
+            [ "left" (mkDsp "layout(\"colwidth -0.05\")") { repeating = true; } ]
+            [ "j" (mkDsp "window.resize({ x = 0, y = 30, relative = true })") { repeating = true; } ]
+            [ "down" (mkDsp "window.resize({ x = 0, y = 30, relative = true })") { repeating = true; } ]
+            [ "k" (mkDsp "window.resize({ x = 0, y = -30, relative = true })") { repeating = true; } ]
+            [ "up" (mkDsp "window.resize({ x = 0, y = -30, relative = true })") { repeating = true; } ]
+            [ "1" (mkDsp "layout(\"colwidth 0.33\")") ]
+            [ "2" (mkDsp "layout(\"colwidth 0.50\")") ]
+            [ "3" (mkDsp "layout(\"colwidth 0.67\")") ]
+            [ "4" (mkDsp "layout(\"colwidth 1.0\")") ]
+            [ "f" (mkDsp "layout(\"fit\")") ]
+            [ "escape" (mkDsp "submap(\"reset\")") ]
+            [ "return" (mkDsp "submap(\"reset\")") ]
+            [ "SUPER + R" (mkDsp "submap(\"reset\")") ]
+          ];
+        };
+      };
+
+      passthrough = {
+        settings = {
+          bind = map mkArgs [
+            [ "SUPER + Z" (mkDsp "submap(\"reset\")") ]
+            [ "SUPER + ESCAPE" (mkDsp "submap(\"reset\")") ]
+          ];
+        };
+      };
+
+      laptop = {
+        settings = {
+          bind = map mkArgs [
+            [ "t" (mkDsp "send_shortcut({ mods = \"\", key = \"grave\" })") ]
+            [ "SHIFT + t" (mkDsp "send_shortcut({ mods = \"SHIFT\", key = \"asciitilde\" })") ]
+            [ "y" (mkDsp "send_shortcut({ mods = \"\", key = \"Num_Lock\" })") ]
+            [ "SUPER + ALT + L" (mkDspExec "notify-send -t 1500 'Laptop Mode' 'Disabled'; hyprctl dispatch submap reset") ]
+            [ "SUPER + ESCAPE" (mkDspExec "notify-send -t 1500 'Laptop Mode' 'Disabled'; hyprctl dispatch submap reset") ]
+          ];
+        };
+      };
     };
   };
 

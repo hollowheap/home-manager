@@ -1,5 +1,7 @@
-{ lib, ... }:
+{ config, lib, ... }:
 let
+  pills = config.styles.pills.starship;
+
   noRuntimeModules = [
     "buf"
     "bun"
@@ -58,7 +60,7 @@ let
   ];
 
   runtimePillSettings = lib.genAttrs noRuntimeModules (_: {
-    format = "via []($style)[$symbol](bg:prev_fg fg:black)[](prev_bg) ";
+    format = "via " + pills.mode { text = "$symbol"; accent = "$style"; } + " ";
   });
 in
 {
@@ -78,51 +80,75 @@ in
 
       character = {
         format = "$symbol ";
-        success_symbol = "[◎](bold italic bright-yellow)";
-        error_symbol = "[○](italic purple)";
-        vimcmd_symbol = "[■](italic dimmed green)";
+        success_symbol = "[◎](bold italic fg:11)";
+        error_symbol = "[○](italic fg:5)";
+        vimcmd_symbol = "[■](italic dimmed fg:2)";
       };
 
       directory = {
-        style = "bright-blue";
-        format = "[]($style)[󰉋 ](bg:prev_fg fg:black)[ $path](bg:bright-white fg:black)[$read_only](bg:bright-white fg:bright-red)[](prev_bg) ";
+        style = "4";
+        format = pills.left {
+          icon = "󰉋";
+          content = "$path";
+          accent = "$style";
+          extra = "[$read_only](bg:8 fg:9)";
+        } + " ";
         truncation_length = 4;
         read_only = " 󰌾";
       };
 
       git_branch = {
         symbol = " ";
-        format = "on [](cyan)[$symbol](bg:prev_fg fg:black)[ $branch](bg:bright-white fg:black)[](prev_bg) ";
+        format = "on " + pills.left {
+          icon = "$symbol";
+          content = "$branch";
+          accent = "6";
+        } + " ";
       };
 
       git_status = {
-        format = "([](bright-yellow)[󱈸 ](bg:prev_fg fg:black)[ $all_status$ahead_behind](bg:bright-white fg:black)[](prev_bg) )";
-        staged = "[+](green)";
-        modified = "[!](yellow)";
-        renamed = "[»](blue)";
-        deleted = "[-](red)";
-        untracked = "[?](red)";
-        stashed = "[≡](purple)";
-        conflicted = "[✖](red bold)";
+        format = "(" + pills.left {
+          icon = "󱈸";
+          content = "$all_status$ahead_behind ";
+          accent = "11";
+        } + " )";
+        staged = "[+](bg:8 fg:10)";
+        modified = "[!](bg:8 fg:11)";
+        renamed = "[»](bg:8 fg:12)";
+        deleted = "[-](bg:8 fg:9)";
+        untracked = "[?](bg:8 fg:9)";
+        stashed = "[≡](bg:8 fg:13)";
+        conflicted = "[✖](bg:8 fg:9 bold)";
 
-        ahead = "[⇡$count](cyan)";
-        behind = "[⇣$count](bright-red)";
-        diverged = "[⇕⇡$ahead_count⇣$behind_count](bright-purple)";
+        ahead = "[↑$count](bg:8 fg:14)";
+        behind = "[↓$count](bg:8 fg:9)";
+        diverged = "[↕ ↑$ahead_count ↓$behind_count](bg:8 fg:13)";
       };
 
       cmd_duration = {
         min_time = 2000;
-        format = "took [](bright-blue)[󱑂 ](bg:prev_fg fg:black)[ $duration](bg:bright-white fg:black)[](prev_bg) ";
+        format = "took " + pills.left {
+          icon = "󱑂";
+          content = "$duration";
+          accent = "4";
+        } + " ";
       };
 
       nix_shell = {
         symbol = " ";
-        format = "via [](blue)[$symbol](bg:prev_fg fg:black)[ $state](bg:bright-white fg:black)[](prev_bg) ";
+        format = "via " + pills.left {
+          icon = "$symbol";
+          content = "$state";
+          accent = "4";
+        } + " ";
       };
 
       package = {
         symbol = "󰏗 ";
-        format = "is [](purple)[$symbol](bg:prev_fg fg:black)[](prev_bg) ";
+        format = "is " + pills.mode {
+          text = "$symbol";
+          accent = "5";
+        } + " ";
       };
     };
   };

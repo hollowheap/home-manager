@@ -1,10 +1,12 @@
 {
+  config,
   pkgs,
   lib,
   ...
 }:
 let
   inherit (lib.generators) mkLuaInline;
+  editorToolchains = import ../../toolchains.nix;
   modes = {
     nvo = [
       "n"
@@ -28,16 +30,15 @@ in
 
       settings.vim = {
         extraPackages = [
+          pkgs.yamllint
+          pkgs.trash-cli
         ];
         lazy.plugins = with pkgs.vimPlugins; {
           "tiny-cmdline.nvim" = {
-            keys = [
-              {
-                mode = modes.nvo;
-              }
-            ];
-            lazy = true;
+            lazy = false;
             package = tiny-cmdline-nvim;
+            setupModule = "tiny-cmdline";
+            setupOpts = { };
           };
           "helpview.nvim" = {
             ft = [ "help" ];
@@ -62,15 +63,38 @@ in
             lazy = false;
             package = wallust;
           };
+          "tiny-glimmer.nvim" = {
+            lazy = false;
+            package = pkgs.vimPlugins.tiny-glimmer-nvim;
+            setupModule = "tiny-glimmer";
+            setupOpts = { };
+          };
+          "nvim-dap-virtual-text" = {
+            lazy = false;
+            package = pkgs.vimPlugins.nvim-dap-virtual-text;
+            setupModule = "nvim-dap-virtual-text";
+            setupOpts = { };
+          };
         };
 
         mini = {
           ai.enable = true;
+          bracketed.enable = true;
+          comment.enable = true;
+          comment.setupOpts.mappings = {
+            comment = "<leader>c";
+            comment_line = "<leader>cc";
+            comment_visual = "<leader>c";
+            textobject = "<leader>c";
+          };
+          hipatterns.enable = true;
           icons.enable = true;
+          jump2d.enable = true;
           operators.enable = true;
           pairs.enable = true;
           surround.enable = true;
           splitjoin.enable = true;
+          visits.enable = true;
         };
 
         languages = {
@@ -80,8 +104,10 @@ in
           enableTreesitter = true;
 
           clang.enable = true;
+          clang.dap.enable = true;
           nix.enable = true;
           python.enable = true;
+          python.dap.enable = true;
           tsx.enable = true;
           typescript.enable = true;
           yaml.enable = true;
@@ -115,11 +141,20 @@ in
             update_in_insert = false;
             severity_sort = true;
           };
+          nvim-lint = {
+            enable = true;
+            # Only filetypes the language modules don't cover; the rest
+            # come from each language's extraDiagnostics.
+            linters_by_ft = lib.genAttrs [ "yaml" "zsh" ] (
+              ft: editorToolchains.linters.${ft}
+            );
+          };
         };
 
         debugger = {
           nvim-dap.enable = true;
           nvim-dap.ui.enable = true;
+          nvim-dap.ui.autoStart = false;
         };
 
         assistant = {
@@ -127,6 +162,9 @@ in
           avante-nvim.setupOpts = {
             provider = "kiro";
             mode = "agentic";
+            behaviour = {
+              auto_suggestions = false;
+            };
             acp_providers = {
               kiro = {
                 command = "${pkgs.kiro-cli}/bin/kiro-cli";
@@ -137,10 +175,10 @@ in
           };
 
           supermaven-nvim = {
-            # enable = true;
+            enable = true;
             setupOpts = {
               disable_keymaps = true;
-              disable_inline_completion = true;
+              disable_inline_completion = false;
             };
           };
         };
@@ -172,7 +210,7 @@ in
               };
             };
             completion = {
-              ghost_text.enabled = true;
+              ghost_text.enabled = false;
               documentation = {
                 auto_show = true;
                 auto_show_delay_ms = 200;
@@ -207,6 +245,7 @@ in
 
         git = {
           gitsigns.enable = true;
+          git-conflict.enable = true;
         };
 
         utility = {
@@ -277,6 +316,10 @@ in
                   section = "keys";
                   gap = 1;
                 }
+                {
+                  section = "recent_files";
+                  padding = 1;
+                }
                 # {
                 #   section = "startup";
                 # }
@@ -288,6 +331,27 @@ in
               trash = true;
             };
             indent = {
+              enabled = true;
+              scope = {
+                enabled = true;
+              };
+            };
+            notifier = {
+              enabled = true;
+            };
+            zen = {
+              enabled = true;
+            };
+            dim = {
+              enabled = true;
+            };
+            bigfile = {
+              enabled = true;
+            };
+            quickfile = {
+              enabled = true;
+            };
+            rename = {
               enabled = true;
             };
             input = {
@@ -327,7 +391,6 @@ in
               "P" = "Paste before";
               "u" = "Undo";
               "U" = "Redo";
-              "gO" = "Document Outline";
 
               "d" = "+Delete";
               "y" = "+Yank";
@@ -335,6 +398,7 @@ in
 
               "s" = "+Surround";
               "g" = "+Go to";
+              "r" = "+Replace";
 
               "<leader>" = "+Menu";
 
@@ -350,7 +414,6 @@ in
 
               "<leader>l" = "+LSP";
               "<leader>lg" = "+Go to";
-              "<leader>lt" = "+Toggle";
               "<leader>lw" = "+Workspace";
 
               "<leader>s" = "+Search";
@@ -399,6 +462,7 @@ in
         };
 
         ui = {
+          ui2.enable = true;
           borders.enable = true;
           borders.plugins = {
             which-key.enable = true;
@@ -441,11 +505,11 @@ in
                         local colors = require("base16-colorscheme").colors
                         local ft = vim.bo.filetype
                         if ft == "AvanteInput" then
-                          return _G.mk_pill("󰌌", "Input", colors.base0B, colors.base07, colors.base00, colors.base00, colors.base00)
+                          return _G.pills.left("󰌌", "Input", colors.base0B, colors.base00)
                         elseif ft == "AvanteSelectedCode" then
-                          return _G.mk_pill("", "Code", colors.base0A, colors.base07, colors.base00, colors.base00, colors.base00)
+                          return _G.pills.left("", "Code", colors.base0A, colors.base00)
                         else
-                          return _G.mk_pill("󰭹", "Chat", colors.base0D, colors.base07, colors.base00, colors.base00, colors.base00)
+                          return _G.pills.left("󰭹", "Chat", colors.base0D, colors.base00)
                         end
                       end
                     },
@@ -461,11 +525,11 @@ in
                         local colors = require("base16-colorscheme").colors
                         local ft = vim.bo.filetype
                         if ft == "AvanteInput" then
-                          return _G.mk_pill("󰌌", "Input", colors.base03, colors.base01, colors.base04, colors.base04, colors.base00)
+                          return _G.pills.left("󰌌", "Input", colors.base03, colors.base00, colors.base01, colors.base04)
                         elseif ft == "AvanteSelectedCode" then
-                          return _G.mk_pill("", "Code", colors.base03, colors.base01, colors.base04, colors.base04, colors.base00)
+                          return _G.pills.left("", "Code", colors.base03, colors.base00, colors.base01, colors.base04)
                         else
-                          return _G.mk_pill("󰭹", "Chat", colors.base03, colors.base01, colors.base04, colors.base04, colors.base00)
+                          return _G.pills.left("󰭹", "Chat", colors.base03, colors.base00, colors.base01, colors.base04)
                         end
                       end
                     },
@@ -478,6 +542,7 @@ in
                   filetypes = { "Avante", "AvanteInput", "AvanteSelectedCode", "AvanteSelectedFiles", "AvanteTodos" }
                 }
               '')
+              "quickfix"
             ];
             sections = {
               lualine_a = [
@@ -524,7 +589,7 @@ in
                     }
                     local mode = vim.api.nvim_get_mode().mode
                     local info = mode_map[mode] or { name = mode, color = colors.base0D }
-                    return _G.mk_pill("󰘧", info.name, info.color, colors.base07, colors.base00, colors.base00, colors.base00)
+                    return _G.pills.mode(info.name, info.color, colors.base00)
                   end
                 '')
               ];
@@ -543,7 +608,7 @@ in
                       end
                       if vim.bo.modified then fname = fname .. " " end
                       if vim.bo.readonly then fname = fname .. " " end
-                      return _G.mk_pill(icon, fname, colors.base0D, colors.base07, colors.base00, colors.base00, colors.base00)
+                      return _G.pills.left(icon, fname, colors.base0D, colors.base00)
                     end
                   '';
                   on_click = mkLuaInline ''
@@ -562,7 +627,7 @@ in
                         if ok and head ~= "" and not head:find("fatal") then branch = head end
                       end
                       if branch == "" then return "" end
-                      return _G.mk_pill("", branch, colors.base0E, colors.base07, colors.base00, colors.base00, colors.base00)
+                      return _G.pills.left("", branch, colors.base0E, colors.base00)
                     end
                   '';
                   on_click = mkLuaInline ''
@@ -591,7 +656,7 @@ in
                     local colors = require("base16-colorscheme").colors
                     local s = vim.fn.searchcount({ recompute = 1, maxcount = 999 })
                     if not s or s.total == 0 then return "" end
-                    return _G.mk_pill("", string.format("%d/%d", s.current, s.total), colors.base0A, colors.base07, colors.base00, colors.base00, colors.base00)
+                    return _G.pills.right(string.format("%d/%d", s.current, s.total), "", colors.base0A, colors.base00)
                   end
                 '')
               ];
@@ -608,7 +673,7 @@ in
                       local i = mini_icons.get("filetype", ft)
                       if i and i ~= "" then icon = i end
                     end
-                    return _G.mk_pill(icon, ft, colors.base0C, colors.base07, colors.base00, colors.base00, colors.base00)
+                    return _G.pills.right(ft, icon, colors.base0C, colors.base00)
                   end
                 '')
               ];
@@ -630,7 +695,7 @@ in
                       end
                       if vim.bo.modified then fname = fname .. " " end
                       if vim.bo.readonly then fname = fname .. " " end
-                      return _G.mk_pill(icon, fname, colors.base03, colors.base01, colors.base04, colors.base04, colors.base00)
+                      return _G.pills.left(icon, fname, colors.base03, colors.base00, colors.base01, colors.base04)
                     end
                   '';
                   on_click = mkLuaInline ''
@@ -650,7 +715,7 @@ in
 
         visuals = {
           fidget-nvim.enable = true;
-          fidget-nvim.setupOpts.notification.override_vim_notify = true;
+          fidget-nvim.setupOpts.notification.override_vim_notify = false;
         };
 
         keymaps =
@@ -669,9 +734,67 @@ in
               "gE"
               "gg"
               "G"
+              "grn"
+              "gra"
+              "grr"
+              "gri"
+              "grt"
+              "gO"
+              "gS"
+              "gI"
+              "*"
+              "#"
+              "g*"
+              "g#"
+              "gq"
+              "gw"
+              "gJ"
+              "g~"
+              "g~~"
+              "gu"
+              "guu"
+              "gU"
+              "gUU"
+              "g?"
+              "g??"
+            ]
+          )
+          ++ (map
+            (key: {
+              inherit key;
+              mode = "n";
+              action = "<Nop>";
+            })
+            # Clears that exist in other modes (visual Q, visual gp/gP)
+            [
+              "Q"
+              "gp"
+              "gP"
+            ]
+          )
+          ++ (map
+            (key: {
+              inherit key;
+              mode = [
+                "v"
+                "o"
+              ];
+              action = "<Nop>";
+            })
+            # Duplicate text object aliases
+            [
+              "ib"
+              "iB"
+              "ab"
+              "aB"
             ]
           )
           ++ [
+            {
+              key = "<C-w>";
+              mode = "i";
+              action = "<Nop>";
+            }
             {
               key = "x";
               mode = modes.nv;
@@ -694,19 +817,96 @@ in
 
             {
               key = "r";
-              mode = modes.nvo;
-              action = "ge";
-              desc = "Prev end of word";
+              mode = modes.nv;
+              action = "<Nop>";
             }
             {
-              key = "R";
-              mode = modes.nvo;
-              action = "gE";
-              desc = "Prev end of WORD";
+              key = "rr";
+              mode = modes.nv;
+              action = "r";
+              desc = "Replace character";
+            }
+            {
+              key = "rR";
+              mode = modes.nv;
+              action = "R";
+              desc = "Replace mode";
+            }
+            {
+              key = "r~";
+              mode = modes.nv;
+              action = "g~";
+              desc = "Toggle case";
+            }
+            {
+              key = "r~~";
+              mode = modes.nv;
+              action = "g~~";
+              desc = "Toggle case line";
+            }
+            {
+              key = "ru";
+              mode = modes.nv;
+              action = "gu";
+              desc = "Lowercase";
+            }
+            {
+              key = "ruu";
+              mode = modes.nv;
+              action = "guu";
+              desc = "Lowercase line";
+            }
+            {
+              key = "rU";
+              mode = modes.nv;
+              action = "gU";
+              desc = "Uppercase";
+            }
+            {
+              key = "rUU";
+              mode = modes.nv;
+              action = "gUU";
+              desc = "Uppercase line";
+            }
+            {
+              key = "r?";
+              mode = modes.nv;
+              action = "g?";
+              desc = "ROT13 encoding";
+            }
+            {
+              key = "r??";
+              mode = modes.nv;
+              action = "g??";
+              desc = "ROT13 line";
+            }
+            {
+              key = "rw";
+              mode = "n";
+              action = "*";
+              desc = "Search word forward";
+            }
+            {
+              key = "rq";
+              mode = "n";
+              action = "#";
+              desc = "Search word backward";
+            }
+            {
+              key = "rp";
+              mode = "n";
+              action = "gp";
+              desc = "Put after";
+            }
+            {
+              key = "rP";
+              mode = "n";
+              action = "gP";
+              desc = "Put before";
             }
             {
               key = "H";
-              mode = modes.nv;
+              mode = modes.nvo;
               action = "^";
               desc = "Beginning of line";
             }
@@ -717,15 +917,33 @@ in
               desc = "End of line";
             }
             {
-              key = "J";
+              key = "gH";
               mode = modes.nvo;
-              action = "<C-d>zz";
+              action = "g^";
+              desc = "Screen top start";
+            }
+            {
+              key = "gL";
+              mode = modes.nvo;
+              action = "g$";
+              desc = "Screen bottom end";
+            }
+            {
+              key = "Y";
+              mode = "n";
+              action = "y$";
+              desc = "Yank to end of line";
+            }
+            {
+              key = "J";
+              mode = modes.nv;
+              action = "<C-d>";
               desc = "Scroll view down";
             }
             {
               key = "K";
-              mode = modes.nvo;
-              action = "<C-u>zz";
+              mode = modes.nv;
+              action = "<C-u>";
               desc = "Scroll view up";
             }
             {
@@ -840,11 +1058,67 @@ in
               desc = "Diagnostics (workspace) [snacks]";
             }
             {
+              key = "<leader>lh";
+              lua = true;
+              action = "function() vim.lsp.buf.hover() end";
+              mode = "n";
+              desc = "Hover";
+            }
+            {
+              key = "<leader>lj";
+              lua = true;
+              action = "function() MiniSplitjoin.toggle() end";
+              mode = modes.nv;
+              desc = "Split or join lines";
+            }
+            {
+              key = "<leader>ln";
+              lua = true;
+              action = "function() vim.lsp.buf.rename() end";
+              mode = "n";
+              desc = "Rename symbol";
+            }
+            {
+              key = "<leader>la";
+              lua = true;
+              action = "function() vim.lsp.buf.code_action() end";
+              mode = "n";
+              desc = "Code action";
+            }
+            {
               key = "<leader>lr";
               lua = true;
-              action = "function() Snacks.picker.lsp_references() end";
-              mode = modes.nv;
-              desc = "LSP References [snacks]";
+              action = "function() vim.lsp.buf.references() end";
+              mode = "n";
+              desc = "Find references";
+            }
+            {
+              key = "<leader>li";
+              lua = true;
+              action = "function() vim.lsp.buf.implementation() end";
+              mode = "n";
+              desc = "Go to implementation";
+            }
+            {
+              key = "<leader>lt";
+              lua = true;
+              action = "function() vim.lsp.buf.type_definition() end";
+              mode = "n";
+              desc = "Go to type definition";
+            }
+            {
+              key = "<leader>lo";
+              lua = true;
+              action = "function() vim.lsp.buf.document_symbol() end";
+              mode = "n";
+              desc = "Document symbols";
+            }
+            {
+              key = "<leader>lf";
+              lua = true;
+              action = "function() local ok, conform = pcall(require, 'conform'); if ok then conform.format({ async = true }) else vim.lsp.buf.format({ async = true }) end end";
+              mode = "n";
+              desc = "Format buffer";
             }
             {
               key = "<leader>lS";
@@ -985,6 +1259,41 @@ in
               desc = "Toggle DAP UI";
             }
             {
+              key = "<leader>ds";
+              lua = true;
+              action = "function() require('dapui').float_element('scopes') end";
+              mode = "n";
+              desc = "Float scopes";
+            }
+            {
+              key = "<leader>dS";
+              lua = true;
+              action = "function() require('dapui').float_element('stacks') end";
+              mode = "n";
+              desc = "Float stacks";
+            }
+            {
+              key = "<leader>dw";
+              lua = true;
+              action = "function() require('dapui').float_element('watches') end";
+              mode = "n";
+              desc = "Float watches";
+            }
+            {
+              key = "<leader>dB";
+              lua = true;
+              action = "function() require('dapui').float_element('breakpoints') end";
+              mode = "n";
+              desc = "Float breakpoints";
+            }
+            {
+              key = "<leader>de";
+              lua = true;
+              action = "function() require('dapui').float_element('repl') end";
+              mode = "n";
+              desc = "Float REPL";
+            }
+            {
               key = "<leader>dp";
               lua = true;
               action = "function() Snacks.profiler.toggle() end";
@@ -993,6 +1302,8 @@ in
             }
 
           ];
+
+        undoFile.enable = true;
 
         lineNumberMode = "relNumber";
         syntaxHighlighting = true;
@@ -1044,7 +1355,9 @@ in
 
           scrolloff = 4;
 
-          cmdheight = 1;
+          cmdheight = 0;
+
+          mouse = "a";
 
           conceallevel = 2;
 
@@ -1055,6 +1368,11 @@ in
 
           pumheight = 10;
         };
+        augroups = [
+          {
+            name = "UserAutocmds";
+          }
+        ];
         autocmds = [
           {
             event = [ "VimEnter" ];
@@ -1062,6 +1380,44 @@ in
             callback = mkLuaInline ''
               function()
                 _G.lazy_startup_time = vim.uv.now()
+              end
+            '';
+          }
+          {
+            event = [ "BufReadPost" ];
+            group = "UserAutocmds";
+            desc = "Restore last cursor position";
+            callback = mkLuaInline ''
+              function(ev)
+                if vim.bo[ev.buf].buftype ~= "" then
+                  return
+                end
+                local mark = vim.api.nvim_buf_get_mark(ev.buf, '"')
+                local count = vim.api.nvim_buf_line_count(ev.buf)
+                if mark[1] > 0 and mark[1] <= count then
+                  pcall(vim.api.nvim_win_set_cursor, 0, mark)
+                end
+              end
+            '';
+          }
+          {
+            event = [ "LspAttach" ];
+            group = "UserAutocmds";
+            desc = "Highlight LSP references";
+            callback = mkLuaInline ''
+              function(ev)
+                local client = vim.lsp.get_client_by_id(ev.data.client_id)
+                if not client or not client:supports_method("textDocument/documentHighlight") then
+                  return
+                end
+                vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+                  buffer = ev.buf,
+                  callback = vim.lsp.buf.document_highlight,
+                })
+                vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+                  buffer = ev.buf,
+                  callback = vim.lsp.buf.clear_references,
+                })
               end
             '';
           }
@@ -1086,23 +1442,8 @@ in
                           wallust.setup()
                         end
 
-                        _G.mk_pill = function(icon, content, accent, content_bg, content_fg, icon_fg, bar_bg)
-                          if not content or content == "" then return "" end
-                          accent = accent or "#7677aa"
-                          content_bg = content_bg or "#ffffff"
-                          content_fg = content_fg or "#000000"
-                          icon_fg = icon_fg or "#000000"
-                          bar_bg = bar_bg or "#000000"
-
-                          local hl_id = "Pill_" .. (accent:gsub("#", "")) .. "_" .. (content_bg:gsub("#", "")) .. "_" .. (content_fg:gsub("#", "")) .. "_" .. (icon_fg:gsub("#", ""))
-                          vim.api.nvim_set_hl(0, hl_id .. "_Left",  { fg = accent, bg = bar_bg })
-                          vim.api.nvim_set_hl(0, hl_id .. "_Icon",  { fg = icon_fg, bg = accent })
-                          vim.api.nvim_set_hl(0, hl_id .. "_Body",  { fg = content_fg, bg = content_bg })
-                          vim.api.nvim_set_hl(0, hl_id .. "_Right", { fg = content_bg, bg = bar_bg })
-
-                          return string.format("%%#%s_Left#%%#%s_Icon#%s %%#%s_Body# %s %%#%s_Right#",
-                            hl_id, hl_id, icon, hl_id, content, hl_id)
-                        end
+                        ${config.styles.pills.lualine.init}
+                        _G.mk_pill = _G.pills.left
 
                         _G.update_lualine_theme = function()
                           local colors = require("base16-colorscheme").colors
@@ -1159,5 +1500,13 @@ in
         };
       };
     };
+  };
+
+  programs.wallust.settings = {
+    templates.nvim = {
+      template = "nvim-colors.lua";
+      target = "${config.home.homeDirectory}/.config/nvf/lua/wallust.lua";
+    };
+    hooks.nvim = "${pkgs.procps}/bin/pkill -SIGUSR1 nvim || true";
   };
 }

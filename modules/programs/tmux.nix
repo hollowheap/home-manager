@@ -1,15 +1,15 @@
-{ pkgs, lib, ... }:
+{ config, pkgs, lib, ... }:
 
 let
-  black = "#000000";
+  pills = config.styles.pills.tmux;
 
   colors = [
-    "brightcyan"
-    "brightblue"
-    "brightmagenta"
-    "brightgreen"
-    "brightyellow"
-    "brightred"
+    "cyan"
+    "blue"
+    "magenta"
+    "green"
+    "yellow"
+    "red"
   ];
 
   mkColorCycle =
@@ -26,72 +26,10 @@ let
     buildCond 0;
 
   windowColor = mkColorCycle colors;
-  sessionColor = "#{?client_prefix,white,brightblack}";
+  modeText = "#{?client_prefix,PREFIX,#{?pane_in_mode,COPY,NORMAL}}";
+  modeColor = "#{?client_prefix,yellow,#{?pane_in_mode,magenta,blue}}";
 
-  batteryScript = pkgs.writeShellScript "tmux-battery" ''
-    PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.gnugrep pkgs.gawk pkgs.upower ]}:$PATH"
-
-    info=$(upower -i $(upower -e 2>/dev/null | grep -E "battery|DisplayDevice" | head -n 1) 2>/dev/null)
-    pct=$(echo "$info" | awk '/percentage:/ {gsub(/%/, ""); print int($2)}')
-    state=$(echo "$info" | awk '/state:/ {print $2}')
-
-    if [ -z "$pct" ]; then
-      for bat in /sys/class/power_supply/BAT* /sys/class/power_supply/battery*; do
-        if [ -f "$bat/capacity" ] && [ -f "$bat/status" ]; then
-          pct=$(cat "$bat/capacity" 2>/dev/null)
-          s=$(cat "$bat/status" 2>/dev/null)
-          case "$s" in
-            Charging) state="charging" ;;
-            Discharging) state="discharging" ;;
-            Full) state="fully-charged" ;;
-            *) state="unknown" ;;
-          esac
-          break
-        fi
-      done
-    fi
-
-    if [ -n "$pct" ]; then
-      if [ "$state" = "charging" ]; then
-        icon="󰂄"
-        color="brightgreen"
-      elif [ "$state" = "fully-charged" ]; then
-        icon="󰁹"
-        color="brightgreen"
-      elif [ "$pct" -ge 90 ]; then
-        icon="󰁹"
-        color="brightgreen"
-      elif [ "$pct" -ge 80 ]; then
-        icon="󰂂"
-        color="brightgreen"
-      elif [ "$pct" -ge 70 ]; then
-        icon="󰂁"
-        color="brightgreen"
-      elif [ "$pct" -ge 60 ]; then
-        icon="󰂀"
-        color="brightgreen"
-      elif [ "$pct" -ge 50 ]; then
-        icon="󰁿"
-        color="brightgreen"
-      elif [ "$pct" -ge 40 ]; then
-        icon="󰁾"
-        color="brightgreen"
-      elif [ "$pct" -ge 30 ]; then
-        icon="󰁽"
-        color="brightyellow"
-      elif [ "$pct" -ge 20 ]; then
-        icon="󰁼"
-        color="brightyellow"
-      elif [ "$pct" -ge 10 ]; then
-        icon="󰁻"
-        color="brightred"
-      else
-        icon="󰂎"
-        color="brightred"
-      fi
-      printf "  #[fg=%s,bg=default]#[fg=${black},bg=%s]%s #[fg=${black},bg=brightwhite] %s%% #[fg=brightwhite,bg=default]" "$color" "$color" "$icon" "$pct"
-    fi
-  '';
+  batteryBin = "${pkgs.tmux-battery}/bin/tmux-battery";
 in
 {
   programs.tmux = {
@@ -141,18 +79,51 @@ in
       set -ga terminal-overrides ",*:Tc"
 
       set -g set-clipboard on
+      set -g allow-passthrough on
       set -g status-interval 1
 
+      # Passthrough escape fallbacks
+      bind C-Space send-prefix
+      bind C-h send-keys C-h
+      bind C-j send-keys C-j
+      bind C-k send-keys C-k
+      bind C-l send-keys C-l
+
       bind x kill-pane
+      bind X kill-window
+      bind B break-pane
 
       unbind r
       bind r source-file ~/.config/tmux/tmux.conf
 
+      # Window navigation
+      bind c new-window -c "#{pane_current_path}"
+      bind Tab last-window
+      bind -r C-p previous-window
+      bind -r p previous-window
+      bind -r C-n next-window
+      bind -r n next-window
+
+      bind -n M-1 select-window -t 1
+      bind -n M-2 select-window -t 2
+      bind -n M-3 select-window -t 3
+      bind -n M-4 select-window -t 4
+      bind -n M-5 select-window -t 5
+      bind -n M-6 select-window -t 6
+      bind -n M-7 select-window -t 7
+      bind -n M-8 select-window -t 8
+      bind -n M-9 select-window -t 9
+
+      # Splits & Layout equalizers (Shift key symmetry)
       unbind %
       bind \\ split-window -h -c "#{pane_current_path}"
 
       unbind \"
       bind - split-window -v -c "#{pane_current_path}"
+
+      bind | select-layout even-horizontal
+      bind _ select-layout even-vertical
+      bind = select-layout tiled
 
       bind -r M-j resize-pane -D 5
       bind -r M-k resize-pane -U 5
@@ -168,13 +139,18 @@ in
       bind v copy-mode
       bind -T copy-mode-vi v send -X begin-selection
       bind -T copy-mode-vi C-v send -X rectangle-toggle
-      bind -T copy-mode-vi y send -X copy-selection
+      bind -T copy-mode-vi y send -X copy-pipe-and-cancel "wl-copy"
       bind -T copy-mode-vi Escape send -X cancel
+      bind -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "wl-copy"
 
-      unbind -T copy-mode-vi MouseDragEnd1Pane
-
-      bind C-y display-popup -d "#{pane_current_path}" -w 90% -h 90% -E "yazi" # yazi float
-      bind C-g display-popup -d "#{pane_current_path}" -w 90% -h 90% -E "lazygit" # lazygit float
+      bind y display-popup -d "#{pane_current_path}" -w 90% -h 90% -E "yazi"
+      bind C-y display-popup -d "#{pane_current_path}" -w 90% -h 90% -E "yazi"
+      bind g display-popup -d "#{pane_current_path}" -w 90% -h 90% -E "lazygit"
+      bind C-g display-popup -d "#{pane_current_path}" -w 90% -h 90% -E "lazygit"
+      bind t display-popup -d "#{pane_current_path}" -w 85% -h 80% -E "$SHELL"
+      bind C-t display-popup -d "#{pane_current_path}" -w 85% -h 80% -E "$SHELL"
+      bind b display-popup -d "#{pane_current_path}" -w 90% -h 90% -E "btop"
+      bind C-b display-popup -d "#{pane_current_path}" -w 90% -h 90% -E "btop"
 
       # Status bar configuration
       set -g status-position top
@@ -183,20 +159,26 @@ in
 
       set -g status-left-length 80
       set -g status-right-length 80
-      set -g status-right '#[fg=brightblue,bg=default]#[fg=${black},bg=brightblue]󰃭 #[fg=${black},bg=brightwhite] %d %b #[fg=brightwhite,bg=default]  #[fg=brightmagenta,bg=default]#[fg=${black},bg=brightmagenta]󱑂 #[fg=${black},bg=brightwhite] %H:%M #[fg=brightwhite,bg=default] '
+      set -g status-right '${pills.right { text = "%d %b"; icon = "󰃭"; accent = "blue"; }}  ${pills.right { text = "%H:%M"; icon = "󱑂"; accent = "magenta"; }} '
 
-      # Left status: Session pill (gray by default, white when prefix is active)
-      set -g status-left '  #[fg=${sessionColor},bg=default]#[fg=${black},bold,bg=${sessionColor}] #S#[fg=${sessionColor},bg=default]#(${batteryScript})'
+      # Left status: Mode pill at left-most, followed by Session pill and Battery pill
+      set -g status-left ' ${pills.mode { text = modeText; color = modeColor; }}  ${pills.left { icon = ""; text = "#S"; accent = modeColor; boldIcon = true; }}#{?#(${batteryBin} pct),  ${pills.left { icon = "#(${batteryBin} icon)"; text = "#(${batteryBin} pct)%"; accent = "#(${batteryBin} color)"; iconFg = "white"; }},}'
 
-      # Window status: Inactive subdued pills & Active rotating color pills (16 ANSI colors)
+      # Window status: Rotating color pills across all windows; active window distinguished with illuminated body
       set -g window-status-separator "  "
-      set -g window-status-format '#[fg=white,bg=default]#[fg=${black},bg=white]#I #[fg=white,bg=default]#[fg=${black},bg=white] #W#{?window_flags, #{window_flags},}#[fg=white,bg=default]'
+      set -g window-status-format '${pills.left { icon = "#I"; text = "#W#{?window_flags, #{window_flags},}"; accent = windowColor; }}'
 
-      set -g window-status-current-format '#[fg=${windowColor},bg=default]#[fg=${black},bg=${windowColor}]#I #[fg=${windowColor},bg=default]#[fg=${black},bg=brightwhite] #W#{?window_flags, #{window_flags},}#[fg=brightwhite,bg=default]'
+      set -g window-status-current-format '${pills.left { icon = "#I"; text = "#W#{?window_flags, #{window_flags},}"; accent = windowColor; charcoal = "white"; charcoalFg = "black"; boldText = true; boldIcon = true; }}'
 
       # Pane borders
       set -g pane-border-style "fg=brightblack,bg=default"
       set -g pane-active-border-style "fg=cyan,bg=default"
     '';
   };
+
+  home.activation.tmuxReload = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if ${pkgs.tmux}/bin/tmux info >/dev/null 2>&1; then
+      ${pkgs.tmux}/bin/tmux source-file ~/.config/tmux/tmux.conf >/dev/null 2>&1 || true
+    fi
+  '';
 }

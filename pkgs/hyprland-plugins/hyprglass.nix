@@ -6,7 +6,7 @@
 }:
 hyprlandPlugins.mkHyprlandPlugin (_: {
   pluginName = "hyprglass";
-  version = "0.7.0";
+  version = "0.10.0";
 
   src = fetchFromGitHub {
     owner = "hyprnux";

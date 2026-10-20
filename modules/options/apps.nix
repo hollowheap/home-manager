@@ -1,7 +1,7 @@
-{ lib, ... }:
+{ config, lib, ... }:
 let
-  inherit (lib) mkOption;
-  inherit (lib.types) bool str;
+  inherit (lib) mkOption optionalString;
+  inherit (lib.types) bool functionTo str;
 in
 {
   options = {
@@ -10,6 +10,14 @@ in
       default = true;
       description = "Whether to wrap desktop applications with UWSM";
     };
+
+    launchApp = mkOption {
+      type = functionTo str;
+      readOnly = true;
+      default = cmd: "${optionalString config.useUWSM "uwsm app -- "}${cmd}";
+      description = "Wrap an application command for UWSM systemd scope compliance when useUWSM is enabled.";
+    };
+
     defaultApps = {
       browser = mkOption {
         type = str;

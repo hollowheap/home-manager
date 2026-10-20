@@ -1,32 +1,31 @@
-{ lib, ... }:
+{
+  config,
+  lib,
+  ...
+}:
 let
-  inherit (lib) mkOption types;
+  inherit (lib) mkOption;
+  inherit (lib.types) int number unspecified;
 in
 {
   options = {
-    fontFeatures = mkOption {
-      type = with types; listOf str;
-      default = [];
-      description = "List of font features";
-    };
-
-    theme.dims = {
+    styles.dims = {
       # Standard Border Options
       border = {
         size = mkOption {
-          type = types.int;
+          type = int;
           default = 1;
           description = "Standard window border thickness.";
         };
 
         radius = mkOption {
-          type = types.int;
+          type = int;
           default = 8;
           description = "Corner rounding radius for standard windows.";
         };
 
         rounding_power = mkOption {
-          type = types.number;
+          type = number;
           default = 2.0;
           description = "Continuous rounding (squircle) power for standard windows.";
         };
@@ -35,19 +34,19 @@ in
       # Small Border Options
       borderSmall = {
         size = mkOption {
-          type = types.int;
+          type = int;
           default = 1;
           description = "Thin window border thickness for specific UI elements.";
         };
 
         radius = mkOption {
-          type = types.int;
+          type = int;
           default = 4;
           description = "Corner rounding radius for thin-bordered UI elements.";
         };
 
         rounding_power = mkOption {
-          type = types.number;
+          type = number;
           default = 2.0;
           description = "Continuous rounding (squircle) power for thin-bordered elements.";
         };
@@ -56,13 +55,13 @@ in
       # Margin Options
       margin = {
         inner = mkOption {
-          type = types.int;
+          type = int;
           default = 8;
           description = "Inner gaps between adjacent windows.";
         };
 
         outer = mkOption {
-          type = types.int;
+          type = int;
           default = 12;
           description = "Outer gaps between windows and the edge of the monitor.";
         };
@@ -70,10 +69,16 @@ in
 
       # Global Dimensions
       barHeight = mkOption {
-        type = types.int;
+        type = int;
         default = 20;
         description = "Global height dimension for your status bar (e.g., MangoWC).";
       };
+    };
+
+    theme.dims = mkOption {
+      type = unspecified;
+      default = config.styles.dims;
+      description = "Alias to styles.dims for backwards compatibility.";
     };
   };
 }

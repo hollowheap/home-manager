@@ -49,6 +49,23 @@ in
       DontCheckDefaultBrowser = true;
       DisableAppUpdate = true;
       NoDefaultBookmarks = true;
+      OverrideFirstRunPage = "";
+      OverridePostUpdatePage = "";
+
+      # Noise & popup suppression
+      UserMessaging = {
+        ExtensionRecommendations = false;
+        FeatureRecommendations = false;
+        UrlbarSuggestions = false;
+        SkipOnboarding = true;
+        MoreFromMozilla = false;
+      };
+
+      # Hardened PDF viewer
+      PDFjs = {
+        Enabled = true;
+        EnablePermissions = false;
+      };
 
       # Preferences
       DisableSetDesktopBackground = true;
@@ -64,6 +81,27 @@ in
             "PostData" =
               "query={searchTerms}&cat=web&t=devic&segment=startpage.apex.desktop&prfe=3e1a53333ebb17d8c9e68e19d8eb8957cffa9bb8412427f6a48ef8147f4602bd734547fb39acd86a1b3ce46801d30fb83e2913f3cacabeb34f962e3d3f5da410bf92cd3c92fa4a2ee5857c7a05c0abc0";
             "SuggestURLTemplate" = "https://www.startpage.com/osuggestions?q={searchTerm}";
+          }
+          {
+            "Name" = "MyNixOS";
+            "URLTemplate" = "https://mynixos.com/search?q={searchTerms}";
+            "IconURL" = "https://mynixos.com/favicon.ico";
+            "Alias" = "@nix";
+            "Description" = "Search packages and options on MyNixOS";
+          }
+          {
+            "Name" = "YouTube";
+            "URLTemplate" = "https://www.youtube.com/results?search_query={searchTerms}";
+            "IconURL" = "https://www.youtube.com/favicon.ico";
+            "Alias" = "@yt";
+            "Description" = "Search YouTube";
+          }
+          {
+            "Name" = "GitHub";
+            "URLTemplate" = "https://github.com/search?q={searchTerms}";
+            "IconURL" = "https://github.githubassets.com/favicons/favicon.svg";
+            "Alias" = "@gh";
+            "Description" = "Search GitHub repositories";
           }
         ];
         Remove = [
@@ -85,7 +123,6 @@ in
           {
             "sponsorBlocker@ajay.app" = "sponsorblock";
             "uBlock0@raymondhill.net" = "ublock-origin";
-            "{b86e4813-687a-43e6-ab65-0bde4ab75758}" = "localcdn-fork-of-decentraleyes";
             "{762f9885-5a13-4abd-9c77-433dcd38b8fd}" = "return-youtube-dislikes";
             "enhancerforyoutube@maximerf.addons.mozilla.org" = "enhanced-for-youtube";
             "gdpr@cavi.au.dk" = "consent-o-matic";
@@ -94,12 +131,30 @@ in
           };
 
       Preferences = mkLockedAttrs {
-        # --- UI & Startup ---
+        # --- UI, Startup & Session ---
         "browser.aboutConfig.showWarning" = false;
         "browser.tabs.warnOnClose" = false;
         "browser.newtabpage.activity-stream.default.sites" = "";
-        "app.update.background.scheduling.enabled" = false;
         "browser.fixup.alternate.enabled" = false;
+        "browser.sessionstore.interval" = 60000;
+        "browser.helperApps.deleteTempFileOnExit" = true;
+
+        # --- URL Bar & Suggestions (Hybrid: Local First + Live Search, Zero Ads/Telemetry) ---
+        "browser.search.suggest.enabled" = true;
+        "browser.urlbar.suggest.searches" = true;
+        "browser.urlbar.showSearchSuggestionsFirst" = false;
+        "browser.urlbar.suggest.history" = true;
+        "browser.urlbar.suggest.bookmark" = true;
+        "browser.urlbar.suggest.openpage" = true;
+        "browser.urlbar.suggest.topsites" = false;
+        "browser.urlbar.suggest.quicksuggest.sponsored" = false;
+        "browser.urlbar.suggest.quicksuggest.nonsponsored" = false;
+        "browser.urlbar.trending.featureGate" = false;
+        "browser.urlbar.addons.featureGate" = false;
+        "browser.urlbar.mdn.featureGate" = false;
+        "browser.urlbar.pocket.featureGate" = false;
+        "browser.urlbar.weather.featureGate" = false;
+        "browser.urlbar.yelp.featureGate" = false;
 
         # --- Hardware & Web APIs ---
         "dom.webhid.enabled" = true;
@@ -113,41 +168,49 @@ in
         "network.file.disable_unc_paths" = true;
         "network.prefetch-next" = false;
         "network.dns.disablePrefetch" = true;
+        "network.dns.disablePrefetchFromHTTPS" = true;
+        "network.predictor.enabled" = false;
+        "network.auth.subresource-http-auth-allow" = 1;
         "permissions.manager.defaultsUrl" = "";
         "network.IDN_show_punycode" = true;
 
-        # --- WebRTC IP Leak Mitigation ---
+        # --- Privacy & Referrers ---
+        "network.http.referer.XOriginTrimmingPolicy" = 2;
+
+        # --- WebRTC IP Leak Mitigation (Sane: ICE suppression without breaking calls) ---
         "media.peerconnection.ice.default_address_only" = true;
         "media.peerconnection.ice.no_host" = true;
 
-        # --- Telemetry, Diagnostics & Safe Browsing ---
+        # --- Telemetry & Diagnostics ---
         "beacon.enabled" = false;
-        "breakpad.reportURL" = false;
-        "browser.safebrowsing.provider.google4.gethashURL" = "";
-        "browser.safebrowsing.provider.google4.updateURL" = "";
-        "browser.safebrowsing.provider.google4.dataSharingURL" = "";
-        "browser.safebrowsing.provider.google.gethashURL" = "";
-        "browser.safebrowsing.provider.google.updateURL" = "";
-        "browser.safebrowsing.downloads.remote.url" = "";
+
+        # --- Safe Browsing (Preserve local blocklists, disable remote download telemetry) ---
+        "browser.safebrowsing.downloads.remote.enabled" = false;
+
+        # --- Certificates & Revocation (CRLite enforcing mode) ---
+        "security.pki.crlite_mode" = 2;
+        "security.remote_settings.crlite_filters.enabled" = true;
 
         # --- Geolocation Shunts ---
-        "geo.provider.network.url" =
-          "https://location.services.mozilla.com/v1/geolocate?key=%MOZILLA_API_KEY%";
         "geo.provider.use_gpsd" = false;
         "geo.provider.use_geoclue" = false;
+        "permissions.default.geo" = 2;
         "browser.region.network.url" = "";
         "browser.region.update.enabled" = false;
 
-        # --- Content Blocking & Query Stripping ---
+        # --- Content & Cookie Blocking ---
+        "browser.contentblocking.category" = "strict";
         "privacy.query_stripping.enabled" = true;
         "privacy.query_stripping.enabled.pbmode" = true;
-        "browser.contentblocking.features.strict" =
-          "tp,tpPrivate,cookieBehavior5,cookieBehaviorPBM5,cm,fp,stp,emailTP,emailTPPrivate,-lvl2,rp,rpTop,ocsp,qps,qpsPBM,fpp,fppPrivate,3pcd,btp";
-        "privacy.firstparty.isolate" = true;
         "network.cookie.cookieBehavior" = 5;
 
-        # --- Anti-Fingerprinting ---
-        "privacy.resistFingerprinting" = true;
+        # --- Cookie Banner Handling (Native rejection) ---
+        "cookiebanners.service.mode" = 1;
+        "cookiebanners.service.mode.privateBrowsing" = 1;
+
+        # --- Anti-Fingerprinting (Modern FPP + Siphash canvas randomization without breaking dark mode/UTC) ---
+        "privacy.fingerprintingProtection" = true;
+        "privacy.fingerprintingProtection.pbmode" = true;
         "privacy.resistFingerprinting.randomization.canvas.use_siphash" = true;
         "privacy.resistFingerprinting.randomization.daily_reset.enabled" = true;
         "privacy.resistFingerprinting.randomization.daily_reset.private.enabled" = true;
@@ -270,13 +333,13 @@ in
               "MyNixOS" = {
                 url = "https://mynixos.com";
                 id = pinUuid 6;
-                position = 600;
+                position = 1010;
                 container = containers.Personal.id;
               };
               "Key BR" = {
                 url = "https://keybr.com";
                 id = pinUuid 7;
-                position = 700;
+                position = 1020;
                 container = containers.Personal.id;
               };
             };
@@ -312,7 +375,7 @@ in
               "In4SIT" = {
                 url = "https://in4sit.singaporetech.edu.sg";
                 id = pinUuid 8;
-                position = 800;
+                position = 1030;
                 container = containers.School.id;
               };
             };
@@ -343,6 +406,12 @@ in
             routes = {
               "youtube" = {
                 reference = "www.youtube.com";
+              };
+              "youtube-apex" = {
+                reference = "youtube.com";
+              };
+              "youtube-short" = {
+                reference = "youtu.be";
               };
             };
           };
@@ -381,15 +450,17 @@ in
         "c01d3e22-1cee-45c1-a25e-53c0f180eea8" # Ghost Tabs
         "642854b5-88b4-4c40-b256-e035532109df" # Transparent Zen
         "4a222d82-2803-4ed2-a390-90abfce4f195" # Back Fwd Always Hidden
-        "cb5efa80-f1e1-43ce-8c0b-fece8462d225" # Container Halo
         "1e86cf37-a127-4f24-b919-d265b5ce29a0" # Lean
         "4c2bec61-7f6c-4e5c-bdc6-c9ad1aba1827" # Vertical Tab Split Groups
         "4ab93b88-151c-451b-a1b7-a1e0e28fa7f8" # No Sidebar Scrollbar
-        "ae7868dc-1fa1-469e-8b89-a5edf7ab1f24" # Load Bar
         "79dde383-4fe7-404a-a8e6-9be440022542" # Tidy Popup
-        "87196c08-8ca1-4848-b13b-7ea41ee830e7" # Tab Preview Enhanced
         "fd24f832-a2e6-4ce9-8b19-7aa888eb7f8e" # Quietify
         "f4866f39-cfd6-4498-ab92-54213b8279dc" # Animation Plus
+        "a6335949-4465-4b71-926c-4a52d34bc9c0" # Better Find Bar
+        "599a1599-e6ab-4749-ab22-de533860de2c" # Pimp your PiP
+        "3ff55ba7-4690-4f74-96a8-9e4416685e4e" # Colored container tab
+        "58649066-2b6f-4a5b-af6d-c3d21d16fc00" # Private Mode Highlighting
+        "6f11c932-b992-433e-8c80-56a613cc511e" # Left close button
       ];
     };
   };

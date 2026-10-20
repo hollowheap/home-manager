@@ -82,4 +82,9 @@ in
       ${allRules}
     '';
   };
+
+  programs.wallust.settings.templates.crush = {
+    template = "crush.json";
+    target = "${config.home.homeDirectory}/.config/crush/themes/wallust.json";
+  };
 }

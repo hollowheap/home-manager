@@ -12,6 +12,7 @@
     repomap
     hollowheap-colorscript
     hollowpi-colorscript
+    agy-statusline
 
     # Desktop Applications
     nautilus
@@ -21,5 +22,6 @@
     libreoffice
     prismlauncher
     telegram-desktop
+    teams-for-linux
   ];
 }

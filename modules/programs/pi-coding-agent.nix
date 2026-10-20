@@ -63,45 +63,17 @@ let
       gitIntervalMs = 5000;
     };
     sections = {
-      a = [
-        {
-          type = "text";
-          text = "";
-          fg = "bright-yellow";
-        }
-        {
-          type = "text";
-          text = "󰘧 ";
-          fg = "black";
-          bg = "bright-yellow";
-          bold = true;
-        }
-        {
-          type = "text";
-          text = " ";
-          fg = "black";
-          bg = "bright-white";
-          bold = true;
-        }
-        {
+      a = config.styles.pills.pi.left {
+        icon = "󰘧";
+        component = {
           type = "mode-guard";
-          fg = "black";
-          bg = "bright-white";
-          bold = true;
-        }
-        {
-          type = "text";
-          text = " ";
-          fg = "black";
-          bg = "bright-white";
-          bold = true;
-        }
-        {
-          type = "text";
-          text = "";
-          fg = "bright-white";
-        }
-      ];
+        };
+        accent = "bright-yellow";
+        iconFg = "black";
+        charcoal = "bright-white";
+        charcoalFg = "black";
+        bold = true;
+      };
       b = [
         {
           type = "git_branch";

@@ -20,6 +20,7 @@
       ELECTRON_OZONE_PLATFORM_HINT = "wayland";
 
       _ZO_ECHO = "1";
+      MANPAGER = "batman";
     };
 
     pointerCursor.enable = true;

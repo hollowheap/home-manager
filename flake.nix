@@ -10,26 +10,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    stylix = {
-      url = "github:nix-community/stylix/master";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        tinted-zed.follows = "nixpkgs";
-        tinted-tmux.follows = "nixpkgs";
-        tinted-kitty.follows = "nixpkgs";
-        base16-fish.follows = "nixpkgs";
-        base16-helix.follows = "nixpkgs";
-        base16-vim.follows = "nixpkgs";
-        firefox-gnome-theme.follows = "nixpkgs";
-        gnome-shell.follows = "nixpkgs";
-        nur.follows = "nixpkgs";
-      };
-    };
-
-    # noctalia-shell = {
-    #   url = "github:noctalia-dev/noctalia-shell/cachix";
-    # };
-
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake/beta";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -45,13 +25,6 @@
       url = "github:notashelf/nvf";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-  };
-
-  nixConfig = {
-    # extra-substituters = [ "https://noctalia.cachix.org" ];
-    # extra-trusted-public-keys = [
-    #   "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
-    # ];
   };
 
   outputs =
@@ -76,7 +49,19 @@
         config.allowUnfreePredicate = pkg: builtins.elem (inputs.nixpkgs.lib.getName pkg) unfreePackages;
         # config.permittedInsecurePackages = [ "electron-40.10.5" ];
 
-        overlays = [ (_: prev: import ./pkgs/default.nix prev) ];
+        overlays = [
+          (_: prev: import ./pkgs/default.nix prev)
+          (final: prev: {
+            typescript-language-server = prev.typescript-language-server.overrideAttrs (old: {
+              pnpmDeps = final.fetchPnpmDeps {
+                inherit (old) pname version src;
+                pnpm = final.pnpm_12;
+                fetcherVersion = 4;
+                hash = "sha256-xR/EF60lVBsITKgH7wCM2wHM46PFQevD51KfCENSUH4=";
+              };
+            });
+          })
+        ];
       };
 
       stateVersionConfig = {
@@ -92,6 +77,49 @@
 
       pkgs = import inputs.nixpkgs packageConfig;
 
+      toolchains = {
+        nix = with pkgs; [
+          nil
+          nixfmt
+        ];
+        ts = with pkgs; [
+          nodejs
+          pnpm
+          bun
+          deno
+          typescript
+          typescript-language-server
+          biome
+        ];
+        rust = with pkgs; [
+          cargo
+          rustc
+          rustfmt
+          clippy
+          rust-analyzer
+        ];
+        python = with pkgs; [
+          python3
+          uv
+          basedpyright
+          ruff
+        ];
+        c = with pkgs; [
+          clang-tools
+          cmake
+          gnumake
+          gcc
+          gdb
+        ];
+        pico = with pkgs; [
+          cmake
+          gnumake
+          gcc-arm-embedded
+          pico-sdk
+          python3
+        ];
+      };
+
       hmConfigurations =
         with inputs;
         usernames:
@@ -101,13 +129,11 @@
             inherit pkgs;
 
             extraSpecialArgs = {
-              inherit inputs;
+              inherit inputs toolchains;
               stable = import inputs.nixpkgs-stable packageConfig;
             };
 
             modules = [
-              stylix.homeModules.stylix
-              # noctalia-shell.homeModules.default
               zen-browser.homeModules.twilight
               nvf.homeManagerModules.default
               sops-nix.homeManagerModules.sops
@@ -121,34 +147,46 @@
     {
       homeConfigurations = hmConfigurations [ "hollowheap" ];
 
+
+
       devShells.x86_64-linux =
         let
-          pico-sdk = pkgs.pico-sdk.override { withSubmodules = true; };
           ts = pkgs.mkShell {
             name = "ts-dev";
-            packages = with pkgs; [
-              nodejs
-              pnpm
-              bun
-              deno
-              typescript
-              typescript-language-server
-              biome
-            ];
+            packages = toolchains.ts;
+          };
+          c = pkgs.mkShell {
+            name = "c-dev";
+            packages = toolchains.c;
           };
         in
         {
+          inherit ts c;
+          typescript = ts;
+          js = ts;
+          clang = c;
+          cpp = c;
+
+          nix = pkgs.mkShell {
+            name = "nix-dev";
+            packages = toolchains.nix;
+          };
+
+          rust = pkgs.mkShell {
+            name = "rust-dev";
+            packages = toolchains.rust;
+          };
+
+          python = pkgs.mkShell {
+            name = "python-dev";
+            packages = toolchains.python;
+          };
+
           pico = pkgs.mkShell {
             name = "pico-dev";
-            packages = with pkgs; [
-              cmake
-              gnumake
-              gcc-arm-embedded
-              pico-sdk
-              python3
-            ];
+            packages = toolchains.pico;
             env = {
-              PICO_SDK_PATH = "${pico-sdk}/lib/pico-sdk";
+              PICO_SDK_PATH = "${pkgs.pico-sdk}/lib/pico-sdk";
             };
             shellHook = ''
               rm -f .clangd
@@ -161,37 +199,6 @@ CompileFlags:
 EOF
             '';
           };
-
-          python = pkgs.mkShell {
-            name = "python-dev";
-            packages = with pkgs; [
-              python3
-              uv
-            ];
-          };
-
-          rust = pkgs.mkShell {
-            name = "rust-dev";
-            packages = with pkgs; [
-              cargo
-              rustc
-              rustfmt
-              clippy
-              rust-analyzer
-            ];
-          };
-
-          nix = pkgs.mkShell {
-            name = "nix-dev";
-            packages = with pkgs; [
-              nil
-              nixfmt
-            ];
-          };
-
-          inherit ts;
-          typescript = ts;
-          js = ts;
         };
     };
 }

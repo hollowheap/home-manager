@@ -26,6 +26,9 @@
 
     nv = "nvim";
     g = "git";
+    cat = "bat";
+    diff = "batdiff";
+    man = "batman";
     sc = "_ systemctl";
     scu = "systemctl --user";
 
@@ -50,8 +53,18 @@
       share = true;
       ignoreSpace = true;
       ignoreDups = true;
+      ignoreAllDups = true;
       saveNoDups = true;
       findNoDups = true;
+      expireDuplicatesFirst = true;
+      ignorePatterns = [
+        "exit"
+        "clear"
+        "history*"
+        "l"
+        "ls"
+        "pwd"
+      ];
       save = 10000;
       size = 10000;
     };
@@ -81,12 +94,7 @@
       }
       {
         name = "fzf-tab-source";
-        src = fetchFromGitHub {
-          owner = "Freed-Wu";
-          repo = "fzf-tab-source";
-          rev = "master";
-          sha256 = "sha256-d7+yKrHp4Vcl5WlQfQ/UMNK5j3wz8Ls168Cuj1LYTgI=";
-        };
+        src = zshPlugins.fzf-tab-source;
         file = "share/fzf-tab-source/fzf-tab-source.plugin.zsh";
       }
       {
@@ -118,11 +126,14 @@
       setopt PATH_DIRS
       setopt COMPLETE_IN_WORD
       setopt ALWAYS_TO_END
+      setopt HIST_REDUCE_BLANKS
+      setopt HIST_NO_STORE
+      setopt HIST_VERIFY
 
       # Common settings
       zstyle ':completion:*' group-name ""
       zstyle ':completion:*' verbose yes
-      zstyle ':completion:*' completer _complete _match
+      zstyle ':completion:*' completer _complete _match _history
       zstyle ':completion:*' list-colors ''${(s.:.)LS_COLORS} # Enable list colors
       zstyle ':completion:*' list-prompt '%S%M matches %s'
 
@@ -166,8 +177,16 @@
       zstyle ':completion:*:manuals' separate-sections true
       zstyle ':completion:*:manuals.(^1*)' insert-sections true
 
+      export FZF_TMUX=1
+      export FZF_TMUX_OPTS="-p 75%,65%"
+      export FZF_DEFAULT_OPTS="--tmux=center,75%,65% --layout=reverse --border=rounded --prompt='❯ ' --marker='❯' --pointer='❯'"
+      export FZF_CTRL_R_OPTS="--border-label=' History ' --border-label-pos=0 --prompt=' History ❯ '"
+      export FZF_CTRL_T_OPTS="--border-label=' Files ' --border-label-pos=0 --prompt=' Files ❯ '"
+      export FZF_ALT_C_OPTS="--border-label=' Directories ' --border-label-pos=0 --prompt=' Directories ❯ '"
+
       zstyle ':fzf-tab:*' fzf-flags \
-        --tmux \
+        --tmux=center,75%,65% \
+        --height=40% \
         --layout=reverse \
         --border=rounded \
         --border-label=" Completions " \
@@ -176,12 +195,42 @@
         --prompt="❯ " \
         --marker="❯" \
         --pointer="❯"
-      # --height=40% \
 
-      bindkey -r "^R"
+      # Path-aware word deletion (C-w stops at slashes)
+      autoload -U select-word-style
+      select-word-style bash
 
-      bindkey "^[OA" fzf-history-widget
-      bindkey "^[OB" fzf-history-widget
+      # Pure viins keybindings hook (ensures zsh-vi-mode preserves bindings)
+      function zvm_after_init() {
+        zvm_bindkey viins '^U' backward-kill-line
+        zvm_bindkey viins '^W' backward-kill-word
+        zvm_bindkey viins '^A' vi-beginning-of-line
+        zvm_bindkey viins '^E' vi-end-of-line
+        zvm_bindkey viins '^R' fzf-history-widget
+        zvm_bindkey viins '^F' fzf-file-widget
+        zvm_bindkey viins '^O' fzf-cd-widget
+        zvm_bindkey viins '^[[A' fzf-history-widget
+        zvm_bindkey viins '^[OA' fzf-history-widget
+        zvm_bindkey vicmd '^R' fzf-history-widget
+        zvm_bindkey vicmd '^F' fzf-file-widget
+        zvm_bindkey vicmd '^O' fzf-cd-widget
+        zvm_bindkey vicmd 'k' up-line-or-history
+        zvm_bindkey vicmd 'j' down-line-or-history
+        bindkey -r "^K"
+      }
+
+      bindkey -M viins '^U' backward-kill-line
+      bindkey -M viins '^W' backward-kill-word
+      bindkey -M viins '^A' vi-beginning-of-line
+      bindkey -M viins '^E' vi-end-of-line
+      bindkey -M viins '^R' fzf-history-widget
+      bindkey -M viins '^F' fzf-file-widget
+      bindkey -M viins '^O' fzf-cd-widget
+      bindkey -M viins '^[[A' fzf-history-widget
+      bindkey -M viins '^[OA' fzf-history-widget
+
+      bindkey "^[OB" down-line-or-history
+      bindkey "^[[B" down-line-or-history
       bindkey "^[[1;5D" vi-backward-word
       bindkey "^[[1;5C" vi-forward-word
       bindkey "^[[1;6D" vi-backward-word
@@ -190,15 +239,35 @@
       bindkey "^[[4~" vi-end-of-line
       bindkey "^[?" run-help
 
-      bindkey "^K" kill-line
+      # Unbind ^K to prevent smart-splits top-boundary from killing prompt
+      bindkey -r "^K"
 
-      bindkey -M vicmd 'k' fzf-history-widget
-      bindkey -M vicmd 'j' fzf-history-widget
+      # Normal mode history navigation (clean up/down without popup takeovers)
+      bindkey -M vicmd 'k' up-line-or-history
+      bindkey -M vicmd 'j' down-line-or-history
+      bindkey -M vicmd '^R' fzf-history-widget
+      bindkey -M vicmd '^F' fzf-file-widget
+      bindkey -M vicmd '^O' fzf-cd-widget
 
       # Source wallust terminal sequences
       if [[ -t 1 && -f "$HOME/.cache/wallust/sequences" ]]; then
-        cat "$HOME/.cache/wallust/sequences"
+        command tr -d '\r\n' < "$HOME/.cache/wallust/sequences"
       fi
+
+      # AI provider API keys from Vaultwarden (rbw folder keys/api). Only when the
+      # vault is already unlocked, so a new shell never triggers a pinentry prompt;
+      # crush, pi and opencode read these provider keys from the environment.
+      if (( ''${+commands[rbw]} )) && rbw unlocked >/dev/null 2>&1; then
+        for _rbw_key in OPENCODE_API_KEY:opencode ANTHROPIC_API_KEY:claude GEMINI_API_KEY:gemini; do
+          _rbw_val="$(rbw get --folder keys/api "''${_rbw_key##*:}" 2>/dev/null)" \
+            && [[ -n "$_rbw_val" ]] \
+            && export "''${_rbw_key%%:*}=$_rbw_val"
+        done
+        [[ -n "$GEMINI_API_KEY" ]] && export GOOGLE_GENERATIVE_AI_API_KEY="$GEMINI_API_KEY"
+        unset _rbw_key _rbw_val
+      fi
+
+      (( ''${+commands[batpipe]} )) && eval "$(batpipe)"
 
       (( ''${+commands[fastfetch]} )) && fastfetch
     '';
