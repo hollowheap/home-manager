@@ -1,6 +1,8 @@
 { config, lib, pkgs, ... }:
 let
-  inherit (lib) mkIf filterAttrs mapAttrs mapAttrsToList optionals;
+  inherit (lib) mkIf mapAttrs mapAttrsToList optionals;
+
+  aiRender = config.ai.render;
 
   agToolsFor =
     agent:
@@ -30,26 +32,11 @@ let
     ++ (optionals (caps.execute || caps.delegate) [
       "manage_task"
     ])
-    ++ (optionals (builtins.elem "question" agent.skills) [
+    ++ (optionals (builtins.elem "grill" agent.skills || builtins.elem "question" agent.skills) [
       "ask_question"
     ]);
 
-  rulesText =
-    agent:
-    let
-      matches =
-        rule:
-        lib.all (cap: !rule.requires.${cap} || agent.capabilities.${cap}) [
-          "read"
-          "write"
-          "execute"
-          "delegate"
-          "mcp"
-          "web"
-        ];
-      kept = lib.filter matches config.ai.rules;
-    in
-    lib.optionalString (kept != [ ]) ("\n\n" + lib.concatStringsSep "\n\n" (map (rule: rule.text) kept));
+  rulesText = aiRender.rulesText config.ai.rules;
 
   mkAgent =
     name: agent:
@@ -74,7 +61,7 @@ let
       );
     in
     {
-      name = ".gemini/config/agents/${name}/agent.md";
+      name = ".gemini/antigravity-cli/agents/${name}/agent.md";
       value.text = ''
         ---
         ${yamlFrontmatter}
@@ -85,64 +72,59 @@ let
       '';
     };
 
-  mkSkillDir =
-    name: skill:
-    let
-      refCmds = mapAttrsToList (
-        fileName: content: ''
-          mkdir -p "$out/references"
-          cp ${pkgs.writeText "${name}-ref-${fileName}" content} "$out/references/${fileName}"
-        ''
-      ) skill.references;
-      scriptCmds = mapAttrsToList (
-        fileName: content: ''
-          mkdir -p "$out/scripts"
-          install -m0755 ${pkgs.writeText "${name}-script-${fileName}" content} "$out/scripts/${fileName}"
-        ''
-      ) skill.scripts;
-    in
-    pkgs.runCommandLocal "antigravity-skill-${name}" { } (
-      ''
-        mkdir -p "$out"
-        cp ${
-          pkgs.writeText "${name}-SKILL.md" ''
-            ---
-            name: ${name}
-            description: ${skill.description} Activate this skill when the user's task involves ${name}, or when the user enters a matching mode (e.g. /${name}).
-            ---
-
-            ${skill.content}
-          ''
-        } "$out/SKILL.md"
-      ''
-      + lib.concatStringsSep "\n" (refCmds ++ scriptCmds)
-    );
+  mkSkillDir = aiRender.mkSkillDir {
+    prefix = "antigravity";
+    descriptionSuffix =
+      name:
+      " Activate this skill when the user's task involves ${name}, or when the user enters a matching mode (e.g. /${name}).";
+  };
 
   # Antigravity built-ins are closed: no drops. Add rule names here once verified.
   droppedDisciplineRules = { };
 
-  renderDiscipline =
-    name: d:
-    let
-      dropped = droppedDisciplineRules.${name} or [ ];
-      kept = filterAttrs (rule: text: text != null && !(builtins.elem rule dropped)) d.rules;
-    in
-    ''
-      # ${name}
-      ${d.description}
-
-      ${lib.concatStringsSep "\n\n" (mapAttrsToList (_: text: text) kept)}
-    '';
+  renderDiscipline = aiRender.renderDiscipline { dropped = droppedDisciplineRules; };
 
   mkRule =
     name: d: {
       name = ".gemini/config/rules/${name}.md";
-      value.text = renderDiscipline name d;
+      value.text = ''
+        ---
+        trigger: always_on
+        description: "${d.description}"
+        ---
+        ${renderDiscipline name d}'';
     };
 in
 {
   programs.antigravity-cli = {
     enable = true;
+    mutableSettings = true;
+    settings = {
+      allowNonWorkspaceAccess = true;
+      editorMode = "vim";
+      model = "Gemini 3.8 Flash (High)";
+      notifications = true;
+      pickerGrouping = "grouped";
+      runningLightSpeed = "fast";
+      showFeedbackSurvey = false;
+      showTips = false;
+      statusLine = {
+        type = "command";
+        command = "${config.home.homeDirectory}/.gemini/antigravity-cli/bin/agy-statusline";
+        enabled = true;
+      };
+      toolPermission = "always-proceed";
+      trustedWorkspaces = [
+        "${config.home.homeDirectory}/repos/home-manager"
+        "${config.home.homeDirectory}/repos/nixos-config"
+        "${config.home.homeDirectory}/repos"
+        "${config.home.homeDirectory}/repos/md-questioner"
+        "${config.home.homeDirectory}/repos/inf2001-scratch"
+        "${config.home.homeDirectory}/repos/my-pi-agent"
+        "${config.home.homeDirectory}/repos/pico-car"
+      ];
+      vimInsertFirst = true;
+    };
     skills = mapAttrs mkSkillDir config.ai.skills;
   };
 
@@ -151,5 +133,8 @@ in
       (mapAttrsToList mkAgent config.ai.agents)
       ++ (mapAttrsToList mkRule config.ai.disciplines)
     )
+    // {
+      ".gemini/antigravity-cli/bin/agy-statusline".source = "${pkgs.agy-statusline}/bin/agy-statusline";
+    }
   );
 }

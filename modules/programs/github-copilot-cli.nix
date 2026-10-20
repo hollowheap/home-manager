@@ -1,10 +1,13 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 let
-  inherit (lib) mkIf filterAttrs mapAttrs mapAttrsToList optionals concatStringsSep;
+  inherit (lib) mkIf mapAttrs mapAttrsToList optionals concatStringsSep;
+
+  aiRender = config.ai.render;
 
   copilotToolsFor =
     agent:
@@ -18,22 +21,7 @@ let
     ++ (optionals caps.web [ "web" ])
     ++ (optionals (builtins.elem "plan" agent.skills) [ "todo" ]);
 
-  rulesText =
-    agent:
-    let
-      matches =
-        rule:
-        lib.all (cap: !rule.requires.${cap} || agent.capabilities.${cap}) [
-          "read"
-          "write"
-          "execute"
-          "delegate"
-          "mcp"
-          "web"
-        ];
-      kept = lib.filter matches config.ai.rules;
-    in
-    lib.optionalString (kept != [ ]) ("\n\n" + concatStringsSep "\n\n" (map (rule: rule.text) kept));
+  rulesText = aiRender.rulesText config.ai.rules;
 
   mkAgent =
     _name: agent:
@@ -69,24 +57,17 @@ let
   # Copilot CLI built-ins are closed: no drops. Add rule names here once verified.
   droppedDisciplineRules = { };
 
-  renderDiscipline =
-    name: d:
-    let
-      dropped = droppedDisciplineRules.${name} or [ ];
-      kept = filterAttrs (rule: text: text != null && !(builtins.elem rule dropped)) d.rules;
-    in
-    ''
-      # ${name}
-      ${d.description}
-
-      ${concatStringsSep "\n" (mapAttrsToList (_: text: text) kept)}
-    '';
+  renderDiscipline = aiRender.renderDiscipline {
+    dropped = droppedDisciplineRules;
+    separator = "\n";
+  };
 
   disciplineBlocks = mapAttrsToList renderDiscipline config.ai.disciplines;
 in
 {
   programs.github-copilot-cli = {
     enable = true;
+    mutableSettings = true;
     enableMcpIntegration = true;
 
     agents = mapAttrs mkAgent config.ai.agents;

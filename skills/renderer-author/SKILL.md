@@ -1,34 +1,19 @@
 ---
 name: renderer-author
-description: New-harness renderer checklist for modules/programs/ in this workspace. Use when adding or changing a harness renderer. Do NOT use for edits inside existing renderers that change no surface.
+description: New-harness renderer authoring in modules/programs/. Load ONLY when adding or modifying an AI harness renderer. Do NOT load for general edits.
 ---
-
-Mirror the closest existing renderer; wire package, skills, agents, disciplines, rules, and drops; prove each surface with eval. Read artifacts/matrix.md first for the current capability, rule, and surface mapping.
-
-## Use / Do NOT use
-
-Use when: new harness module, new option surface, changing what a renderer emits.
-Do NOT use when: editing text inside one surface (just verify that surface).
 
 ## Workflow
 
-1. Package: confirm the nixpkgs attr first (beware near-miss names: `codex`, not `codex-cli`).
-2. Options: introspect the upstream module (store source declarations, option descriptions) before writing; never guess shapes.
-3. Surfaces: map skills, agents, disciplines plus rules, and drop-lists to harness-native paths.
-4. Drops: fetch the base prompt; drop only verified overlap, empty map plus comment otherwise.
-5. Matrix: eval per-agent rule and tool presence (full/partial/none caps); flake check to close.
+1. Package: confirm nixpkgs attr first (beware near-miss names like codex vs codex-cli).
+2. Options: introspect upstream home-manager / nixpkgs module source before writing; never guess shapes.
+3. Surfaces: wire package, skills, agents, disciplines, rules, and drop lists into harness-native targets.
+4. Reference: consult references/matrices.md for renderer mapping, prompt overlap, and capabilities.
+5. Verification: stage new files with git add and verify with nix flake check --no-build.
 
 ## Rules
 
-1. Structure mirrors modules/programs/<closest>.nix: mkSkill or mkSkillDir, mkAgent or agent files, renderDiscipline, rulesText.
-2. Per-agent prompt bodies get matched rules; global surfaces get disciplines only.
-3. Follow nix-flake-eval: stage the new file before evaluating anything.
-
-## Bad / Good
-
-Bad: hand-write TOML strings and discover lib has no toTOML at eval time.
-Good: formats module or store-source check first, then write, stage, eval matrix.
-
-## Verification
-
-Skills list, agent file, context, and drops each eval to expected content; flake check passes.
+- Use shared rendering from config.ai.render (modelFor, effortFor, agentBodyFor, context, mkSkillDir); keep harness-specific tool and model mapping in the program module.
+- Per-agent prompt bodies receive matched rules; global surfaces receive disciplines only.
+- Stage new module files before evaluating per nix-flake-eval.
+- Verify: Each rendered surface evals to expected content and nix flake check passes.

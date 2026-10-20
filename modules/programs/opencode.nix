@@ -5,7 +5,9 @@
   ...
 }:
 let
-  inherit (lib) concatStringsSep filterAttrs mapAttrs mapAttrsToList optionalString;
+  inherit (lib) concatStringsSep mapAttrs mapAttrsToList;
+
+  aiRender = config.ai.render;
 
   toolsFor =
     capabilities:
@@ -24,117 +26,107 @@ let
       webfetch = caps.web;
     };
 
-  opencodeModelFor =
-    model:
-    if model == "low" then
-      "opencode/mimo-v2.6-flash-free"
-    else if model == "flash" || model == "medium" then
-      "opencode/muse-spark-1.3-contributor-free"
-    else if model == "high" || model == "pro" || model == "xhigh" || model == "max" then
-      "opencode/step-5-preview-free"
-    else
-      model;
+  opencodeModel = "opencode/deepseek-v4.1-flash-free";
 
   modeFor =
     agent:
-    if agent.mainAgent && agent.subagent then
+    if agent.role == "subagent" then
+      "subagent"
+    else if agent.mainAgent && agent.subagent then
       "all"
     else if agent.mainAgent then
       "primary"
     else
       "subagent";
 
-  rulesText =
-    agent:
-    let
-      matches =
-        rule:
-        lib.all (cap: !rule.requires.${cap} || agent.capabilities.${cap}) [
-          "read"
-          "write"
-          "execute"
-          "delegate"
-          "mcp"
-          "web"
-        ];
-      kept = lib.filter matches config.ai.rules;
-    in
-    lib.optionalString (kept != [ ]) ("\n\n" + concatStringsSep "\n\n" (map (rule: rule.text) kept));
-
   mkAgent =
-    _name: agent:
-    # TODO: Map agent.effort to Opencode reasoning effort
+    name: agent:
     let
-      resolvedModel = if agent.model != null then opencodeModelFor agent.model else "opencode/muse-spark-1.3-contributor-free";
-      model = "model: ${builtins.toJSON resolvedModel}\n";
+      model = aiRender.modelFor "opencode" agent;
+      effort = aiRender.effortFor "opencode" agent;
       tools = toolsFor agent.capabilities // {
         # Built-in question tool exists; gate it on the question skill like antigravity's ask_question.
-        question = builtins.elem "question" agent.skills;
+        question = builtins.elem "question" agent.skills || builtins.elem "grill" agent.skills;
       };
+      perms =
+        if name == "scout" || name == "Scout" then ''
+          permission:
+            skill: "deny"
+            bash:
+              "repomap*": "allow"
+              "rg*": "allow"
+              "fd*": "allow"
+              "nix eval*": "allow"
+              "nix flake show*": "allow"
+              "git status*": "allow"
+              "git log*": "allow"
+              "git diff*": "allow"
+              "*": "deny"
+        '' else if name == "code-reviewer" || name == "Code Reviewer" then ''
+          permission:
+            skill: "deny"
+        '' else if name == "ask" then ''
+          permission:
+            task:
+              scout: "allow"
+              "*": "deny"
+        '' else if agent.role == "primary" || agent.mainAgent then ''
+          permission:
+            task:
+              general: "deny"
+              explore: "deny"
+        '' else "";
+      toolsText = concatStringsSep "\n" (mapAttrsToList (tool: enabled: "  ${tool}: ${if enabled then "true" else "false"}") tools);
+      effortLine = lib.optionalString (effort != null) "reasoningEffort: ${effort}\n";
     in
     ''
       ---
       description: ${builtins.toJSON agent.description}
       mode: ${modeFor agent}
-      ${model}tools:
-      ${concatStringsSep "\n" (mapAttrsToList (tool: enabled: "  ${tool}: ${if enabled then "true" else "false"}") tools)}
-      ---
+      model: ${builtins.toJSON model}
+      ${effortLine}tools:
+      ${toolsText}
+      ${perms}---
 
-      ${agent.instructions}${rulesText agent}
+      ${aiRender.agentBodyFor "opencode" agent}
     '';
 
-  mkSkill =
-    name: skill:
-    pkgs.runCommandLocal "opencode-skill-${name}" { } ''
-      mkdir -p "$out/references" "$out/scripts"
-      cp ${
-        pkgs.writeText "${name}-SKILL.md" ''
-          ---
-          name: ${name}
-          description: ${skill.description}
-          ---
+  mkSkill = aiRender.mkSkillDir { prefix = "opencode"; };
 
-          ${skill.content}
-        ''
-      } "$out/SKILL.md"
-      ${concatStringsSep "\n" (mapAttrsToList (fileName: content: ''
-        cp ${pkgs.writeText "${name}-reference-${fileName}" content} "$out/references/${fileName}"
-      '') skill.references)}
-      ${concatStringsSep "\n" (mapAttrsToList (fileName: content: ''
-        install -m0755 ${pkgs.writeText "${name}-script-${fileName}" content} "$out/scripts/${fileName}"
-      '') skill.scripts)}
-    '';
-
-  # Discipline lines the opencode built-in prompt already covers (concise style guide,
-  # no-dump file refs, single targeted questions): drop them here, keep the rest.
-  droppedDisciplineRules = {
-    unslop = [
-      "concise"
-      "no-restate"
-      "dense"
-    ];
-  };
-
-  renderDiscipline =
-    name: discipline:
-    let
-      dropped = droppedDisciplineRules.${name} or [ ];
-      kept = filterAttrs (rule: text: text != null && !(builtins.elem rule dropped)) discipline.rules;
-    in
-    ''
-      # ${name}
-      ${discipline.description}
-
-      ${concatStringsSep "\n\n" (mapAttrsToList (_: text: text) kept)}
-    '';
-
-  context = concatStringsSep "\n\n" (mapAttrsToList renderDiscipline config.ai.disciplines);
+  context = aiRender.context "opencode";
 in
 {
   programs.opencode = {
     enable = true;
+    package = pkgs.symlinkJoin {
+      name = "opencode-wrapped";
+      paths = [ pkgs.opencode ];
+      nativeBuildInputs = [ pkgs.makeWrapper ];
+      postBuild = ''
+        wrapProgram $out/bin/opencode \
+          --set-default OPENCODE_CONFIG "${config.xdg.configHome}/opencode/home-manager.json" \
+          --set-default OPENCODE_TUI_CONFIG "${config.xdg.configHome}/opencode/home-manager-tui.json" \
+          --unset OPENCODE_API_KEY
+      '';
+    };
+    mutableSettings = true;
+    settings = {
+      "$schema" = "https://opencode.ai/config.json";
+      model = opencodeModel;
+      small_model = opencodeModel;
+      provider.opencode.env = [ ];
+      agent.general.disable = true;
+      agent.explore.disable = true;
+      permission = {
+        task = {
+          general = "deny";
+          explore = "deny";
+        };
+      };
+    };
     agents = mapAttrs mkAgent config.ai.agents;
     skills = mapAttrs mkSkill config.ai.skills;
+    tui.theme = "wallust";
     inherit context;
   };
 }

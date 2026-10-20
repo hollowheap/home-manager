@@ -5,23 +5,14 @@
   ...
 }:
 let
-  inherit (lib) concatStringsSep filterAttrs mapAttrsToList;
+  inherit (lib) concatStringsSep mapAttrsToList;
+
+  aiRender = config.ai.render;
 
   # Pi built-in prompt is unverified for overlap: no drops. Add rule names here once verified.
   droppedDisciplineRules = { };
 
-  renderDiscipline =
-    name: discipline:
-    let
-      dropped = droppedDisciplineRules.${name} or [ ];
-      kept = filterAttrs (rule: text: text != null && !(builtins.elem rule dropped)) discipline.rules;
-    in
-    ''
-      # ${name}
-      ${discipline.description}
-
-      ${concatStringsSep "\n\n" (mapAttrsToList (_: text: text) kept)}
-    '';
+  renderDiscipline = aiRender.renderDiscipline { dropped = droppedDisciplineRules; };
 
   disciplines = concatStringsSep "\n\n" (mapAttrsToList renderDiscipline config.ai.disciplines);
 
@@ -31,33 +22,7 @@ let
 
   configDir = config.programs.pi-coding-agent.configDir;
 
-  opencodeModelFor =
-    model:
-    if model == "low" then
-      "mimo-v2.6-flash-free"
-    else if model == "flash" || model == "medium" then
-      "muse-spark-1.3-contributor-free"
-    else if model == "high" || model == "pro" || model == "xhigh" || model == "max" then
-      "step-5-preview-free"
-    else
-      model;
-
-  rulesText =
-    agent:
-    let
-      matches =
-        rule:
-        lib.all (cap: !rule.requires.${cap} || agent.capabilities.${cap}) [
-          "read"
-          "write"
-          "execute"
-          "delegate"
-          "mcp"
-          "web"
-        ];
-      kept = lib.filter matches config.ai.rules;
-    in
-    lib.optionalString (kept != [ ]) ("\n\n" + concatStringsSep "\n\n" (map (rule: rule.text) kept));
+  rulesText = aiRender.rulesText config.ai.rules;
 
   agentFiles = mapAttrsToList (name: agent: {
     name = "${configDir}/agents/${name}.md";
@@ -65,8 +30,8 @@ let
       ---
       name: ${name}
       description: ${agent.description}
-      model: ${opencodeModelFor (agent.model or "medium")}
-      effort: ${agent.effort or "high"}
+      model: ${aiRender.modelFor "pi" agent}
+      effort: ${aiRender.effortFor "pi" agent}
       mode: ${if agent.capabilities.write then "ask" else "plan"}
       ---
 
@@ -277,12 +242,14 @@ in
     settings = {
       defaultProvider = "zen";
       defaultModel = "muse-spark-1.3-contributor-free";
+      defaultThinkingLevel = aiRender.effortFor "pi" (config.ai.agents.engineer or { effort = "high"; });
     };
     context = ''
       # Available agents (full briefs in agents/*.md)
 
       ${roster}
-
+    '';
+    appendSystem = ''
       # Shared disciplines
 
       ${disciplines}

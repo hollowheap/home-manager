@@ -5,7 +5,9 @@
   ...
 }:
 let
-  inherit (lib) mkIf mapAttrsToList optionals filterAttrs concatStringsSep;
+  inherit (lib) mkIf mapAttrsToList optionals concatStringsSep;
+
+  aiRender = config.ai.render;
 
   slugToTitle =
     slug:
@@ -51,18 +53,7 @@ let
   # Kiro built-ins are closed: no drops. Add rule names here once verified.
   droppedDisciplineRules = { };
 
-  renderDiscipline =
-    name: d:
-    let
-      dropped = droppedDisciplineRules.${name} or [ ];
-      kept = filterAttrs (rule: text: text != null && !(builtins.elem rule dropped)) d.rules;
-    in
-    ''
-      # ${name}
-      ${d.description}
-
-      ${concatStringsSep "\n\n" (mapAttrsToList (_: text: text) kept)}
-    '';
+  renderDiscipline = aiRender.renderDiscipline { dropped = droppedDisciplineRules; };
 
   mkDiscipline = name: d: {
     name = ".kiro/steering/${name}.md";
@@ -125,22 +116,7 @@ let
     else
       model;
 
-  rulesText =
-    agent:
-    let
-      matches =
-        rule:
-        lib.all (cap: !rule.requires.${cap} || agent.capabilities.${cap}) [
-          "read"
-          "write"
-          "execute"
-          "delegate"
-          "mcp"
-          "web"
-        ];
-      kept = lib.filter matches config.ai.rules;
-    in
-    lib.optionalString (kept != [ ]) ("\n\n" + concatStringsSep "\n\n" (map (rule: rule.text) kept));
+  rulesText = aiRender.rulesText config.ai.rules;
 
   mkKiroAgent =
     name: agent:

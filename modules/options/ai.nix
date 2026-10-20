@@ -1,94 +1,159 @@
-{ lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
-  inherit (lib) mkOption types;
-  inherit (lib.types) str bool lines submodule listOf attrsOf nullOr;
+  inherit (lib)
+    all
+    concatStringsSep
+    filter
+    filterAttrs
+    mapAttrsToList
+    mkOption
+    optionalString
+    ;
+  inherit (lib.types)
+    attrsOf
+    bool
+    enum
+    lines
+    listOf
+    nullOr
+    str
+    submodule
+    unspecified
+    ;
 
-  agentSubmodule = submodule {
-    options = {
-      description = mkOption {
-        type = str;
-        description = "Brief summary of the agent's purpose and role.";
-      };
-      mainAgent = mkOption {
-        type = bool;
-        default = true;
-        description = "Whether this agent can be used as a primary conversational agent.";
-      };
-      subagent = mkOption {
-        type = bool;
-        default = true;
-        description = "Whether this agent can be spawned as a subagent.";
-      };
-      capabilities = mkOption {
-        type = submodule {
-          options = {
-            read = mkOption {
-              type = bool;
-              default = true;
-              description = "Whether the agent may read files, search, and inspect the workspace.";
-            };
-            write = mkOption {
-              type = bool;
-              default = false;
-              description = "Whether the agent may create or modify files.";
-            };
-            execute = mkOption {
-              type = bool;
-              default = false;
-              description = "Whether the agent may run shell commands.";
-            };
-            delegate = mkOption {
-              type = bool;
-              default = false;
-              description = "Whether the agent may spawn and delegate to sub-agents.";
-            };
-            mcp = mkOption {
-              type = bool;
-              default = false;
-              description = "Whether the agent may use MCP server tools.";
-            };
-            web = mkOption {
-              type = bool;
-              default = false;
-              description = "Whether the agent may fetch and search the web.";
+  cfg = config.ai;
+
+  aiRenderBase = import ../../lib/ai-render.nix { inherit lib pkgs; };
+
+  harnessDroppedDisciplines = { };
+
+  harnessDroppedRules = { };
+
+  agentSubmodule = submodule (
+    { config, ... }:
+    {
+      options = {
+        description = mkOption {
+          type = str;
+          description = "Brief summary of the agent's purpose and role.";
+        };
+        role = mkOption {
+          type = enum [
+            "primary"
+            "subagent"
+          ];
+          default = if !config.mainAgent && config.subagent then "subagent" else "primary";
+          description = "Agent role: primary or subagent.";
+        };
+        tier = mkOption {
+          type = enum [
+            "high"
+            "medium"
+            "low"
+          ];
+          default = "medium";
+          description = "Tier for model and effort routing.";
+        };
+        effort = mkOption {
+          type = enum [
+            "low"
+            "medium"
+            "high"
+          ];
+          default = cfg.tiers.${config.tier}.effort;
+          description = "Harness-neutral reasoning effort override (low, medium, high).";
+        };
+        dropDisciplines = mkOption {
+          type = listOf str;
+          default = [ ];
+          description = "Discipline names excluded for this agent.";
+        };
+        mainAgent = mkOption {
+          type = bool;
+          default = true;
+          description = "Whether this agent can be used as a primary conversational agent.";
+        };
+        subagent = mkOption {
+          type = bool;
+          default = true;
+          description = "Whether this agent can be spawned as a subagent.";
+        };
+        capabilities = mkOption {
+          type = submodule {
+            options = {
+              read = mkOption {
+                type = bool;
+                default = true;
+                description = "Whether the agent may read files, search, and inspect the workspace.";
+              };
+              write = mkOption {
+                type = bool;
+                default = false;
+                description = "Whether the agent may create or modify files.";
+              };
+              execute = mkOption {
+                type = bool;
+                default = false;
+                description = "Whether the agent may run shell commands.";
+              };
+              delegate = mkOption {
+                type = bool;
+                default = false;
+                description = "Whether the agent may spawn and delegate to sub-agents.";
+              };
+              mcp = mkOption {
+                type = bool;
+                default = false;
+                description = "Whether the agent may use MCP server tools.";
+              };
+              web = mkOption {
+                type = bool;
+                default = false;
+                description = "Whether the agent may fetch and search the web.";
+              };
             };
           };
+          default = { };
+          description = "Harness-neutral capability boundary. Each harness renderer translates these into its own tool vocabulary and permission model.";
         };
-        default = { };
-        description = "Harness-neutral capability boundary. Each harness renderer translates these into its own tool vocabulary and permission model.";
+        availableAgents = mkOption {
+          type = listOf str;
+          default = [ ];
+          description = "Glob patterns of sub-agents this agent may spawn (requires capabilities.delegate). Empty means all agents are allowed.";
+        };
+        trustedAgents = mkOption {
+          type = listOf str;
+          default = [ ];
+          description = "Sub-agents that run without permission prompts when spawned by this agent.";
+        };
+        skills = mkOption {
+          type = listOf str;
+          default = [ ];
+          description = "List of skills associated with this agent.";
+        };
+        model = mkOption {
+          type = nullOr str;
+          default = "${cfg.tiers.${config.tier}.provider}/${cfg.tiers.${config.tier}.model}";
+          description = "Harness-neutral model override. Each renderer maps this to its own model identifier; defaults to tier provider/model.";
+        };
+        prompt = mkOption {
+          type = lines;
+          default = config.instructions;
+          description = "Agent system prompt.";
+        };
+        instructions = mkOption {
+          type = lines;
+          default = "";
+          description = "System instructions and role guidelines for the agent.";
+        };
       };
-      availableAgents = mkOption {
-        type = listOf str;
-        default = [ ];
-        description = "Glob patterns of sub-agents this agent may spawn (requires capabilities.delegate). Empty means all agents are allowed.";
-      };
-      trustedAgents = mkOption {
-        type = listOf str;
-        default = [ ];
-        description = "Sub-agents that run without permission prompts when spawned by this agent.";
-      };
-      skills = mkOption {
-        type = listOf str;
-        default = [ ];
-        description = "List of skills associated with this agent.";
-      };
-      model = mkOption {
-        type = nullOr str;
-        default = null;
-        description = "Harness-neutral model override. Each renderer maps this to its own model identifier; null uses the harness default.";
-      };
-      effort = mkOption {
-        type = nullOr (types.enum [ "xlow" "low" "medium" "high" "xhigh" "max" ]);
-        default = null;
-        description = "Harness-neutral reasoning effort override (xlow, low, medium, high, xhigh, max). Harnesses map or ignore this based on their provider capabilities; null uses harness default.";
-      };
-      instructions = mkOption {
-        type = lines;
-        default = "";
-        description = "System instructions and role guidelines for the agent.";
-      };
-    };
-  };
+    }
+  );
 
   ruleSubmodule = submodule {
     options = {
@@ -170,6 +235,14 @@ let
         type = str;
         description = "Brief summary of the global discipline.";
       };
+      target = mkOption {
+        type = enum [
+          "primary"
+          "subagent"
+        ];
+        default = "primary";
+        description = "Target agent role: primary or subagent.";
+      };
       rules = mkOption {
         type = attrsOf (nullOr lines);
         default = { };
@@ -180,6 +253,47 @@ let
 in
 {
   options.ai = {
+    tiers = mkOption {
+      type = attrsOf (submodule {
+        options = {
+          provider = mkOption {
+            type = str;
+            description = "Provider name.";
+          };
+          model = mkOption {
+            type = str;
+            description = "Model name.";
+          };
+          effort = mkOption {
+            type = enum [
+              "low"
+              "medium"
+              "high"
+            ];
+            description = "Reasoning effort level.";
+          };
+        };
+      });
+      default = {
+        high = {
+          provider = "github-copilot";
+          model = "claude-opus-4.6";
+          effort = "high";
+        };
+        medium = {
+          provider = "github-copilot";
+          model = "claude-sonnet-4.6";
+          effort = "medium";
+        };
+        low = {
+          provider = "github-copilot";
+          model = "gpt-5.4-mini";
+          effort = "low";
+        };
+      };
+      description = "3-tier model and effort routing table.";
+    };
+
     agents = mkOption {
       type = attrsOf agentSubmodule;
       default = { };
@@ -203,5 +317,156 @@ in
       default = { };
       description = "Global always-on code-writing rules, consolidated per harness into a single sectioned steering/rules file. Each carries harness-specific content that complements that harness's built-in defaults.";
     };
+
+    render = mkOption {
+      type = unspecified;
+      description = "Shared AI rendering helpers.";
+    };
+  };
+
+  config.ai.render = rec {
+    inherit (aiRenderBase) mkSkillDir zenModelFor;
+
+    capabilityNames = [
+      "read"
+      "write"
+      "execute"
+      "delegate"
+      "mcp"
+      "web"
+    ];
+
+    matchesCaps =
+      agent: rule:
+      all (cap: !rule.requires.${cap} or false || agent.capabilities.${cap} or false) capabilityNames;
+
+    agentRules =
+      agent:
+      if agent.role == "subagent" then
+        [ ]
+      else
+        builtins.filter (matchesCaps agent) cfg.rules;
+
+    formatRuleLines =
+      text:
+      let
+        rawLines = lib.splitString "\n" text;
+        nonEmpty = filter (l: lib.trim l != "") rawLines;
+      in
+      concatStringsSep "\n" (
+        map (l: if lib.hasPrefix "- " (lib.trim l) then lib.trim l else "- " + lib.trim l) nonEmpty
+      );
+
+    renderDisciplines =
+      {
+        dropped ? { },
+      }:
+      disciplines:
+      concatStringsSep "\n" (
+        filter (s: s != "") (
+          mapAttrsToList (
+            name: d:
+            let
+              dropList = dropped.${name} or [ ];
+              kept = filterAttrs (rName: text: text != null && !(builtins.elem rName dropList)) d.rules;
+            in
+            concatStringsSep "\n" (
+              filter (s: s != "") (map formatRuleLines (lib.attrValues kept))
+            )
+          ) disciplines
+        )
+      );
+
+    renderRules =
+      rules:
+      concatStringsSep "\n" (
+        filter (s: s != "") (map (rule: formatRuleLines rule.text) rules)
+      );
+
+    renderDiscipline =
+      {
+        dropped ? { },
+        heading ? "#",
+        separator ? "\n\n",
+      }:
+      name: discipline:
+      aiRenderBase.renderDiscipline { inherit dropped heading separator; } name discipline;
+
+    rulesText =
+      rules: agent:
+      let
+        matched = if agent.role == "subagent" then [ ] else builtins.filter (matchesCaps agent) rules;
+      in
+      optionalString (matched != [ ]) (
+        "\n\n" + concatStringsSep "\n\n" (map (rule: rule.text) matched)
+      );
+
+    modelFor =
+      harness: agent:
+      let
+        rawModel = agent.model;
+      in
+      if harness == "pi" || harness == "pi-coding-agent" then
+        if
+          rawModel == "flash"
+          || rawModel == "medium"
+          || rawModel == "pro"
+          || rawModel == "high"
+          || rawModel == "low"
+        then
+          zenModelFor { } rawModel
+        else
+          rawModel
+      else
+        rawModel;
+
+    effortFor =
+      _harness: agent:
+      let
+        eff = agent.effort;
+      in
+      if eff == null then
+        null
+      else if eff == "low" then
+        "low"
+      else if eff == "medium" then
+        "medium"
+      else
+        "high";
+
+    agentBodyFor =
+      harness: agent:
+      let
+        agentPrompt = if agent.prompt != "" then agent.prompt else agent.instructions;
+        harnessDrops = harnessDroppedDisciplines.${harness} or [ ];
+        agentDrops = agent.dropDisciplines or [ ];
+        allDrops = harnessDrops ++ agentDrops;
+        matchingDisciplines = filterAttrs (
+          name: d: d.target == agent.role && !(builtins.elem name allDrops)
+        ) cfg.disciplines;
+        harnessDropRules = harnessDroppedRules.${harness} or { };
+        disciplinesBlock = renderDisciplines { dropped = harnessDropRules; } matchingDisciplines;
+        matchedRules = agentRules agent;
+        rulesBlock = renderRules matchedRules;
+        sections = filter (s: s != "") [
+          (lib.trim agentPrompt)
+          disciplinesBlock
+          rulesBlock
+        ];
+      in
+      concatStringsSep "\n\n" sections;
+
+    agentBody = agent: agentBodyFor "" agent;
+
+    context =
+      harness:
+      if harness == "opencode" then
+        ""
+      else
+        let
+          primaryDisciplines = filterAttrs (_: d: d.target == "primary") cfg.disciplines;
+          harnessDropRules = harnessDroppedRules.${harness} or { };
+        in
+        renderDisciplines { dropped = harnessDropRules; } primaryDisciplines;
   };
 }

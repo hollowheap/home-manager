@@ -5,29 +5,11 @@
   ...
 }:
 let
-  inherit (lib) concatStringsSep filterAttrs mapAttrs mapAttrsToList;
+  inherit (lib) concatStringsSep mapAttrs mapAttrsToList;
 
-  mkSkill =
-    name: skill:
-    pkgs.runCommandLocal "crush-skill-${name}" { } ''
-      mkdir -p "$out/references" "$out/scripts"
-      cp ${
-        pkgs.writeText "${name}-SKILL.md" ''
-          ---
-          name: ${name}
-          description: ${skill.description}
-          ---
+  aiRender = config.ai.render;
 
-          ${skill.content}
-        ''
-      } "$out/SKILL.md"
-      ${concatStringsSep "\n" (mapAttrsToList (fileName: content: ''
-        cp ${pkgs.writeText "${name}-reference-${fileName}" content} "$out/references/${fileName}"
-      '') skill.references)}
-      ${concatStringsSep "\n" (mapAttrsToList (fileName: content: ''
-        install -m0755 ${pkgs.writeText "${name}-script-${fileName}" content} "$out/scripts/${fileName}"
-      '') skill.scripts)}
-    '';
+  mkSkill = aiRender.mkSkillDir { prefix = "crush"; };
 
   instructions = concatStringsSep "\n\n" (
     mapAttrsToList (name: agent: ''
@@ -38,35 +20,13 @@ let
     '') config.ai.agents
   );
 
-  # Discipline lines the crush coder prompt already covers harder (<4 lines output,
-  # no preamble/postamble, file:line refs): drop them here, keep the rest.
-  droppedDisciplineRules = {
-    complete = [
-      "whole"
-    ];
-    skills = [
-      "load"
-      "obey"
-    ];
-    unslop = [
-      "concise"
-      "no-restate"
-      "dense"
-    ];
+  # Discipline lines the crush coder prompt covers. Add rule names here once verified.
+  droppedDisciplineRules = { };
+
+  renderDiscipline = aiRender.renderDiscipline {
+    dropped = droppedDisciplineRules;
+    heading = "##";
   };
-
-  renderDiscipline =
-    name: discipline:
-    let
-      dropped = droppedDisciplineRules.${name} or [ ];
-      kept = filterAttrs (rule: text: text != null && !(builtins.elem rule dropped)) discipline.rules;
-    in
-    ''
-      ## ${name}
-      ${discipline.description}
-
-      ${concatStringsSep "\n\n" (mapAttrsToList (_: text: text) kept)}
-    '';
 
   # Crush has no per-agent surface: render the union over all agents.
   allRules = concatStringsSep "\n\n" (map (rule: rule.text) config.ai.rules);
@@ -79,6 +39,8 @@ in
     settings = {
       default_provider = "zen";
       default_model = "muse-spark-1.3-contributor-free";
+      reasoning_effort = aiRender.effortFor "crush" (config.ai.agents.engineer or { effort = "high"; });
+      options.tui.active_theme = "wallust";
       providers = {
         zen = {
           type = "openai-compat";
