@@ -5,9 +5,11 @@
       description = "Workspace artifact layout.";
       target = "primary";
       rules = {
-        layout = "Store persistent workspace artifacts under artifacts/.";
-        plan = "artifacts/plan.md tracks high-level objectives and per-initiative task checklists.";
-        specs = "artifacts/specs.md tracks specifications, explicit non-goals, and interface contracts.";
+        layout = "Store persistent workspace artifacts under artifacts/: context.md (repo map & commands), decisions.md (DEC-xx), specs.md (SPEC-xx), and plan.md (TASK-xx).";
+        context = "artifacts/context.md stores one-time repo architecture, entrypoints, module seams, and verified build/test/eval commands (populated by /init).";
+        decisions = "artifacts/decisions.md tracks settled grill decisions (- [ ] DEC-01: <decision> | Why: <rationale>) and explicit Non-Goals.";
+        specs = "artifacts/specs.md tracks module seams and behavioral invariants (- [ ] SPEC-01 [DEC-01]: <seam & invariant> | Verify: <check>).";
+        plan = "artifacts/plan.md tracks dependency-ordered vertical tasks (- [ ] TASK-01 [SPEC-01] (blocked-by: none): <goal outcome> | Verify: <cmd>).";
       };
     };
 

@@ -10,6 +10,7 @@
     universal-ctags
     tree-sitter
     repomap
+    artifacts-helper
     hollowheap-colorscript
     hollowpi-colorscript
     agy-statusline

@@ -1829,4 +1829,158 @@ Implement the Small-Pillar AI architecture across `modules/options/ai.nix`, `mod
   - [x] Stage new files and verify `nix flake check --no-build`.
   - [x] Run token/character audit for `AGENTS.md`, `ai.render.context "opencode"`, and rendered OpenCode agents.
 
+---
+
+# Implementation Plan: Universal Powerline Pill Engine & Pure Bash agy-statusline
+
+## Objective
+Implement Architectural Proposal 1 across `modules/styles/pills.nix`, `modules/shell/starship.nix`, `modules/programs/pi-coding-agent.nix`, and `pkgs/agy-statusline`:
+1. **Extend `modules/styles/pills.nix`**:
+   - Keep `styles.pills` strictly as compile-time Nix formatters (no runtime library package).
+   - Add `styles.pills.starship` adapter (`mode`, `left`, `right`).
+   - Add `styles.pills.pi` adapter (`mode`, `left`, `right`) producing JSON component lists.
+   - Add `styles.pills.bash` adapter exposing shell formatting functions (`pill_mode`, `pill_left`, `pill_right`) supporting standard 16 ANSI slots and dynamic 24-bit RGB from `~/.cache/wallust/sequences`.
+2. **Rewrite `pkgs/agy-statusline` in Pure Bash**:
+   - Create `pkgs/agy-statusline.sh` implementing full feature parity with `pkgs/agy-statusline.py` (JSON stdin parsing via `jq`, git vcs check, model fallback, 5-tier responsive width collapse, dynamic wallust sequence parsing).
+   - Update `pkgs/agy-statusline.nix` to use `writeShellApplication` with `runtimeInputs = [ jq git coreutils ]`, removing `python3`.
+   - Remove `pkgs/agy-statusline.py`.
+3. **Integrate Modules**:
+   - Refactor `modules/shell/starship.nix` to consume `config.styles.pills.starship`.
+   - Refactor `modules/programs/pi-coding-agent.nix` mode pill synthesis to consume `config.styles.pills.pi`.
+4. **Verification**:
+   - Verify `nix flake check --no-build`.
+   - Test execute `agy-statusline` with mock JSON stdin and empty stdin to verify responsive tiers and ANSI output.
+   - Verify activation package build with `nix build .#homeConfigurations.hollowheap.activationPackage --dry-run`.
+
+## Tasks
+- [x] Implement `styles.pills.starship`, `styles.pills.pi`, and `styles.pills.bash` in `modules/styles/pills.nix`.
+- [x] Rewire `modules/shell/starship.nix` to use `config.styles.pills.starship`.
+- [x] Rewire `modules/programs/pi-coding-agent.nix` to use `config.styles.pills.pi`.
+- [x] Create `pkgs/agy-statusline.sh` in pure Bash + `jq` with wallust sequence RGB parsing and responsive collapse.
+- [x] Update `pkgs/agy-statusline.nix` to package the Bash script with `jq git coreutils` dependencies, and remove `pkgs/agy-statusline.py`.
+- [x] Stage untracked files (`git add pkgs/agy-statusline.sh`) and verify `nix flake check --no-build`.
+- [x] Execute test runs of `agy-statusline` under various terminal widths and JSON payloads.
+
+---
+
+# Implementation Plan: Modular Wallust Templates & Hardened Noctalia Theming Hook
+
+## Objective
+Implement Architectural Proposal 3 per user decisions without unnecessary abstractions:
+1. **Modularize Wallust Templates and Reload Hooks**:
+   - De-monolith `modules/environment/wallust.nix`: Retain only core `sequences` template and terminal PTY broadcast hook.
+   - Distribute app-specific templates and hooks to their respective modules:
+     - `modules/programs/nvim.nix`: `nvim` template + `SIGUSR1` hook
+     - `modules/programs/ghostty.nix`: `ghostty` template + `ghostty-reload` hook
+     - `modules/programs/btop.nix`: `btop` template + `SIGUSR2` hook
+     - `modules/programs/bat.nix`: `bat` template + `bat cache --build` hook
+     - `modules/programs/yazi.nix`: `yazi` flavor template
+     - `modules/programs/crush.nix`: `crush` theme template
+     - `modules/programs/opencode.nix`: `opencode` theme template
+   - Disabling any app automatically removes its template and reload hook from Wallust.
+2. **Harden Noctalia Wallpaper Hook**:
+   - In `modules/environment/noctalia.nix`, harden `wallust` post_hook extraction:
+     - Handle sections `[wallpaper]` or `[wallpaper.last]` robustly.
+     - Strip single/double quotes and whitespace safely with `awk`.
+     - Validate that image exists (`-f`) and is readable (`-r`) before calling `wallust run "$img" -s`.
+3. **Verification**:
+   - Run `nix flake check --no-build`.
+   - Run `nix build .#homeConfigurations.hollowheap.activationPackage --dry-run`.
+   - Inspect generated `wallust.toml` in derivation to ensure all templates and hooks merge identically.
+
+## Tasks
+- [x] Distribute templates and hooks from `modules/environment/wallust.nix` into `modules/programs/{nvim,ghostty,btop,bat,yazi,crush,opencode}.nix`.
+- [x] Retain only core `sequences` template and broadcast hook in `modules/environment/wallust.nix`.
+- [x] Harden the Noctalia `wallust` post_hook in `modules/environment/noctalia.nix`.
+- [x] Verify with `nix flake check --no-build`.
+- [x] Verify activation build with `nix build .#homeConfigurations.hollowheap.activationPackage --dry-run`.
+
+---
+
+# Implementation Plan: Git Credential RBW, SOPS GPG Secrets, Email Privacy, accounts.*, and Clean Palette Hooks
+
+## Objective
+Implement secrets management, email privacy, upstream git credential helper, and clean modular theming hooks per user feedback:
+1. **Upstream `git-credential-rbw` Package**:
+   - Create `pkgs/git-credential-rbw.nix` wrapping upstream `doy/rbw` credential helper.
+   - Wire `credential.helper = "${pkgs.git-credential-rbw}/bin/git-credential-rbw"` in `modules/programs/git.nix` and delete bespoke `writeShellApplication`.
+2. **SOPS Setup with Keyring GPG Key**:
+   - Create `.sops.yaml` with user's GPG key fingerprint `41F93F1724EDF2D022E696E86B2A3C5D49EE0523` inspired by `~/repos/nixos-config/.sops.yaml`.
+   - Update `modules/services/sops.nix` to use `gnupg.home = "${config.home.homeDirectory}/.gnupg"`.
+3. **Hide Email & Add `accounts.*` Declarations**:
+   - Remove plain-text email from `modules/programs/git.nix` and `modules/services/auth-agents.nix`.
+   - Include decrypted git identity from SOPS (`config.sops.secrets."git/config".path`) in `modules/programs/git.nix`.
+   - Create `modules/core/accounts.nix` declaring `accounts.email.accounts.personal` with GPG key, Thunderbird integration, and optional `accounts.local.nix` import.
+   - Add `accounts.local.nix` to `.gitignore`.
+4. **Clean Modular Palette Hooks (Separate Nix Module, No Restarts, Package Python)**:
+   - Create `pkgs/mactahoe-icon-accent.py` and `pkgs/mactahoe-icon-accent.nix` for the Python icon theme variant selection script.
+   - Create `modules/environment/dconf-theme.nix` as a dedicated separate module managing the unified Noctalia dconf/gsettings template and hook.
+   - Remove `restartGtkApps` and `pkill -x` loops from GTK theme compilation hooks.
+   - Clean up `modules/environment/noctalia.nix`.
+5. **Verification**:
+   - Verify `nix flake check --no-build`.
+   - Test build `pkgs.git-credential-rbw` and `pkgs.mactahoe-icon-accent`.
+   - Verify activation package dry-run.
+
+- [x] Wire upstream `pkgs.rbw` credential helper in `modules/programs/git.nix` (retiring redundant `pkgs/git-credential-rbw.nix` to prevent `pkgs.buildEnv` collision).
+- [x] Update `modules/programs/git.nix` to include SOPS `gitconfig` template for user email.
+- [x] Create `.sops.yaml` with GPG key `41F93F1724EDF2D022E696E86B2A3C5D49EE0523`.
+- [x] Update `modules/services/sops.nix` to configure GPG home, declare secrets, and render `rbw-config.json` via sops template.
+- [x] Update `modules/services/auth-agents.nix` to remove plain-text email and install `pinentry-gnome3`.
+- [x] Create `modules/core/accounts.nix` and update `.gitignore` for `accounts.local.nix`.
+- [x] Create `pkgs/mactahoe-icon-accent.py` and `pkgs/mactahoe-icon-accent.nix`.
+- [x] Create `modules/environment/dconf-theme.nix` and clean up `modules/environment/noctalia.nix` (removing inline python, app restart loop, and separating dconf hook).
+- [x] Stage untracked files by name and verify with `nix flake check --no-build`.
+- [x] Test build new packages and verify activation package build.
+- [x] Enable color cycling on tmux inactive windows in `modules/programs/tmux.nix` with distinct white body for active window.
+- [x] Unify `user/email` secret in `modules/services/sops.nix` and `modules/programs/git.nix` via `gitconfig` template, removing inlined gitconfig in `secrets.yaml`.
+- [x] Update `skills/nix-flake-eval/SKILL.md` to be aware of rebuild logs (`nix log <drv>`, `artifacts/errors/`) and activation package builds.
+- [x] Add pure Pocock-driven `tdd` skill to `modules/ai/skills.nix` rendered across all 8 harnesses.
+- [x] Update `skills/renderer-author` with skill authoring standards, unslop action verbs, and skills surface mapping matrix.
+
+---
+
+# Implementation Plan: Pass 5 — Per-Agent Skill Gating, /init, Phased SDLC Skills & Artifact CLI Contract
+
+## Objective
+Implement Pass 5 across `modules/options/ai.nix`, `modules/ai/{disciplines,skills,agents}.nix`, `modules/programs/opencode.nix`, `pkgs/artifacts-helper.nix`, and `flake.nix`:
+1. **Per-Agent Skill Gating**: Add `agents` option to `skillSubmodule` in `modules/options/ai.nix`; render per-agent allow/deny permissions in `modules/programs/opencode.nix` (subagents deny all skills; primary agents allow repo-local skills while denying global skills outside their authorized agents; architect edits `artifacts/*.md` and executes `artifacts*`/`repomap*` in bash).
+2. **Artifacts Discipline**: Update `ai.disciplines.artifacts.rules` in `modules/ai/disciplines.nix` with the 4 workspace files and traceable ID chain (`context.md`, `decisions.md` [DEC-xx], `specs.md` [SPEC-xx], `plan.md` [TASK-xx]).
+3. **Artifact Helper CLI Script**: Create `pkgs/artifacts-helper.nix` implementing `status`, `unconverted-decs`, `unconverted-specs`, `next-tasks`, `context <TASK-id>`, and `verify-links`.
+4. **Flake Check Test**: Add `checks.x86_64-linux.artifacts-helper-test` in `flake.nix` testing all 6 subcommands.
+5. **8 Global Skills**: Define `init`, `grill`, `to-spec`, `to-task`, `implement`, `review`, `git-commit`, `nav-repomap` in `modules/ai/skills.nix` with `<25 word` triggers, active verbs, zero preambles, and `- Verify:` exit gates.
+6. **Agent Alignment**: Update `modules/ai/agents.nix` with `execute = true` on `architect` and align agent skill declarations.
+
+## Tasks
+- [x] Add `agents` option to `skillSubmodule` in `modules/options/ai.nix`.
+- [x] Update `ai.disciplines.artifacts.rules` in `modules/ai/disciplines.nix`.
+- [x] Create `pkgs/artifacts-helper.nix` with the 6 subcommands and alias symlinks.
+- [x] Add `checks.x86_64-linux.artifacts-helper-test` in `flake.nix` testing all 6 subcommands.
+- [x] Update `modules/programs/opencode.nix` with per-agent skill gating and architect permissions.
+- [x] Define the 8 global skills in `modules/ai/skills.nix` with `<25 word` triggers and examples.
+- [x] Align `modules/ai/agents.nix` agent capabilities and skill lists.
+- [x] Run `nix flake check` and verify the test passes cleanly.
+
+---
+
+# Implementation Plan: Skill Adaptation — Retain to-spec, Direct Seam Tasks, and Standalone TDD
+
+## Objective
+Adapt SDLC skills and artifact contracts per user feedback:
+1. **Retain `to-spec`**: Keep `to-spec` for `architect` (`agents = [ "architect" ]`) for multi-module specifications.
+2. **Grant `to-task` to `engineer`**: Set `agents = [ "architect" "engineer" ]` on `to-task`; allow tasks to absorb seam invariants directly (`- [ ] TASK-xx [SPEC-xx|DEC-xx] (blocked-by: ...): <seam invariant & outcome> | Verify: <cmd>`).
+3. **Restore Standalone `tdd`**: Add dedicated Pocock-driven `tdd` skill (`agents = [ "engineer" ]`), unmixing it from `implement`.
+4. **Refine `implement`**: Focus `implement` strictly on task execution lifecycle (scoped context loading, minimal hunks, explicit `| Verify: <cmd>` check).
+5. **Support Direct Links in `artifacts.sh`**: Allow `context <TASK-id>` and `verify-links` to resolve `TASK [DEC-xx]` directly as well as `TASK [SPEC-xx] [DEC-xx]`.
+6. **Align Agent Skills**: Update `modules/ai/agents.nix` to include `tdd` and `to-task` for `engineer`.
+7. **Verify**: Ensure `nix flake check` and activation package build pass.
+
+## Tasks
+- [x] Update `pkgs/artifacts-helper.sh` to support direct `DEC-xx` links from tasks in `context` and `verify-links`.
+- [x] Update `flake.nix` check derivation to verify both direct and spec-mediated task links.
+- [x] Update `modules/ai/skills.nix` to include standalone `tdd`, refine `implement`, allow `engineer` on `to-task`, and absorb seam invariants.
+- [x] Update `modules/ai/agents.nix` to include `to-task` and `tdd` in `engineer.skills`.
+- [x] Verify `nix flake check` passes cleanly.
+
+
 

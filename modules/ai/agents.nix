@@ -37,7 +37,7 @@
       capabilities = {
         read = true;
         write = true;
-        execute = false;
+        execute = true;
         delegate = true;
         web = true;
       };
@@ -45,11 +45,13 @@
         "scout"
       ];
       skills = [
-        "plan"
+        "init"
         "grill"
         "nav-repomap"
+        "to-spec"
+        "to-task"
       ];
-      prompt = "Design technical solutions, evaluate architectural trade-offs, and author specifications in artifacts/specs.md without executing shell commands.";
+      prompt = "Design technical solutions, evaluate architectural trade-offs, and author specifications and tasks in artifacts/.";
     };
 
     engineer = {
@@ -72,9 +74,14 @@
         "code-reviewer"
       ];
       skills = [
-        "plan"
+        "init"
         "grill"
         "nav-repomap"
+        "to-task"
+        "implement"
+        "tdd"
+        "review"
+        "git-commit"
       ];
       prompt = "Implement features, refactor code, and verify with tests. Keep main context minimal, delegate recon to Scout, and review non-trivial diffs with Code Reviewer.";
     };

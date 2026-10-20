@@ -226,6 +226,14 @@ let
         default = { };
         description = "Optional executable scripts placed under scripts/.";
       };
+      agents = mkOption {
+        type = listOf str;
+        default = [
+          "architect"
+          "engineer"
+        ];
+        description = "List of primary agents authorized to load this skill.";
+      };
     };
   };
 

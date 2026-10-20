@@ -47,35 +47,62 @@ let
       tools = toolsFor agent.capabilities // {
         # Built-in question tool exists; gate it on the question skill like antigravity's ask_question.
         question = builtins.elem "question" agent.skills || builtins.elem "grill" agent.skills;
+        bash = agent.capabilities.execute || name == "architect";
       };
+      deniedSkills = lib.filterAttrs (_skillName: skill: !(builtins.elem name skill.agents)) config.ai.skills;
+      deniedSkillEntries = concatStringsSep "\n" (mapAttrsToList (skillName: _: "    ${skillName}: \"deny\"") deniedSkills);
+      skillPermSection = ''
+  skill:
+    "*": "allow"
+${deniedSkillEntries}'';
       perms =
-        if name == "scout" || name == "Scout" then ''
-          permission:
-            skill: "deny"
-            bash:
-              "repomap*": "allow"
-              "rg*": "allow"
-              "fd*": "allow"
-              "nix eval*": "allow"
-              "nix flake show*": "allow"
-              "git status*": "allow"
-              "git log*": "allow"
-              "git diff*": "allow"
-              "*": "deny"
-        '' else if name == "code-reviewer" || name == "Code Reviewer" then ''
-          permission:
-            skill: "deny"
-        '' else if name == "ask" then ''
-          permission:
-            task:
-              scout: "allow"
-              "*": "deny"
-        '' else if agent.role == "primary" || agent.mainAgent then ''
-          permission:
-            task:
-              general: "deny"
-              explore: "deny"
-        '' else "";
+        if agent.role == "subagent" then
+          if name == "scout" || name == "Scout" then ''
+permission:
+  skill: "deny"
+  bash:
+    "repomap*": "allow"
+    "rg*": "allow"
+    "fd*": "allow"
+    "nix eval*": "allow"
+    "nix flake show*": "allow"
+    "git status*": "allow"
+    "git log*": "allow"
+    "git diff*": "allow"
+    "*": "deny"
+'' else ''
+permission:
+  skill: "deny"
+''
+        else if name == "architect" then ''
+permission:
+  task:
+    general: "deny"
+    explore: "deny"
+  edit:
+    "artifacts/*.md": "allow"
+    "*": "deny"
+  write:
+    "artifacts/*.md": "allow"
+    "*": "deny"
+  bash:
+    "artifacts*": "allow"
+    "repomap*": "allow"
+    "*": "deny"
+${skillPermSection}
+'' else if name == "ask" then ''
+permission:
+  task:
+    scout: "allow"
+    "*": "deny"
+${skillPermSection}
+'' else ''
+permission:
+  task:
+    general: "deny"
+    explore: "deny"
+${skillPermSection}
+'';
       toolsText = concatStringsSep "\n" (mapAttrsToList (tool: enabled: "  ${tool}: ${if enabled then "true" else "false"}") tools);
       effortLine = lib.optionalString (effort != null) "reasoningEffort: ${effort}\n";
     in
@@ -128,5 +155,10 @@ in
     skills = mapAttrs mkSkill config.ai.skills;
     tui.theme = "wallust";
     inherit context;
+  };
+
+  programs.wallust.settings.templates.opencode = {
+    template = "opencode.json";
+    target = "${config.home.homeDirectory}/.config/opencode/themes/wallust.json";
   };
 }

@@ -37,15 +37,15 @@ Match = agent holds every required cap. Writer has no tests rule (no execute); i
 | Harness | Agent surface (brief + matched rules) | Global surface | Drops |
 |---|---|---|---|
 | opencode | native agents | context = disciplines | unslop concise/no-restate/dense |
-| pi | agents/*.md | context = disciplines | (none) |
+| pi | agents/*.md | appendSystem = disciplines, context = roster | (none) |
 | codex | .codex/agents/*.toml | AGENTS.md = disciplines | (none) |
 | kiro | agents/*.json (web stripped for subagents) | steering = disciplines | (none) |
 | copilot | agent prompts | context = disciplines | (none) |
-| antigravity | agent.md files | rules = disciplines | (none) |
+| antigravity | agent.md files (~/.gemini/antigravity-cli/agents/) | rules = disciplines (~/.gemini/config/rules/) | (none) |
 | crush | none (single file below) | AGENTS.md = briefs + rules union + disciplines | complete whole, skills load/obey, unslop ×3 |
-| hermes | none | skills external_dirs only | n/a |
+| hermes | none | skills external_dirs only (TODO) | n/a |
 
-Question tool exists on opencode (`question`) and antigravity (`ask_question`) only; the question skill flags the other six harnesses.
+Question tool exists on opencode (`question`), antigravity (`ask_question`), and crush (`question`); the question skill flags the other five harnesses.
 
 ## Skills (`modules/ai/skills.nix`)
 

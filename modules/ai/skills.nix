@@ -1,82 +1,322 @@
 { pkgs, ... }:
 {
   ai.skills = {
-    plan = {
-      description = "Structured implementation planning in artifacts/plan.md. Load ONLY when a task needs 3+ steps, multi-file changes, or architectural coordination. Do NOT load for single trivial edits.";
+    init = {
+      description = "Scout repo architecture and commands into artifacts/context.md. Load ONLY when onboarding or initializing a repo. Do NOT load when context.md exists.";
+      agents = [
+        "architect"
+        "engineer"
+      ];
       content = ''
         ## Workflow
 
-        1. Read relevant target files, specifications, and options before drafting; never assume architecture.
-        2. Write or update artifacts/plan.md with Objective, numbered Tasks, and explicit Verification per task.
-        3. Keep exactly one task in progress; mark completed only after verification passes.
-        4. Record discovered build, test, and lint commands plus failed assumptions in artifacts/ so knowledge persists.
-        5. Update roadmap as milestones are achieved; append newly discovered follow-up tasks to the active section.
+        1. Inspect artifacts/context.md; if already non-empty and user did not request refresh, stop immediately.
+        2. Inspect workspace manifests, source entrypoints, directory seams, and test runners directly or via Scout.
+        3. Verify build, check, and test commands in the shell to confirm they pass.
+        4. Write artifacts/context.md (<60 lines) with ## Stack & Entrypoints, ## Commands, and ## Module Seams.
 
         ## Rules
 
-        - Tasks are atomic: one action and one verifiable outcome each.
-        - Every task names its exact check command (test suite, nix eval, nix build, nix flake check).
-        - Never batch completions; update task checkboxes in real time.
-        - Objectives are stable and high-level; append new work as Tasks sections, and move closed initiatives to artifacts/tasks/<slug>.md.
-        - Maintainer ownership: engineer maintains plan.md; architect contributes specifications and roadmaps.
-        - Verify: artifacts/plan.md exists with Objective, Tasks, and passing Verification for every checked box.
-      '';
-      references."template.md" = ''
-        # Plan
-        ## Objectives
-        Stable high-level goals (see artifacts/tasks/overview.md); new initiatives append Tasks below.
-        Closed initiatives move to artifacts/tasks/; this file keeps objectives and active work.
-        ## Tasks
-        - [ ] Action + file path + outcome
-        - [ ] Next action + verification cmd
-        ## Verification
-        Exact commands: tests, nix eval, nix build, nix flake check.
+        - Keep artifacts/context.md strictly under 60 lines.
+        - Record only verified build, check, and eval commands; run commands before writing.
+        - Document high-level module seams and boundary entrypoints, never internal functions.
+        - Verify: artifacts/context.md exists with non-empty ## Stack & Entrypoints, ## Commands, and ## Module Seams sections.
       '';
       references."examples.md" = ''
-        # Plan Examples
+        # Init Examples
 
         ## Bad
-        - Start editing files without a plan, keeping tasks in head and losing track mid-refactor.
-        - Marking all tasks complete in a single batch without running individual verification checks.
+        - Dumping 300 lines of file trees and internal types into context.md.
+        - Writing unverified commands that fail during subsequent implementation.
 
         ## Good
-        - Write plan.md with atomic `- [ ] Add pill helper`, `- [ ] Wire lualine sections`, `- [ ] nix flake check`, verify each step, and check off one at a time.
+        - Scout manifests, identify `nix flake check --no-build`, verify it passes, and write 30-line artifacts/context.md.
+      '';
+      scripts."artifacts.sh" = ''
+        #!/usr/bin/env bash
+        exec ${pkgs.artifacts-helper}/bin/artifacts.sh "$@"
       '';
     };
 
     grill = {
-      description = "Design-tree interview to resolve ambiguities. Load ONLY when requirements, architecture, or undocumented options have open decisions. Do NOT load for clear tasks.";
+      description = "Interactive design-tree interview resolving architecture decisions into artifacts/decisions.md. Load ONLY when requirements or decisions are open. Do NOT load for settled tasks.";
+      agents = [
+        "architect"
+        "engineer"
+      ];
       content = ''
         ## Workflow
 
-        1. Separate repo-verifiable facts from user decisions: check plain-text repo/docs once (or via Scout) for facts; never run strings/objdump/hexdump on compiled binaries or brute-force CLI flags.
-        2. Ask every independent frontier question in one round: use the harness question tool with (Recommended) first when available; otherwise output numbered ❓ questions with ➡️ (Recommended) default in chat and end the turn to wait for user response.
-        3. Advance frontier round-by-round until settled and confirm shared understanding before acting.
+        1. Run scripts/artifacts.sh status to inspect workspace state:
+           - Greenfield or empty repo (CONTEXT:none and zero code files): run zero code inspection tools (grill-me mode); interview user directly.
+           - Existing uninitialized repo (CONTEXT:none): run init to populate artifacts/context.md before interviewing.
+           - Initialized repo (CONTEXT:present or existing artifacts): read artifacts/context.md and artifacts/decisions.md; spawn Scout only for unmapped questions.
+        2. Separate repo-verifiable facts from user decisions: check plain-text repo/docs once; never run strings/objdump/hexdump on binaries.
+        3. Ask all independent frontier questions in one round: use harness question tool with (Recommended) first when available; otherwise output numbered questions with (Recommended) default and end turn.
+        4. Settle confirmed decisions into artifacts/decisions.md: append - [ ] DEC-xx: <decision> | Why: <rationale> and ## Non-Goals.
 
         ## Rules
 
         - Exhaust plain-text repo/docs lookup before asking; never ask questions the codebase answers directly.
         - Ask all independent questions in a single turn; avoid multi-turn interrogation when options are decoupled.
-        - Put the recommended option first with clear rationale and trade-offs.
-        - Precision beats brevity when formulating design decisions.
-        - Verify: All frontier ambiguities resolved and confirmed before code edits begin.
+        - Put recommended option first with clear rationale and trade-offs.
+        - Record settled decisions in artifacts/decisions.md with explicit | Why: <rationale>.
+        - Verify: artifacts/decisions.md contains settled - [ ] DEC-xx items and scripts/artifacts.sh unconverted-decs reports them.
       '';
       references."examples.md" = ''
         # Grill Examples
 
         ## Bad
-        - Numbered CLI menu pasted into chat without recommendations.
-        - Running strings on a binary to guess command-line flags instead of checking docs or asking.
         - Asking three sequential questions across three turns when all three were known upfront.
+        - Asking user for the project build command when flake.nix defines it.
 
         ## Good
         - Single round with 2 decoupled questions, (Recommended) defaults marked, clear impact on architecture.
-        - Checked plain-text Nix module options first; asked user only about chosen application behavior.
+        - Settle output as `- [ ] DEC-01: SQLite storage | Why: single-node simplicity` in `artifacts/decisions.md`.
+      '';
+      scripts."artifacts.sh" = ''
+        #!/usr/bin/env bash
+        exec ${pkgs.artifacts-helper}/bin/artifacts.sh "$@"
+      '';
+    };
+
+    to-spec = {
+      description = "Convert settled decisions into module seams and invariants in artifacts/specs.md. Load ONLY when decisions.md has unconverted DEC items. Do NOT load for tasks.";
+      agents = [
+        "architect"
+      ];
+      content = ''
+        ## Workflow
+
+        1. Run scripts/artifacts.sh unconverted-decs; if output is NONE, stop immediately.
+        2. Formulate public module seams, boundary interfaces, and testable behavioral invariants for each decision.
+        3. Append specifications to artifacts/specs.md: - [ ] SPEC-xx [DEC-xx]: <seam & invariant> | Verify: <check>.
+        4. Mark converted decisions complete in artifacts/decisions.md: - [x] DEC-xx: ...
+        5. Run scripts/artifacts.sh verify-links to ensure valid trace references.
+
+        ## Rules
+
+        - Every spec must reference at least one valid parent decision [DEC-xx].
+        - Specify public seams and external behavioral invariants; never mandate private internal implementation.
+        - Every spec must declare an explicit verification check command (| Verify: <cmd>).
+        - Mark parent decisions complete immediately after drafting corresponding specifications.
+        - Verify: scripts/artifacts.sh verify-links outputs OK and scripts/artifacts.sh unconverted-specs lists new items.
+      '';
+      references."examples.md" = ''
+        # To-Spec Examples
+
+        ## Bad
+        - Writing specs that reference non-existent DEC IDs or omitting the verify command.
+        - Specifying internal helper function signatures instead of public module boundaries.
+
+        ## Good
+        - Convert `- [ ] DEC-01: SQLite storage | Why: simplicity` into `- [ ] SPEC-01 [DEC-01]: Database seam exports query helpers | Verify: nix eval .#dbCheck`.
+      '';
+      scripts."artifacts.sh" = ''
+        #!/usr/bin/env bash
+        exec ${pkgs.artifacts-helper}/bin/artifacts.sh "$@"
+      '';
+    };
+
+    to-task = {
+      description = "Decompose specifications or decisions into vertical tasks absorbing seam invariants in artifacts/plan.md. Load ONLY when converting items. Do NOT load during active coding.";
+      agents = [
+        "architect"
+        "engineer"
+      ];
+      content = ''
+        ## Workflow
+
+        1. Run scripts/artifacts.sh unconverted-specs; if NONE, check scripts/artifacts.sh unconverted-decs. If both NONE, stop immediately.
+        2. Decompose specifications or decisions into atomic vertical tasks absorbing public seam invariants directly into task outcomes.
+        3. Append tasks to artifacts/plan.md: - [ ] TASK-xx [SPEC-xx|DEC-xx] (blocked-by: none|TASK-yy): <seam invariant & goal outcome> | Verify: <cmd>.
+        4. Mark converted specifications in artifacts/specs.md or decisions in artifacts/decisions.md complete: - [x] ...
+        5. Run scripts/artifacts.sh verify-links to confirm valid trace links.
+
+        ## Rules
+
+        - Every task references its parent [SPEC-xx] or [DEC-xx] and dependency (blocked-by: none|TASK-yy).
+        - Embed public seam invariants directly in the task description.
+        - Ensure initial task specifies (blocked-by: none) so implementation can begin immediately.
+        - Keep tasks atomic with exactly one verifiable outcome and command per task.
+        - Verify: scripts/artifacts.sh verify-links outputs OK and scripts/artifacts.sh next-tasks lists ready tasks.
+      '';
+      references."examples.md" = ''
+        # To-Task Examples
+
+        ## Bad
+        - Tasks referencing missing IDs or circular/unmarked dependencies.
+        - Massive multi-action tasks like "build whole backend and frontend".
+
+        ## Good
+        - `- [ ] TASK-01 [SPEC-01] (blocked-by: none): Define schema types | Verify: nix build`
+        - `- [ ] TASK-02 [DEC-01] (blocked-by: TASK-01): Implement query interface | Verify: nix flake check`
+      '';
+      scripts."artifacts.sh" = ''
+        #!/usr/bin/env bash
+        exec ${pkgs.artifacts-helper}/bin/artifacts.sh "$@"
+      '';
+    };
+
+    implement = {
+      description = "Implement next unblocked vertical task with verification check. Load ONLY when an unblocked task is ready in artifacts/plan.md. Do NOT load for planning.";
+      agents = [
+        "engineer"
+      ];
+      content = ''
+        ## Workflow
+
+        1. Run scripts/artifacts.sh next-tasks to locate unblocked work; if NONE, stop immediately.
+        2. Run scripts/artifacts.sh context <TASK-id> to load scoped commands, specs, decisions, and seam invariants; do not read unrelated files.
+        3. Review the absorbed seam invariant and run the verification command first if checking existing behavior.
+        4. Implement minimum production code required to satisfy the invariant using targeted hunk edits.
+        5. Re-run task verification command to confirm pass, then run broader test suite for regressions.
+        6. Mark task complete in artifacts/plan.md: - [x] TASK-xx: ...
+
+        ## Rules
+
+        - Load context strictly via scripts/artifacts.sh context <TASK-id>.
+        - Respect absorbed seam invariants: change internal implementation without breaking public boundaries.
+        - Apply minimal hunk edits; avoid unsolicited refactoring or premature abstractions.
+        - If developing code with test runners, consult tdd skill for seam-based test authoring.
+        - Mark task complete only after verification check command passes.
+        - Stop immediately once verification passes.
+        - Verify: Task check command passes and artifacts/plan.md reflects - [x] TASK-xx.
+      '';
+      references."examples.md" = ''
+        # Implement Examples
+
+        ## Bad
+        - Starting implementation without checking `scripts/artifacts.sh next-tasks` and editing blocked tasks.
+        - Marking tasks complete without executing the verification command.
+
+        ## Good
+        - Run `scripts/artifacts.sh context TASK-01`, run reproducer, implement minimal hunk, verify pass, and check box.
+      '';
+      scripts."artifacts.sh" = ''
+        #!/usr/bin/env bash
+        exec ${pkgs.artifacts-helper}/bin/artifacts.sh "$@"
+      '';
+    };
+
+    tdd = {
+      description = "Test-driven development via public seams and vertical slices. Load ONLY when writing code with test runners. Do NOT load for declarative configs or pure docs.";
+      agents = [
+        "engineer"
+      ];
+      content = ''
+        ## Workflow
+
+        1. Identify public seam with user; define external boundary where behavior is observed.
+        2. Write one minimal test asserting desired behavior across that seam.
+        3. Run test runner; capture exact failure line and error message.
+        4. Implement minimum production code required to satisfy the test.
+        5. Re-run test to confirm pass, then run broader suite to ensure zero regressions.
+        6. Refactor implementation and test for clarity, keeping suite green.
+        7. Repeat one vertical slice at a time; never write tests in bulk.
+
+        ## Rules
+
+        - Test behavior through public seams; never assert on private functions or internal state.
+        - Keep tests durable across refactors: tests pass unchanged if internals change completely.
+        - Work in strict vertical slices: one test, one implementation, one refactor per cycle.
+        - Discard production code written before capturing a failing test.
+        - Write DAMP tests over DRY: prefer clear test narratives over shared helper abstractions.
+        - Mock only external boundaries (network, filesystem, clock); never mock internal domain logic.
+        - Verify: Targeted test fails first, passes with minimal implementation, and suite remains green.
+      '';
+      references."examples.md" = ''
+        # TDD Examples
+
+        ## Bad
+        - Writing 10 unit tests for internal helper functions before writing implementation.
+        - Mocking the entire database, state container, and sibling classes to test a simple calculation.
+
+        ## Good
+        - Confirm public API endpoint or module export with user.
+        - Write a single failing test against the public export.
+        - Run test, observe failure, implement minimal code to pass, refactor cleanly, repeat for next slice.
+      '';
+    };
+
+    review = {
+      description = "Audit staged changes and task edits for regressions and invariants. Load ONLY after implementing a task before committing. Do NOT load during active coding.";
+      agents = [
+        "engineer"
+      ];
+      content = ''
+        ## Workflow
+
+        1. Run git status and git diff to inspect changes produced during task implementation.
+        2. Delegate diff review to Code Reviewer subagent citing the task specification and invariant.
+        3. Review subagent findings for correctness bugs, regressions, secret leaks, and security flaws.
+        4. Apply minimal patches for any high or medium severity findings.
+        5. Re-run task verification commands to confirm the suite remains green.
+
+        ## Rules
+
+        - Review diffs against parent SPEC-xx behavioral invariants.
+        - Treat Code Reviewer as read-only; implement fixes directly in the engineer session.
+        - Reject unsolicited refactoring, scope creep, and unrequested style cleanup.
+        - Verify: Zero high or medium severity review findings and verification suite passes.
+      '';
+      references."examples.md" = ''
+        # Review Examples
+
+        ## Bad
+        - Skipping review before committing multi-file refactors.
+        - Asking reviewer to rewrite entire files instead of citing exact line numbers.
+
+        ## Good
+        - Run git diff, delegate to Code Reviewer, receive line-number citations, patch boundary bug, re-verify.
+      '';
+      scripts."artifacts.sh" = ''
+        #!/usr/bin/env bash
+        exec ${pkgs.artifacts-helper}/bin/artifacts.sh "$@"
+      '';
+    };
+
+    git-commit = {
+      description = "Stage verified files and craft Conventional Commits. Load ONLY on explicit user request to commit. Do NOT load during planning or implementation.";
+      agents = [
+        "engineer"
+      ];
+      content = ''
+        ## Workflow
+
+        1. Run git status, git diff, and git log --oneline -n 5 to inspect working tree state and foreign session edits.
+        2. Check diffs for exposed secrets, API keys, tokens, or private credentials before staging.
+        3. Stage intended task files explicitly by path; never run git add -A or git add .
+        4. Commit with <type>(<scope>): <imperative summary> (<=50 chars, types: feat|fix|refactor|docs|test|chore|perf|ci|build|style).
+        5. Map one verified plan.md task to one commit; never rewrite shared git history.
+
+        ## Rules
+
+        - Never commit unless explicitly requested by the user.
+        - Always stage explicit file paths; never use blanket git add commands.
+        - Check diffs for keys, tokens, and secrets before staging.
+        - Never revert, amend, or reset changes made outside the current session.
+        - Never force-push, delete remote branches, or rewrite history.
+        - Verify: git log -n 1 shows conventional commit message and git diff --staged is clean.
+      '';
+      references."examples.md" = ''
+        # Git-Commit Examples
+
+        ## Bad
+        - Committing without user request during a coding or planning turn.
+        - Running `git add .` and accidentally staging `.env` or untracked secret keys.
+
+        ## Good
+        - User asks "commit changes", agent runs `git status`, stages explicit files, and commits with `feat(ai): add init skill`.
       '';
     };
 
     nav-repomap = {
-      description = "Repository symbol navigation via repomap artifact and slice reads. Load ONLY when locating definitions or exact line ranges in unfamiliar code. Do NOT load for known file paths.";
+      description = "Symbol navigation via repomap and slice reads. Load ONLY when locating definitions or line ranges in unfamiliar code. Do NOT load for known paths.";
+      agents = [
+        "architect"
+        "engineer"
+      ];
       content = ''
         ## Workflow
 
@@ -106,256 +346,6 @@
         #!/usr/bin/env bash
         mkdir -p artifacts
         exec ${pkgs.repomap}/bin/repomap "$@"
-      '';
-    };
-
-    git-commit = {
-      description = "Stage paths and create a Conventional Commit. Load ONLY when the user explicitly asks to stage or commit. Do NOT load during planning, coding, or git status/diff checks.";
-      content = ''
-        ## Workflow
-
-        1. Run git status, git diff, and git log --oneline -n 5 to inspect working tree state and foreign session edits.
-        2. Check diffs for exposed secrets, API keys, tokens, or private credentials before staging.
-        3. Stage intended task files explicitly by path; never run git add -A or git add .
-        4. Commit with <type>(<scope>): <imperative summary> (<=50 chars, types: feat|fix|refactor|docs|test|chore|perf|ci|build|style).
-        5. Map one verified plan.md task to one commit; never rewrite shared git history.
-
-        ## Rules
-
-        - Never commit unless explicitly requested by the user.
-        - Always stage explicit file paths; never use blanket git add commands.
-        - Check diffs for keys, tokens, and secrets before staging.
-        - Never revert, amend, or reset changes made outside the current session.
-        - Never force-push, delete remote branches, or rewrite history.
-        - Verify: git log -n 1 shows conventional commit message and git diff --staged is clean.
-      '';
-      references."examples.md" = ''
-        # Git-Commit Examples
-
-        ## Bad
-        - Committing without user request during a coding or planning turn.
-        - Running `git add .` and accidentally staging `.env` or untracked secret keys.
-        - Vague commit message like `update files` or `wip`.
-
-        ## Good
-        - User asks "commit changes", agent runs `git status`, stages `modules/programs/opencode.nix`, checks diff for secrets, and commits with `feat(ai): configure scout and code-reviewer subagents`.
-      '';
-    };
-
-    layout-spacing-audit = {
-      description = "Audit fully-rendered HTML for layout and spacing defects against a compact, comfortable, or spacious profile and emit a JSON report. Use after a build when checking visual rhythm, breathing room, or cramped and loose components. Do NOT use for color, typography, contrast, or unrendered source review.";
-      content = ''
-        Audit rendered spacing, not source CSS. Render in a real browser, compute boxes, and compare inward parent-to-child spacing to a target profile. Read references/profiles.md for component signals, spacing rules, the profile tables, and the output schema.
-
-        ## Use / Do NOT use
-
-        Use when: a build emits HTML and you must check padding, gaps, sidebar/main separation, or density against a spacing profile.
-        Do NOT use when: reviewing color, typography, or contrast, or reading static CSS/JSX without rendering (declared spacing lies; invalid tokens only surface in the computed tree).
-
-        ## Workflow
-
-        1. Build first; stale bundles audit old styles.
-        2. Capture desktop and mobile: scripts/render-metrics.mjs <html> <out.json> [width] [height] [waitSelector].
-        3. Segment components, then evaluate inward spacing and profile conformance (references/profiles.md).
-        4. Emit the JSON report; one entry per component, real issues only.
-        5. After fixes, rebuild, re-capture, and re-report to confirm.
-
-        ## Rules
-
-        1. Audit the computed box, never the declared prop; invalid tokens collapse to 0.
-        2. Always render a mobile viewport; drawers and sticky footers only surface there.
-        3. Judge fixed-height controls by computed height (>= ~40px), not vertical padding.
-        4. Report the pre-fix state; note applied fixes separately.
-
-        ## Bad / Good
-
-        Bad: read the CSS and pass pb="$28"; it computes to 0 and hides content under the footer.
-        Good: capture both viewports, find the 0px bottom padding, cite the selector and target 96px.
-
-        ## Verification
-
-        Report cites computed values (padding, gap, width) and a unique selector per component; re-running shows the flagged css_target values.
-      '';
-      references."profiles.md" = ''
-        # Layout spacing audit reference
-
-        ## Component detection signals (priority order)
-
-        - Sidebar: <aside>, role="complementary" or "navigation", or class/testid matching /sidebar|drawer|nav-rail|aside/i.
-        - Main: <main>, role="main", or class matching /main|content-root|workspace|page-body/i.
-        - Composite (card, modal, form, list, toolbar): <form>, <dialog>, <nav>, <header>, <footer>, <section>, <article>; data-component, data-testid, data-slot; class matching /card|panel|modal|dialog|toolbar|dropdown|form-group|menu/i.
-        - Atomic controls: <button>, <input>, <select>, styled <a>.
-
-        Prefer data-testid and data-component hooks over tag heuristics when present.
-
-        ## Inward spacing rules
-
-        1. Container breathing room: container padding must be at least the gap/margin between its own children. A container wrapping text or interactive children with padding 0 is a violation.
-        2. Sibling gap vs boundary padding: spacing between two distinct child components must not exceed the parent's outer padding.
-        3. Sidebar-to-main: an explicit gap or margin must separate them (a 1px border is not separation). Sidebar nav items need proportional vertical padding to be distinct targets without overflowing.
-        4. Hierarchy inversion: a nested child container must not have larger internal padding than its enclosing parent container.
-
-        ## Profile constraints
-
-        Choose compact (dashboards/grids/IDEs), comfortable (default: standard SaaS), or spacious (editorial/marketing).
-
-        | Metric | compact | comfortable | spacious |
-        | --- | --- | --- | --- |
-        | Sidebar width | 200-240px | 240-280px | 280-320px |
-        | Sidebar internal padding | 8-12px | 16-20px | 24-32px |
-        | Sidebar nav item gap | 4-6px | 8-10px | 12-16px |
-        | Sidebar to main gap | 12-16px | 24-32px | 32-48px |
-        | Container/card padding | 12-16px | 20-24px | 32-48px |
-        | Container child gap | 8-12px | 16-20px | 24-32px |
-        | Control padding (v/h) | 4-6 / 8-12px | 8-10 / 16-20px | 12-16 / 24-32px |
-        | Label to control gap | 4px | 8px | 12px |
-
-        ## Output schema
-
-        Return only this JSON (write it to a report file as well as inline):
-
-        {
-          "profile_used": "compact | comfortable | spacious",
-          "detected_components": [
-            {
-              "component_type": "sidebar | card | form | modal | main_layout | button",
-              "selector": "<unique CSS selector or xpath of the parent>",
-              "child_count": 0,
-              "issues": [
-                {
-                  "type": "CONTAINER_PADDING_COLLAPSE | SIBLING_GAP_OVERFLOW | SIDEBAR_GAP_MISSING | TOUCH_DENSITY_MISMATCH | HIERARCHY_INVERSION",
-                  "target_node": "<parent | child selector>",
-                  "details": "<concise spatial explanation>",
-                  "css_target": {
-                    "padding": "<value or null>",
-                    "margin": "<value or null>",
-                    "gap": "<value or null>",
-                    "width": "<value or null>"
-                  }
-                }
-              ]
-            }
-          ]
-        }
-
-        ## Gotchas (from real audits)
-
-        - Invalid design tokens silently zero out padding. A prop like pb="$28" on a token scale that jumps 24 to 32 computes to 0px, hiding content behind a sticky footer. Confirm the token exists in the resolved scale.
-        - Fixed-height controls legitimately have padding 0 vertically. Component libraries (e.g. Gluestack Button) set a fixed height plus horizontal padding instead of vertical padding. Judge the touch target by computed height (>= ~40px), not by vertical padding; do not flag these.
-        - Sticky or fixed footers need bottom padding on the scroll container of at least the footer height, or the last child is obscured.
-        - gap and margin are separate. A flex row with gap 0 shows no separation even if children have borders.
-        - Fixed or absolute sidebars leave the flow. A gap on the parent flex row has no effect when the sidebar is position fixed (single in-flow child), so a desktop gap fix is harmless on mobile but must be verified there.
-        - Report the pre-fix state, then note applied fixes separately; the report is an audit, not a changelog.
-      '';
-      scripts."render-metrics.mjs" = ''
-        #!/usr/bin/env node
-        import { chromium } from "playwright";
-        import fs from "node:fs/promises";
-        import { existsSync, readdirSync } from "node:fs";
-        import path from "node:path";
-        import { pathToFileURL } from "node:url";
-
-        function resolveChromium() {
-          const env =
-            process.env.CHROMIUM_PATH ||
-            process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ||
-            process.env.CHROME_BIN;
-          if (env && existsSync(env)) return env;
-
-          const common = [
-            "/usr/bin/chromium",
-            "/usr/bin/chromium-browser",
-            "/usr/bin/google-chrome",
-            "/usr/bin/google-chrome-stable",
-            "/run/current-system/sw/bin/chromium",
-            "/run/current-system/sw/bin/google-chrome",
-          ];
-          for (const p of common) if (existsSync(p)) return p;
-
-          try {
-            for (const entry of readdirSync("/nix/store")) {
-              if (!/-chromium-[0-9]/.test(entry)) continue;
-              const bin = path.join("/nix/store", entry, "bin", "chromium");
-              if (existsSync(bin)) return bin;
-            }
-          } catch {}
-          return undefined;
-        }
-
-        const args = process.argv.slice(2);
-        if (args.length < 2) {
-          console.error("usage: render-metrics.mjs <html> <out.json> [width] [height] [waitSelector]");
-          process.exit(1);
-        }
-        const [htmlPath, outPath, widthArg, heightArg, waitSelector] = args;
-        const width = Number(widthArg || 1280);
-        const height = Number(heightArg || 800);
-
-        const launchOpts = {
-          headless: true,
-          args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
-        };
-        const exe = resolveChromium();
-        if (exe) launchOpts.executablePath = exe;
-
-        const browser = await chromium.launch(launchOpts);
-        const context = await browser.newContext({ viewport: { width, height } });
-        const page = await context.newPage();
-        await page.goto(pathToFileURL(path.resolve(htmlPath)).href, { waitUntil: "load" });
-        if (waitSelector) {
-          await page.waitForSelector(waitSelector, { timeout: 15000 }).catch(() => {});
-        }
-        await page.waitForTimeout(500);
-
-        const data = await page.evaluate(() => {
-          const round = (v) => {
-            const n = parseFloat(v);
-            return Number.isFinite(n) ? Math.round(n * 100) / 100 : v;
-          };
-          const skip = new Set(["script", "style", "svg", "path", "defs", "symbol", "use", "g", "rect", "circle", "line", "polyline", "polygon", "meta", "link", "title"]);
-          const nodes = Array.from(document.querySelectorAll("*")).filter((el) => {
-            if (skip.has(el.tagName.toLowerCase())) return false;
-            if (el.closest("svg")) return false;
-            return true;
-          });
-          const metrics = nodes.map((el) => {
-            const cs = getComputedStyle(el);
-            const r = el.getBoundingClientRect();
-            const parts = [];
-            let cur = el;
-            while (cur && cur.nodeType === 1 && parts.length < 8) {
-              let part = cur.tagName.toLowerCase();
-              if (cur.dataset && cur.dataset.testid) part += "[" + cur.dataset.testid + "]";
-              else if (cur.id) part += "#" + cur.id;
-              else if (typeof cur.className === "string" && cur.className.trim()) {
-                part += "." + cur.className.trim().split(/\s+/).slice(0, 2).join(".");
-              }
-              parts.unshift(part);
-              cur = cur.parentElement;
-            }
-            return {
-              path: parts.join(">"),
-              tag: el.tagName.toLowerCase(),
-              testid: el.dataset ? el.dataset.testid || null : null,
-              role: el.getAttribute("role"),
-              childElementCount: el.childElementCount,
-              display: cs.display,
-              flexDirection: cs.flexDirection,
-              position: cs.position,
-              padding: [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].map(round).join(" "),
-              margin: [cs.marginTop, cs.marginRight, cs.marginBottom, cs.marginLeft].map(round).join(" "),
-              gap: cs.gap === "normal" ? "normal" : cs.gap,
-              width: round(r.width),
-              height: round(r.height),
-              text: el.childNodes.length && el.textContent ? el.textContent.trim().slice(0, 40) : "",
-            };
-          });
-          return { viewport: { width: window.innerWidth, height: window.innerHeight }, outerHTML: document.documentElement.outerHTML, metrics };
-        });
-
-        await fs.writeFile(outPath, JSON.stringify(data, null, 2), "utf-8");
-        console.log("Wrote " + outPath + ": " + data.metrics.length + " nodes at " + width + "x" + height);
-        await browser.close();
       '';
     };
   };
