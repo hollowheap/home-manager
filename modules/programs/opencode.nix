@@ -42,7 +42,8 @@ let
   mkAgent =
     name: agent:
     let
-      model = aiRender.modelFor "opencode" agent;
+      rawModel = aiRender.modelFor "opencode" agent;
+      model = if rawModel != null && rawModel != "" then rawModel else opencodeModel;
       effort = aiRender.effortFor "opencode" agent;
       tools = toolsFor agent.capabilities // {
         # Built-in question tool exists; gate it on the question skill like antigravity's ask_question.

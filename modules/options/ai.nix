@@ -425,6 +425,14 @@ in
           zenModelFor { } rawModel
         else
           rawModel
+      else if harness == "opencode" then
+        if
+          rawModel == null
+          || !(lib.hasPrefix "opencode/" rawModel || lib.hasPrefix "deepseek/" rawModel)
+        then
+          "opencode/deepseek-v4.1-flash-free"
+        else
+          rawModel
       else
         rawModel;
 
